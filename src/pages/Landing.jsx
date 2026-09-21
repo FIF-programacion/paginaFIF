@@ -22,46 +22,43 @@ const SECTIONS = [
   { id: "contacto", title: "Contacto" },
 ];
 
-const HERO_SLIDES = ["/images/dona-aula.png", "/images/team.jpg", "/images/family-sun.jpg"];
-
 const ABOUT_BANDS = [
   {
     kicker: "Nosotros",
     title: "Quiénes somos",
     text: "Somos una fundación comprometida con brindar oportunidades de aprendizaje, creatividad y desarrollo personal a niños y jóvenes. Creemos en el poder de la educación y el arte como herramientas para transformar vidas y construir comunidades más solidarias y conscientes.",
-    image: "/images/dona-aula.png",
+    image: "/images/Image1.jpg",
     side: "left",
   },
   {
     kicker: "Misión",
     title: "Misión",
     text: "Ser un espacio educativo innovador que nutre el potencial y el desarrollo integral de los niños, fomentando el amor por el aprendizaje, el pensamiento crítico y un carácter fuerte.",
-    image: "/images/dona-aula.png",
+    image: "/images/Image2.jpg",
     side: "right",
   },
   {
     kicker: "Enfoque",
     title: "Nuestro trabajo",
     text: "Nuestro trabajo se enfoca en crear espacios donde cada participante pueda descubrir su potencial, fortalecer su confianza y compartir con otros sus talentos. Desde nuestros inicios, hemos buscado ser un punto de encuentro entre la enseñanza, la expresión y la colaboración. Cada actividad que realizamos nace del deseo de inspirar curiosidad, empatía y sentido de pertenencia. En nuestra fundación, aprender también significa disfrutar, explorar y crecer juntos.",
-    image: "/images/dona-aula.png",
+    image: "/images/Image3.jpg",
     side: "left",
   },
   {
     kicker: "Visión",
     title: "Visión",
     text: "Ser reconocida en Ecuador como la fundación líder en el desarrollo integral de la niñez, transformando la educación en una aventura de vida. Aspiramos a que cada niño de FIF se convierta en un agente de cambio, capaz de destacar en cualquier ámbito, con una capacidad crítica mejorada y una visión equilibrada y creativa del mundo.",
-    image: "/images/dona-aula.png",
+    image: "/images/Image4.jpg",
     side: "right",
   },
 ];
 
 const PROJECT_IMAGES = [
-  "/images/dona-aula.png",
-  "/images/team.jpg",
-  "/images/family-sun.jpg",
-  "/images/girl-hands-up.jpg",
-  "/images/kid-pointing.jpg",
-  "/images/family-alone.jpg",
+  "/images/Image1.jpg",
+  "/images/Image2.jpg",
+  "/images/Image3.jpg",
+  "/images/Image4.jpg",
+  "/images/Image5.jpg",
 ];
 
 const EVENTS = [
@@ -89,12 +86,11 @@ const EVENTS = [
 ];
 
 const ALLIES = [
-  { name: "Wayra Wawa Fundación Est. 2020", src: "/images/allies/wayra-wawa.png" },
-  { name: "USFQ PASEC", src: "/images/allies/usfq-pasec.png" },
+  { name: "USFQ PASEC", src: "/images/allies/pasec.png" },
   { name: "Manualidades Mil Travesuras", src: "/images/allies/mil-travesuras.png" },
   { name: "K-School", src: "/images/allies/k-school.png" },
-  { name: "McGraw Hill ALEKS", src: "/images/allies/aleks.png" },
-  { name: "Donkey", src: "/images/allies/donkey.png" },
+  { name: "McGraw Hill ALEKS", src: "/images/allies/aleks.jpg" },
+  { name: "Donkey Burritos", src: "/images/allies/donkey-burritos.png" },
 ];
 
 const HOURS = [
@@ -165,8 +161,7 @@ export default function Landing() {
   const scrollToId = useSlowPageScroll();
   const wa = assistanceWhatsAppUrl("Hola FIF, quiero conocer más sobre la fundación.");
 
-  const shrink = clamp((heroProgress - 0.08) / 0.36);
-  const slide = clamp((heroProgress - 0.48) / 0.3);
+  const shrink = clamp((heroProgress - 0.08) / 0.5);
   const fade = clamp((heroProgress - 0.84) / 0.14);
   const scale = 1 - shrink * 0.36;
   const copyOpacity = 1 - Math.min(1, heroProgress / 0.18);
@@ -248,23 +243,19 @@ export default function Landing() {
                 opacity: 1 - fade,
               }}
             >
-              <div className="lp-hero-track" style={{ transform: `translateX(${-slide * 66.666}%)` }}>
-                {HERO_SLIDES.map((src) => (
-                  <div className="lp-hero-slide" key={src}>
-                    <img src={src} alt="" />
-                    <video autoPlay muted loop playsInline poster={src} onError={(event) => { event.currentTarget.style.display = "none"; }}>
-                      <source src="/videos/hero.mp4" type="video/mp4" />
-                    </video>
-                  </div>
-                ))}
-              </div>
+              <video className="lp-hero-video" autoPlay muted loop playsInline poster="/images/Image1.jpg">
+                <source src="/videos/videoInicio.mp4" type="video/mp4" />
+              </video>
               <div className="lp-hero-copy" style={{ opacity: copyOpacity }}>
                 <h1>
                   <span>Fundación</span>
                   <span>Integral</span>
                   <span>de Familias</span>
                 </h1>
-                <a href="#dona" className="lp-hero-cta" onClick={goTo("dona")}>Dona hoy</a>
+                <div className="lp-hero-actions">
+                  <a href="#dona" className="lp-hero-cta" onClick={goTo("dona")}>Dona hoy</a>
+                  <Link to="/fif-learning" className="lp-hero-cta lp-hero-cta-learning">FIF LEARNING</Link>
+                </div>
                 <p className="lp-scroll-hint">Desliza</p>
               </div>
             </div>
@@ -332,7 +323,7 @@ export default function Landing() {
         </section>
 
         <ScrollSplitEvents
-          imageSrc="/images/dona-aula.png"
+          imageSrc="/images/Image5.jpg"
           cards={EVENTS.map((event) => ({
             ...event,
             moreHref: "#contacto",
@@ -409,7 +400,7 @@ export default function Landing() {
 
         <section className="lp-portal" id="fif-learning">
           <div className="lp-portal-frame">
-            <img src="/images/dona-aula.png" alt="" />
+            <img src="/images/Image1.jpg" alt="" />
             <div className="lp-portal-copy">
               <p className="lp-kicker">Portal</p>
               <h2 className="lp-portal-wordmark"><Wordmark size="lg" /></h2>

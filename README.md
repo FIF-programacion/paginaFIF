@@ -149,7 +149,7 @@ La app queda en `http://127.0.0.1:5173/`.
 
 El menú lateral de la fundación incluye **FIF Learning**. Desde esa sección se entra al portal. Login y registro siguen en las mismas rutas de antes.
 
-Video opcional del hero: `public/videos/hero.mp4`. Si no existe, se usa una secuencia de imágenes.
+Video del hero: `public/videos/videoInicio.mp4` (cubre todo el recuadro, `object-fit: cover`). Fotos de la landing: `public/images/Image1.jpg` … `Image5.jpg`.
 
 ---
 
@@ -159,12 +159,12 @@ Fondo blanco, menú lateral de líneas (hover muestra el título), chip **Dona h
 
 | Sección | Qué hace |
 |---|---|
-| **Inicio** | Recuadro redondeado con video o fotos. Título *Fundación Integral de Familias* en Nunito (tres líneas, tipografía seria). Al hacer scroll el recuadro se encoge al centro, las imágenes avanzan y el bloque desaparece. |
+| **Inicio** | Recuadro redondeado con `videoInicio.mp4` a fill. Título *Fundación Integral de Familias* en Nunito (tres líneas). Al hacer scroll el recuadro se encoge al centro y desaparece. |
 | **Nosotros** | Zigzag con foto: Quiénes somos (texto izq. / foto der.), Misión (foto izq. / texto der.), Nuestro trabajo, Visión. El texto entra con **Kinetic Text Reveal** (palabras, blur, dirección). |
 | **Proyectos** | Título centrado y carrusel infinito tipo fisheye de fotos de talleres. |
 | **Eventos** | **Scroll Split Card**: 1) una imagen completa, 2) se parte en tres, 3) las tarjetas se voltean y muestran los tres eventos (Soul Concert, Modern Ballet, Album Launch). *More info* va a contacto; *Register Now* abre WhatsApp. |
 | **Dona ahora** | Franja dorada `DONA AHORA` + tarjetas de donación individual y organización. |
-| **Colaboradores** | Carrusel continuo de logos (Wayra Wawa, USFQ PASEC, Mil Travesuras, K-School, ALEKS, Donkey). |
+| **Colaboradores** | Carrusel continuo de logos (USFQ PASEC, Mil Travesuras, K-School, ALEKS, Donkey Burritos). |
 | **Multimedia** | Enlaces a podcast *Conversando con los Profes* y canal de YouTube. |
 | **FIF Learning (portal)** | Recuadro con foto de taller y wordmark de colores **FIF LEARNING**. Botón al portal `/fif-learning`. |
 | **Contacto** | Tres tarjetas: datos, horarios y redes. |
@@ -189,7 +189,7 @@ FIF LEARNING WEB/
 ├── public/
 │   ├── images/             ← logo, ilustraciones, foto de talleres, aliados
 │   │   └── allies/         ← logos de colaboradores
-│   └── videos/             ← hero.mp4 (opcional)
+│   └── videos/             ← videoInicio.mp4
 ├── src/
 │   ├── main.jsx
 │   ├── App.jsx
@@ -226,7 +226,7 @@ FIF LEARNING WEB/
 
 Se sirve en la URL raíz. Ejemplo: `public/images/LOGO_COLOR.png` → `/images/LOGO_COLOR.png`.
 
-Incluye el logo, ilustraciones, la foto de talleres (`dona-aula.png`) y los recortes de colaboradores en `public/images/allies/`.
+Incluye el logo, ilustraciones, `Image1.jpg`–`Image5.jpg` para la landing y los recortes de colaboradores en `public/images/allies/`.
 
 ### 6.3 `Images/`
 
@@ -426,7 +426,8 @@ No hay analítica de terceros.
 - **Nuevo curso o ejercicio:** `src/data/courses.js`.
 - **Nueva ilustración:** copiar a `public/images/` y usar `/images/nombre.ext`.
 - **Datos de la fundación o legales:** `src/data/org.js` y `src/pages/legal/LegalPages.jsx`.
-- **Video del hero:** `public/videos/hero.mp4`.
+- **Video del hero:** `public/videos/videoInicio.mp4`.
+- **Fotos de la landing:** `public/images/Image1.jpg` a `Image5.jpg`.
 - **Subir cambios:** `git add` → `git commit` → `git push` (sección 2).
 
 Antes de un lanzamiento con pagos reales hay que conectar un procesador; hoy el botón de donar abre WhatsApp con el monto o el paquete elegido.

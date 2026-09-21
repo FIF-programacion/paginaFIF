@@ -63,6 +63,19 @@ html.lp-html {
   color: var(--lp-blue);
 }
 
+.lp-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.lp-hero-copy .lp-hero-cta-learning {
+  background: var(--lp-blue);
+  color: #fff;
+}
+
 .lp-nav {
   position: fixed;
   right: clamp(12px, 2vw, 28px);
@@ -225,21 +238,7 @@ html.lp-html {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
 }
 
-.lp-hero-track {
-  display: flex;
-  width: 300%;
-  height: 100%;
-  transition: transform 0.05s linear;
-}
-
-.lp-hero-slide {
-  position: relative;
-  flex: 0 0 33.333%;
-  height: 100%;
-}
-
-.lp-hero-slide img,
-.lp-hero-slide video {
+.lp-hero-video {
   position: absolute;
   inset: 0;
   width: 100%;
