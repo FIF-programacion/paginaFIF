@@ -33,6 +33,9 @@ export function GameProvider({ children }) {
   const [tests, setTests] = useState([]);
   const [attempts, setAttempts] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [attendance, setAttendance] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [activityDone, setActivityDone] = useState([]);
   const [noticeSeen, setNoticeSeen] = useState(true);
   const [hydrated, setHydrated] = useState(false);
 
@@ -72,6 +75,9 @@ export function GameProvider({ children }) {
       setTests(saved.tests || []);
       setAttempts(saved.attempts || []);
       setMessages(saved.messages || []);
+      setAttendance(saved.attendance || []);
+      setActivities(saved.activities || []);
+      setActivityDone(saved.activityDone || []);
     }
     setHydrated(true);
   }, []);
@@ -81,9 +87,20 @@ export function GameProvider({ children }) {
     if (new URLSearchParams(window.location.search).get("preview") === "1") return;
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ accounts, sessionId, stats, progress, tests, attempts, messages }),
+      JSON.stringify({
+        accounts,
+        sessionId,
+        stats,
+        progress,
+        tests,
+        attempts,
+        messages,
+        attendance,
+        activities,
+        activityDone,
+      }),
     );
-  }, [accounts, sessionId, stats, progress, tests, attempts, messages, hydrated]);
+  }, [accounts, sessionId, stats, progress, tests, attempts, messages, attendance, activities, activityDone, hydrated]);
 
   const acknowledgeNotice = () => {
     localStorage.setItem(NOTICE_KEY, "1");
@@ -211,19 +228,48 @@ export function GameProvider({ children }) {
 
   const saveTest = (test) => setTests((current) => [...current.filter((item) => item.code !== test.code), test]);
 
-  const saveAttempt = (attempt) => setAttempts((current) => [...current, attempt]);
+  const saveAttempt = (attempt) => setAttempts((current) => [...current.filter((item) => item.id !== attempt.id), attempt]);
 
   const saveMessage = (message) => setMessages((current) => [...current, { ...message, createdAt: Date.now() }]);
+
+  const saveAttendance = (record) => {
+    setAttendance((current) => {
+      const key = (item) => `${item.teacherEmail}|${item.courseId}|${item.date}`;
+      return [...current.filter((item) => key(item) !== key(record)), record];
+    });
+  };
+
+  const saveActivity = (activity) => {
+    setActivities((current) => [...current.filter((item) => item.id !== activity.id), activity]);
+  };
+
+  const completeActivity = (activityId, studentEmail) => {
+    setActivityDone((current) => {
+      if (current.some((item) => item.activityId === activityId && item.studentEmail === studentEmail)) return current;
+      return [...current, { activityId, studentEmail, completedAt: Date.now() }];
+    });
+  };
+
+  const students = useMemo(
+    () => accounts
+      .filter((item) => item.role === "student")
+      .map(({ passwordHash, ...rest }) => rest),
+    [accounts],
+  );
 
   const value = useMemo(
     () => ({
       hydrated,
       user,
+      students,
       stats,
       progress,
       tests,
       attempts,
       messages,
+      attendance,
+      activities,
+      activityDone,
       noticeSeen,
       visibleCourses,
       acknowledgeNotice,
@@ -237,8 +283,11 @@ export function GameProvider({ children }) {
       saveTest,
       saveAttempt,
       saveMessage,
+      saveAttendance,
+      saveActivity,
+      completeActivity,
     }),
-    [hydrated, user, stats, progress, tests, attempts, messages, noticeSeen, visibleCourses],
+    [hydrated, user, students, stats, progress, tests, attempts, messages, attendance, activities, activityDone, noticeSeen, visibleCourses],
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

@@ -59,6 +59,7 @@ const PROJECT_IMAGES = [
   "/images/Image3.jpg",
   "/images/Image4.jpg",
   "/images/Image5.jpg",
+  "/images/proyectos-profes.jpg",
 ];
 
 const EVENTS = [

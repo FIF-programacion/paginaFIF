@@ -21,6 +21,7 @@ import CourseComplete from "./pages/CourseComplete";
 import TeacherLogin from "./pages/TeacherLogin";
 import TeacherPanel from "./pages/TeacherPanel";
 import TakeTest from "./pages/TakeTest";
+import StudentActivities from "./pages/StudentActivities";
 import { PrivacyPage, TermsPage, CookiesPage, RefundsPage, NoticesPage, ContactPage } from "./pages/legal/LegalPages";
 
 export default function App() {
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="recursos" element={<Resources />} />
           <Route path="asistencia" element={<Help />} />
           <Route path="prueba" element={<TakeTest />} />
+          <Route path="actividades" element={<StudentActivities />} />
           <Route path="curso/:courseId" element={<CourseMap />} />
           <Route path="curso/:courseId/leccion/:lessonId" element={<ExercisePage />} />
           <Route path="curso/:courseId/completado" element={<CourseComplete />} />

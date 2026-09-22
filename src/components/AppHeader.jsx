@@ -43,6 +43,7 @@ export function AppHeader() {
         <NavLink to="/app/progreso">Progreso</NavLink>
         <NavLink to="/app/recursos">Mis recursos</NavLink>
         <NavLink to="/app/asistencia">Asistencia</NavLink>
+        <NavLink to="/app/actividades">Actividades</NavLink>
         <NavLink to="/app/prueba" className="nav-test-code">Ingresar código de prueba</NavLink>
         <button type="button" onClick={logout}>Cerrar sesión</button>
       </nav>

@@ -1,14 +1,38 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useGame } from "../context/GameContext";
+import { COURSES } from "../data/courses";
+import { ageLabel } from "../data/org";
+import { ACTIVITY_TYPES, QUESTION_TYPES, SUBJECTS, coursesForSubject, emptyQuestion, isQuestionReady, normalizeQuestion } from "../data/teacher";
 import { parseTestCode } from "../utils/parseTestCode";
 import { makeTestCode } from "../utils/security";
 
-const emptyQuestion = () => ({ prompt: "", options: ["", "", "", ""], correctIndex: 0 });
+function todayInput() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function formatWhen(value) {
+  if (!value) return "—";
+  return new Date(value).toLocaleString("es-EC", { dateStyle: "short", timeStyle: "short" });
+}
 
 export default function TeacherPanel() {
-  const { user, hydrated, tests, attempts, saveTest, logout } = useGame();
+  const {
+    user,
+    hydrated,
+    students,
+    tests,
+    attempts,
+    attendance,
+    activities,
+    saveTest,
+    saveAttendance,
+    saveActivity,
+    logout,
+  } = useGame();
   const [tab, setTab] = useState("crear");
+  const [subjectId, setSubjectId] = useState(SUBJECTS[0].id);
+  const [courseId, setCourseId] = useState(SUBJECTS[0].courses[0]);
   const [title, setTitle] = useState("");
   const [questions, setQuestions] = useState([emptyQuestion()]);
   const [codeText, setCodeText] = useState(`TITULO: Prueba de ejemplo
@@ -19,30 +43,60 @@ B) 4
 C) 5
 CORRECTA: B`);
   const [feedback, setFeedback] = useState("");
+  const [attendDate, setAttendDate] = useState(todayInput());
+  const [marks, setMarks] = useState({});
+  const [activityTitle, setActivityTitle] = useState("");
+  const [activityType, setActivityType] = useState("tarea");
+  const [activityDue, setActivityDue] = useState("");
+  const [activityText, setActivityText] = useState("");
 
+  const courseOptions = coursesForSubject(subjectId);
   const mine = tests.filter((test) => test.teacherEmail === user?.email);
-  const myAttempts = attempts.filter((item) => mine.some((test) => test.code === item.code));
+  const myAttempts = attempts.filter((item) => item.teacherEmail === user?.email || mine.some((test) => test.code === item.code));
+  const published = useMemo(() => mine.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)), [mine]);
+  const myActivities = activities.filter((item) => item.teacherEmail === user?.email).slice().reverse();
+  const visibleStudents = students.filter((student) => {
+    const course = COURSES.find((item) => item.id === courseId);
+    if (!course) return true;
+    return course.ageGroups.includes(student.ageGroup || "over12");
+  });
 
-  const published = useMemo(() => mine.slice().reverse(), [mine]);
+  useEffect(() => {
+    if (tab !== "asistencia" || !user) return;
+    const saved = attendance.find((item) => item.teacherEmail === user.email && item.courseId === courseId && item.date === attendDate);
+    if (!saved) {
+      setMarks({});
+      return;
+    }
+    const next = {};
+    saved.records.forEach((row) => { next[row.studentId] = row.status; });
+    setMarks(next);
+  }, [tab, courseId, attendDate, attendance, user]);
 
   if (!hydrated) return null;
   if (!user || user.role !== "teacher") return <Navigate to="/profesores" replace />;
 
+  const changeSubject = (nextId) => {
+    setSubjectId(nextId);
+    const nextCourses = coursesForSubject(nextId);
+    setCourseId(nextCourses[0]?.id || "");
+  };
+
+  const updateQuestion = (index, patch) => {
+    setQuestions((current) => current.map((question, qi) => (qi === index ? { ...question, ...patch } : question)));
+  };
+
   const publishFromForm = () => {
-    const clean = questions
-      .map((question) => ({
-        prompt: question.prompt.trim(),
-        options: question.options.map((option) => option.trim()).filter(Boolean),
-        correctIndex: Number(question.correctIndex),
-      }))
-      .filter((question) => question.prompt && question.options.length >= 2);
+    const clean = questions.map(normalizeQuestion).filter(isQuestionReady);
     if (!title.trim() || !clean.length) {
-      setFeedback("Pon un título y al menos una pregunta con dos opciones.");
+      setFeedback("Pon un título y al menos una pregunta lista, con respuesta correcta y puntaje.");
       return;
     }
     const test = {
       code: makeTestCode(),
       title: title.trim(),
+      subjectId,
+      courseId,
       teacherEmail: user.email,
       teacherName: `${user.firstName} ${user.lastName}`,
       questions: clean,
@@ -59,7 +113,10 @@ CORRECTA: B`);
       const parsed = parseTestCode(codeText);
       const test = {
         code: makeTestCode(),
-        ...parsed,
+        title: parsed.title,
+        subjectId,
+        courseId,
+        questions: parsed.questions.map((question) => normalizeQuestion({ ...question, type: "choice", points: 1 })),
         teacherEmail: user.email,
         teacherName: `${user.firstName} ${user.lastName}`,
         createdAt: Date.now(),
@@ -71,114 +128,302 @@ CORRECTA: B`);
     }
   };
 
+  const saveClassAttendance = () => {
+    if (!visibleStudents.length) {
+      setFeedback("No hay estudiantes registrados en este dispositivo para ese curso.");
+      return;
+    }
+    const records = visibleStudents.map((student) => ({
+      studentId: student.id,
+      studentName: `${student.firstName} ${student.lastName}`,
+      studentEmail: student.email,
+      status: marks[student.id] || "present",
+    }));
+    saveAttendance({
+      id: `${user.email}|${courseId}|${attendDate}`,
+      teacherEmail: user.email,
+      subjectId,
+      courseId,
+      date: attendDate,
+      records,
+      createdAt: Date.now(),
+    });
+    setFeedback(`Asistencia guardada para ${attendDate}.`);
+  };
+
+  const publishActivity = () => {
+    if (!activityTitle.trim() || !activityText.trim()) {
+      setFeedback("La actividad necesita título e instrucciones.");
+      return;
+    }
+    saveActivity({
+      id: crypto.randomUUID(),
+      title: activityTitle.trim(),
+      type: activityType,
+      dueDate: activityDue,
+      description: activityText.trim(),
+      subjectId,
+      courseId,
+      teacherEmail: user.email,
+      teacherName: `${user.firstName} ${user.lastName}`,
+      createdAt: Date.now(),
+    });
+    setFeedback("Actividad publicada. Los estudiantes la verán en Actividades.");
+    setActivityTitle("");
+    setActivityText("");
+    setActivityDue("");
+  };
+
+  const loadSavedAttendance = () => {
+    const saved = attendance.find((item) => item.teacherEmail === user.email && item.courseId === courseId && item.date === attendDate);
+    if (!saved) {
+      setMarks({});
+      return;
+    }
+    const next = {};
+    saved.records.forEach((row) => { next[row.studentId] = row.status; });
+    setMarks(next);
+  };
+
   return (
-    <div className="app-shell">
+    <div className="app-shell teacher-shell">
       <header className="app-header">
         <div className="app-header-top">
-          <h1 className="course-title" style={{ margin: 0 }}>Docentes FIF</h1>
+          <h1 className="course-title" style={{ margin: 0 }}>DOCENTES FIF</h1>
           <div className="header-actions">
             <Link className="btn btn-blue login-chip" to="/fif-learning">Volver al portal</Link>
             <button className="btn btn-green login-chip" type="button" onClick={logout}>Cerrar sesión</button>
           </div>
         </div>
-        <p>Hola, {user.firstName}. Crea pruebas y revisa calificaciones de este dispositivo.</p>
+        <p>Hola, {user.firstName}. Maneja asistencia, crea pruebas y revisa calificaciones de este dispositivo.</p>
       </header>
       <nav className="app-nav">
         <button type="button" className={tab === "crear" ? "active" : ""} onClick={() => setTab("crear")}>Crear prueba</button>
         <button type="button" className={tab === "codigo" ? "active" : ""} onClick={() => setTab("codigo")}>Crear con código</button>
         <button type="button" className={tab === "notas" ? "active" : ""} onClick={() => setTab("notas")}>Calificaciones</button>
+        <button type="button" className={tab === "asistencia" ? "active" : ""} onClick={() => setTab("asistencia")}>Asistencia en clase</button>
+        <button type="button" className={tab === "actividades" ? "active" : ""} onClick={() => setTab("actividades")}>Actividades</button>
       </nav>
 
       {feedback && <p className="feedback ok" role="status">{feedback}</p>}
 
       {tab === "crear" && (
-        <section className="panel">
-          <h2>Nueva prueba</h2>
-          <label htmlFor="test-title">Título</label>
-          <input id="test-title" className="pill-input" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <section className="teacher-board">
+          <div className="teacher-filters">
+            <label>
+              Materia
+              <select className="pill-select" value={subjectId} onChange={(event) => changeSubject(event.target.value)}>
+                {SUBJECTS.map((subject) => <option key={subject.id} value={subject.id}>{subject.label}</option>)}
+              </select>
+            </label>
+            <label>
+              Curso
+              <select className="pill-select" value={courseId} onChange={(event) => setCourseId(event.target.value)}>
+                {courseOptions.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
+              </select>
+            </label>
+          </div>
+          <label htmlFor="test-title">Título prueba</label>
+          <input id="test-title" className="pill-input" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="TÍTULO PRUEBA" />
           {questions.map((question, qi) => (
-            <fieldset key={qi} className="question-card">
-              <legend>Pregunta {qi + 1}</legend>
-              <label htmlFor={`q-${qi}`}>Enunciado</label>
-              <input id={`q-${qi}`} className="pill-input" value={question.prompt} onChange={(e) => {
-                const next = [...questions];
-                next[qi] = { ...question, prompt: e.target.value };
-                setQuestions(next);
-              }} />
-              {question.options.map((option, oi) => (
+            <article key={qi} className="teacher-question">
+              <label htmlFor={`q-${qi}`}>Pregunta / enunciado</label>
+              <input id={`q-${qi}`} className="pill-input" value={question.prompt} onChange={(event) => updateQuestion(qi, { prompt: event.target.value })} />
+              <div className="teacher-filters">
+                <label>
+                  Tipo de pregunta
+                  <select className="pill-select" value={question.type} onChange={(event) => updateQuestion(qi, { type: event.target.value })}>
+                    {QUESTION_TYPES.map((type) => <option key={type.id} value={type.id}>{type.label}</option>)}
+                  </select>
+                </label>
+                <label>
+                  Ponderación
+                  <input className="pill-input" type="number" min="1" value={question.points} onChange={(event) => updateQuestion(qi, { points: Number(event.target.value) })} />
+                </label>
+              </div>
+              {question.type === "choice" && question.options.map((option, oi) => (
                 <label key={oi} htmlFor={`q-${qi}-o-${oi}`}>
                   Opción {String.fromCharCode(65 + oi)}
-                  <input id={`q-${qi}-o-${oi}`} className="pill-input" value={option} onChange={(e) => {
-                    const next = [...questions];
+                  <input id={`q-${qi}-o-${oi}`} className="pill-input" value={option} onChange={(event) => {
                     const options = [...question.options];
-                    options[oi] = e.target.value;
-                    next[qi] = { ...question, options };
-                    setQuestions(next);
+                    options[oi] = event.target.value;
+                    updateQuestion(qi, { options });
                   }} />
                 </label>
               ))}
-              <label htmlFor={`q-${qi}-ok`}>Respuesta correcta</label>
-              <select id={`q-${qi}-ok`} className="pill-select" value={question.correctIndex} onChange={(e) => {
-                const next = [...questions];
-                next[qi] = { ...question, correctIndex: Number(e.target.value) };
-                setQuestions(next);
-              }}>
-                {question.options.map((_, oi) => (
-                  <option key={oi} value={oi}>{String.fromCharCode(65 + oi)}</option>
-                ))}
-              </select>
-            </fieldset>
+              {(question.type === "choice" || question.type === "truefalse") && (
+                <label>
+                  Respuesta correcta
+                  <select className="pill-select" value={question.correctIndex} onChange={(event) => updateQuestion(qi, { correctIndex: Number(event.target.value) })}>
+                    {(question.type === "truefalse" ? ["Verdadero", "Falso"] : question.options).map((option, oi) => (
+                      <option key={oi} value={oi}>{question.type === "truefalse" ? option : `${String.fromCharCode(65 + oi)} ${option || ""}`}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              {(question.type === "complete" || question.type === "short") && (
+                <label>
+                  Respuesta correcta
+                  <input className="pill-input" value={question.correctText} onChange={(event) => updateQuestion(qi, { correctText: event.target.value })} placeholder="Texto que se considera correcto" />
+                </label>
+              )}
+            </article>
           ))}
           <div className="actions-row">
-            <button className="btn btn-blue" type="button" onClick={() => setQuestions((current) => [...current, emptyQuestion()])}>
-              Añadir pregunta
-            </button>
-            <button className="btn btn-green" type="button" onClick={publishFromForm}>
-              Publicar prueba
-            </button>
+            <button className="btn btn-blue" type="button" onClick={() => setQuestions((current) => [...current, emptyQuestion()])}>Añadir pregunta +</button>
+            <button className="btn btn-green" type="button" onClick={publishFromForm}>Publicar prueba</button>
           </div>
         </section>
       )}
 
       {tab === "codigo" && (
-        <section className="panel">
+        <section className="teacher-board">
           <h2>Pegar prueba en código de texto</h2>
           <p>Usa TITULO, PREGUNTA, opciones A) B) C) y CORRECTA. Separa preguntas con una línea en blanco.</p>
           <label htmlFor="code-test">Código de la prueba</label>
-          <textarea id="code-test" className="code-editor" value={codeText} onChange={(e) => setCodeText(e.target.value)} />
+          <textarea id="code-test" className="code-editor" value={codeText} onChange={(event) => setCodeText(event.target.value)} />
           <button className="btn btn-green" type="button" onClick={publishFromCode}>Publicar desde código</button>
         </section>
       )}
 
       {tab === "notas" && (
-        <section className="panel">
+        <section className="teacher-board">
           <h2>Calificaciones</h2>
-          <p>Pruebas publicadas: {published.map((test) => `${test.title} (${test.code})`).join(" · ") || "ninguna aún"}.</p>
-          <table className="progress-table">
-            <thead>
-              <tr>
-                <th>Estudiante</th>
-                <th>Correo</th>
-                <th>Prueba</th>
-                <th>Código</th>
-                <th>Nota</th>
-              </tr>
-            </thead>
-            <tbody>
-              {myAttempts.length === 0 && (
-                <tr><td colSpan={5}>Todavía no hay envíos en este dispositivo.</td></tr>
-              )}
-              {myAttempts.map((item) => (
-                <tr key={item.id}>
-                  <td>{item.studentName}</td>
-                  <td>{item.studentEmail}</td>
-                  <td>{item.title}</td>
-                  <td>{item.code}</td>
-                  <td>{item.score}/{item.total}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {published.length === 0 && <p>Todavía no hay pruebas publicadas en este dispositivo.</p>}
+          {published.map((test) => {
+            const rows = myAttempts
+              .filter((item) => item.code === test.code)
+              .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            const maxPoints = (test.questions || []).reduce((sum, question) => sum + (Number(question.points) || 1), 0);
+            return (
+              <article key={test.code} className="grade-block">
+                <header>
+                  <h3>{test.title}</h3>
+                  <p>Código {test.code} · {maxPoints} pts · {COURSES.find((course) => course.id === test.courseId)?.title || "Curso"}</p>
+                </header>
+                <table className="progress-table">
+                  <thead>
+                    <tr>
+                      <th>Estudiante</th>
+                      <th>Correo</th>
+                      <th>Fecha</th>
+                      <th>Puntaje</th>
+                      <th>Nota</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.length === 0 && (
+                      <tr><td colSpan={5}>Nadie ha enviado esta prueba todavía.</td></tr>
+                    )}
+                    {rows.map((item) => (
+                      <tr key={item.id}>
+                        <td>{item.studentName || "Estudiante"}</td>
+                        <td>{item.studentEmail || "—"}</td>
+                        <td>{formatWhen(item.createdAt)}</td>
+                        <td>{item.score ?? 0}/{item.total || maxPoints}</td>
+                        <td>{item.percent != null ? `${item.percent}%` : (item.total ? `${Math.round((item.score / item.total) * 100)}%` : "—")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </article>
+            );
+          })}
+        </section>
+      )}
+
+      {tab === "asistencia" && (
+        <section className="teacher-board">
+          <div className="teacher-filters">
+            <label>
+              Materia
+              <select className="pill-select" value={subjectId} onChange={(event) => changeSubject(event.target.value)}>
+                {SUBJECTS.map((subject) => <option key={subject.id} value={subject.id}>{subject.label}</option>)}
+              </select>
+            </label>
+            <label>
+              Curso
+              <select className="pill-select" value={courseId} onChange={(event) => setCourseId(event.target.value)}>
+                {courseOptions.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
+              </select>
+            </label>
+            <label>
+              Fecha
+              <input className="pill-input" type="date" value={attendDate} onChange={(event) => setAttendDate(event.target.value)} />
+            </label>
+          </div>
+          <h2>Asistencia en clase</h2>
+          <div className="attend-list">
+            <div className="attend-head">
+              <span>Estudiante</span>
+              <span>Asistencia</span>
+            </div>
+            {visibleStudents.length === 0 && <p>No hay estudiantes de este curso registrados en este dispositivo.</p>}
+            {visibleStudents.map((student) => (
+              <div className="attend-row" key={student.id}>
+                <strong>{student.firstName} {student.lastName}</strong>
+                <span className="chip-age">{ageLabel(student.ageGroup)}</span>
+                <div className="attend-radios">
+                  <label>
+                    <input type="radio" name={`att-${student.id}`} checked={(marks[student.id] || "present") === "present"} onChange={() => setMarks((current) => ({ ...current, [student.id]: "present" }))} />
+                    Presente
+                  </label>
+                  <label>
+                    <input type="radio" name={`att-${student.id}`} checked={marks[student.id] === "absent"} onChange={() => setMarks((current) => ({ ...current, [student.id]: "absent" }))} />
+                    Falta
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="actions-row">
+            <button className="btn btn-blue" type="button" onClick={loadSavedAttendance}>Cargar lista guardada</button>
+            <button className="btn btn-green" type="button" onClick={saveClassAttendance}>Guardar asistencia</button>
+          </div>
+        </section>
+      )}
+
+      {tab === "actividades" && (
+        <section className="teacher-board">
+          <div className="teacher-filters">
+            <label>
+              Materia
+              <select className="pill-select" value={subjectId} onChange={(event) => changeSubject(event.target.value)}>
+                {SUBJECTS.map((subject) => <option key={subject.id} value={subject.id}>{subject.label}</option>)}
+              </select>
+            </label>
+            <label>
+              Curso
+              <select className="pill-select" value={courseId} onChange={(event) => setCourseId(event.target.value)}>
+                {courseOptions.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
+              </select>
+            </label>
+            <label>
+              Tipo
+              <select className="pill-select" value={activityType} onChange={(event) => setActivityType(event.target.value)}>
+                {ACTIVITY_TYPES.map((type) => <option key={type.id} value={type.id}>{type.label}</option>)}
+              </select>
+            </label>
+          </div>
+          <label htmlFor="act-title">Título de la actividad</label>
+          <input id="act-title" className="pill-input" value={activityTitle} onChange={(event) => setActivityTitle(event.target.value)} />
+          <label htmlFor="act-due">Fecha de entrega (opcional)</label>
+          <input id="act-due" className="pill-input" type="date" value={activityDue} onChange={(event) => setActivityDue(event.target.value)} />
+          <label htmlFor="act-text">Instrucciones</label>
+          <textarea id="act-text" className="code-editor" value={activityText} onChange={(event) => setActivityText(event.target.value)} placeholder="Qué deben hacer los alumnos." />
+          <button className="btn btn-green" type="button" onClick={publishActivity}>Publicar actividad</button>
+
+          <h2>Actividades publicadas</h2>
+          {myActivities.length === 0 && <p>Aún no hay actividades.</p>}
+          <ul className="activity-list">
+            {myActivities.map((item) => (
+              <li key={item.id}>
+                <strong>{item.title}</strong>
+                <p>{ACTIVITY_TYPES.find((type) => type.id === item.type)?.label} · {COURSES.find((course) => course.id === item.courseId)?.title} {item.dueDate ? `· Entrega ${item.dueDate}` : ""}</p>
+                <p>{item.description}</p>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
     </div>
