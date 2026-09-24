@@ -20,8 +20,10 @@ import ExercisePage from "./pages/exercises/ExercisePage";
 import CourseComplete from "./pages/CourseComplete";
 import TeacherLogin from "./pages/TeacherLogin";
 import TeacherPanel from "./pages/TeacherPanel";
+import AdminPanel from "./pages/AdminPanel";
 import TakeTest from "./pages/TakeTest";
 import StudentActivities from "./pages/StudentActivities";
+import StudentSchedules from "./pages/StudentSchedules";
 import { PrivacyPage, TermsPage, CookiesPage, RefundsPage, NoticesPage, ContactPage } from "./pages/legal/LegalPages";
 
 export default function App() {
@@ -40,6 +42,7 @@ export default function App() {
         <Route path="/bienvenida" element={<Welcome />} />
         <Route path="/profesores" element={<TeacherLogin />} />
         <Route path="/profesores/panel" element={<TeacherPanel />} />
+        <Route path="/coordinacion" element={<AdminPanel />} />
         <Route path="/legal/privacidad" element={<PrivacyPage />} />
         <Route path="/legal/terminos" element={<TermsPage />} />
         <Route path="/legal/cookies" element={<CookiesPage />} />
@@ -54,6 +57,7 @@ export default function App() {
           <Route path="asistencia" element={<Help />} />
           <Route path="prueba" element={<TakeTest />} />
           <Route path="actividades" element={<StudentActivities />} />
+          <Route path="horarios" element={<StudentSchedules />} />
           <Route path="curso/:courseId" element={<CourseMap />} />
           <Route path="curso/:courseId/leccion/:lessonId" element={<ExercisePage />} />
           <Route path="curso/:courseId/completado" element={<CourseComplete />} />

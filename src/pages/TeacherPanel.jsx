@@ -4,7 +4,9 @@ import { useGame } from "../context/GameContext";
 import { COURSES } from "../data/courses";
 import { ageLabel } from "../data/org";
 import { ACTIVITY_TYPES, QUESTION_TYPES, SUBJECTS, coursesForSubject, emptyQuestion, isQuestionReady, normalizeQuestion } from "../data/teacher";
+import { WEEKDAYS } from "../data/staff";
 import { parseTestCode } from "../utils/parseTestCode";
+import { staffAccess } from "../utils/roles";
 import { makeTestCode } from "../utils/security";
 
 function todayInput() {
@@ -25,11 +27,21 @@ export default function TeacherPanel() {
     attempts,
     attendance,
     activities,
+    schedules,
     saveTest,
     saveAttendance,
     saveActivity,
     logout,
   } = useGame();
+  const access = useMemo(() => staffAccess(user), [user]);
+  const tabs = useMemo(() => [
+    { id: "crear", key: "tests", label: "Crear prueba" },
+    { id: "codigo", key: "tests", label: "Crear con código" },
+    { id: "notas", key: "grades", label: "Calificaciones" },
+    { id: "asistencia", key: "attendance", label: "Asistencia en clase" },
+    { id: "actividades", key: "activities", label: "Actividades" },
+    { id: "horarios", key: "schedules", label: "Horarios" },
+  ].filter((item) => access[item.key]), [access]);
   const [tab, setTab] = useState("crear");
   const [subjectId, setSubjectId] = useState(SUBJECTS[0].id);
   const [courseId, setCourseId] = useState(SUBJECTS[0].courses[0]);
@@ -55,6 +67,7 @@ CORRECTA: B`);
   const myAttempts = attempts.filter((item) => item.teacherEmail === user?.email || mine.some((test) => test.code === item.code));
   const published = useMemo(() => mine.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)), [mine]);
   const myActivities = activities.filter((item) => item.teacherEmail === user?.email).slice().reverse();
+  const mySchedules = schedules.filter((item) => !item.teacherEmail || item.teacherEmail === user?.email);
   const visibleStudents = students.filter((student) => {
     const course = COURSES.find((item) => item.id === courseId);
     if (!course) return true;
@@ -73,8 +86,14 @@ CORRECTA: B`);
     setMarks(next);
   }, [tab, courseId, attendDate, attendance, user]);
 
+  useEffect(() => {
+    if (tabs.length && !tabs.some((item) => item.id === tab)) {
+      setTab(tabs[0].id);
+    }
+  }, [tabs, tab]);
+
   if (!hydrated) return null;
-  if (!user || user.role !== "teacher") return <Navigate to="/profesores" replace />;
+  if (!user || user.role !== "teacher") return <Navigate to={user?.role === "admin" ? "/coordinacion" : "/profesores"} replace />;
 
   const changeSubject = (nextId) => {
     setSubjectId(nextId);
@@ -195,14 +214,14 @@ CORRECTA: B`);
             <button className="btn btn-green login-chip" type="button" onClick={logout}>Cerrar sesión</button>
           </div>
         </div>
-        <p>Hola, {user.firstName}. Maneja asistencia, crea pruebas y revisa calificaciones de este dispositivo.</p>
+        <p>Hola, {user.firstName}. Coordinación define tus accesos y las actividades que te delega.</p>
       </header>
       <nav className="app-nav">
-        <button type="button" className={tab === "crear" ? "active" : ""} onClick={() => setTab("crear")}>Crear prueba</button>
-        <button type="button" className={tab === "codigo" ? "active" : ""} onClick={() => setTab("codigo")}>Crear con código</button>
-        <button type="button" className={tab === "notas" ? "active" : ""} onClick={() => setTab("notas")}>Calificaciones</button>
-        <button type="button" className={tab === "asistencia" ? "active" : ""} onClick={() => setTab("asistencia")}>Asistencia en clase</button>
-        <button type="button" className={tab === "actividades" ? "active" : ""} onClick={() => setTab("actividades")}>Actividades</button>
+        {tabs.map((item) => (
+          <button key={item.id} type="button" className={tab === item.id ? "active" : ""} onClick={() => setTab(item.id)}>
+            {item.label}
+          </button>
+        ))}
       </nav>
 
       {feedback && <p className="feedback ok" role="status">{feedback}</p>}
@@ -421,6 +440,24 @@ CORRECTA: B`);
                 <strong>{item.title}</strong>
                 <p>{ACTIVITY_TYPES.find((type) => type.id === item.type)?.label} · {COURSES.find((course) => course.id === item.courseId)?.title} {item.dueDate ? `· Entrega ${item.dueDate}` : ""}</p>
                 <p>{item.description}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {tab === "horarios" && (
+        <section className="teacher-board">
+          <h2>Horarios asignados</h2>
+          {mySchedules.length === 0 && <p>Coordinación aún no te asignó horarios en este dispositivo.</p>}
+          <ul className="activity-list">
+            {mySchedules.map((item) => (
+              <li key={item.id}>
+                <strong>{item.title}</strong>
+                <p>
+                  {WEEKDAYS.find((day) => day.id === item.day)?.label} · {item.startTime}–{item.endTime} · {item.ageGroup === "all" ? "Todos los grupos" : ageLabel(item.ageGroup)}
+                </p>
+                {item.notes && <p>{item.notes}</p>}
               </li>
             ))}
           </ul>

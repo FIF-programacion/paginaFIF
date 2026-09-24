@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { COURSES, coursesForAge, getCourse } from "../data/courses";
+import { ACCESS_PRESETS, DEFAULT_ADMIN, DEFAULT_TEMP_PASSWORD, DEFAULT_TEMP_VOLUNTEERS } from "../data/staff";
 import { hashSecret } from "../utils/security";
 
 const STORAGE_KEY = "fif-learning-state-v2";
@@ -25,6 +26,45 @@ function loadState() {
   }
 }
 
+async function ensureDefaultStaff(accounts) {
+  const next = [...accounts];
+  const hasEmail = (email) => next.some((item) => item.email === email);
+
+  if (!hasEmail(DEFAULT_ADMIN.email)) {
+    next.push({
+      id: "staff-admin-default",
+      role: "admin",
+      staffKind: "admin",
+      firstName: DEFAULT_ADMIN.firstName,
+      lastName: DEFAULT_ADMIN.lastName,
+      email: DEFAULT_ADMIN.email,
+      passwordHash: await hashSecret(DEFAULT_ADMIN.password, DEFAULT_ADMIN.email),
+      access: ACCESS_PRESETS.admin,
+      lockedUsername: true,
+      createdAt: Date.now(),
+    });
+  }
+
+  for (const slot of DEFAULT_TEMP_VOLUNTEERS) {
+    if (hasEmail(slot.email)) continue;
+    next.push({
+      id: `staff-temp-${slot.slot}`,
+      role: "teacher",
+      staffKind: "temporary",
+      firstName: slot.firstName,
+      lastName: slot.lastName,
+      email: slot.email,
+      passwordHash: await hashSecret(DEFAULT_TEMP_PASSWORD, slot.email),
+      access: ACCESS_PRESETS.temporary,
+      lockedUsername: true,
+      slot: slot.slot,
+      createdAt: Date.now(),
+    });
+  }
+
+  return next;
+}
+
 export function GameProvider({ children }) {
   const [accounts, setAccounts] = useState([]);
   const [sessionId, setSessionId] = useState(null);
@@ -36,50 +76,66 @@ export function GameProvider({ children }) {
   const [attendance, setAttendance] = useState([]);
   const [activities, setActivities] = useState([]);
   const [activityDone, setActivityDone] = useState([]);
+  const [schedules, setSchedules] = useState([]);
   const [noticeSeen, setNoticeSeen] = useState(true);
   const [hydrated, setHydrated] = useState(false);
 
   const user = accounts.find((item) => item.id === sessionId) || null;
 
   useEffect(() => {
+    let cancelled = false;
     const preview = new URLSearchParams(window.location.search).get("preview") === "1";
     const saved = loadState();
     setNoticeSeen(localStorage.getItem(NOTICE_KEY) === "1");
-    if (preview) {
-      const demo = {
-        id: "demo-student",
-        role: "student",
-        firstName: "Ariel",
-        lastName: "Estudiante",
-        email: "ariel@correo.com",
-        passwordHash: "preview",
-        ageGroup: "over12",
-        dailyGoal: "5 minutos",
-        createdAt: Date.now(),
-      };
-      setAccounts([demo]);
-      setSessionId(demo.id);
-      setStats({ points: 45, badges: 1, days: 1, lastActive: todayKey(), earnedBadges: ["primera-leccion"] });
-      setProgress({
-        ...emptyProgress(),
-        "ingles-1": { completed: ["1", "2", "3"], unlocked: true },
-        matematica: { completed: ["1"], unlocked: true },
-        "lenguaje-1": { completed: [], unlocked: true },
-        "arte-1": { completed: [], unlocked: true },
-      });
-    } else if (saved) {
-      setAccounts(saved.accounts || []);
-      setSessionId(saved.sessionId || null);
-      setStats(saved.stats || { points: 0, badges: 0, days: 0, lastActive: null, earnedBadges: [] });
-      setProgress({ ...emptyProgress(), ...(saved.progress || {}) });
-      setTests(saved.tests || []);
-      setAttempts(saved.attempts || []);
-      setMessages(saved.messages || []);
-      setAttendance(saved.attendance || []);
-      setActivities(saved.activities || []);
-      setActivityDone(saved.activityDone || []);
-    }
-    setHydrated(true);
+
+    const hydrate = async () => {
+      if (preview) {
+        const demo = {
+          id: "demo-student",
+          role: "student",
+          firstName: "Ariel",
+          lastName: "Estudiante",
+          email: "ariel@correo.com",
+          passwordHash: "preview",
+          ageGroup: "over12",
+          dailyGoal: "5 minutos",
+          createdAt: Date.now(),
+        };
+        if (cancelled) return;
+        setAccounts([demo]);
+        setSessionId(demo.id);
+        setStats({ points: 45, badges: 1, days: 1, lastActive: todayKey(), earnedBadges: ["primera-leccion"] });
+        setProgress({
+          ...emptyProgress(),
+          "ingles-1": { completed: ["1", "2", "3"], unlocked: true },
+          matematica: { completed: ["1"], unlocked: true },
+          "lenguaje-1": { completed: [], unlocked: true },
+          "arte-1": { completed: [], unlocked: true },
+        });
+        setHydrated(true);
+        return;
+      }
+
+      const accounts = await ensureDefaultStaff(saved?.accounts || []);
+      if (cancelled) return;
+      setAccounts(accounts);
+      setSessionId(saved?.sessionId || null);
+      setStats(saved?.stats || { points: 0, badges: 0, days: 0, lastActive: null, earnedBadges: [] });
+      setProgress({ ...emptyProgress(), ...(saved?.progress || {}) });
+      setTests(saved?.tests || []);
+      setAttempts(saved?.attempts || []);
+      setMessages(saved?.messages || []);
+      setAttendance(saved?.attendance || []);
+      setActivities(saved?.activities || []);
+      setActivityDone(saved?.activityDone || []);
+      setSchedules(saved?.schedules || []);
+      setHydrated(true);
+    };
+
+    hydrate();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -98,9 +154,10 @@ export function GameProvider({ children }) {
         attendance,
         activities,
         activityDone,
+        schedules,
       }),
     );
-  }, [accounts, sessionId, stats, progress, tests, attempts, messages, attendance, activities, activityDone, hydrated]);
+  }, [accounts, sessionId, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, hydrated]);
 
   const acknowledgeNotice = () => {
     localStorage.setItem(NOTICE_KEY, "1");
@@ -112,9 +169,12 @@ export function GameProvider({ children }) {
     const passwordHash = await hashSecret(profile.password, email);
     const existing = accounts.find((item) => item.email === email);
     const id = existing?.id || crypto.randomUUID();
+    const role = profile.role === "admin" ? "teacher" : (profile.role || "student");
+    const staffKind = role === "teacher" ? (profile.staffKind || "teacher") : null;
     const nextUser = {
       id,
-      role: profile.role || "student",
+      role,
+      staffKind,
       firstName: profile.firstName.trim(),
       lastName: profile.lastName.trim(),
       email,
@@ -123,6 +183,8 @@ export function GameProvider({ children }) {
       dailyGoal: profile.dailyGoal || null,
       tutorName: profile.tutorName || "",
       tutorEmail: profile.tutorEmail || "",
+      access: role === "teacher" ? (profile.access || ACCESS_PRESETS[staffKind] || ACCESS_PRESETS.teacher) : undefined,
+      lockedUsername: Boolean(profile.lockedUsername),
       consents: profile.consents || {},
       createdAt: existing?.createdAt || Date.now(),
     };
@@ -250,9 +312,86 @@ export function GameProvider({ children }) {
     });
   };
 
+  const updateStudentGroup = (studentId, ageGroup) => {
+    setAccounts((current) => current.map((item) => (
+      item.id === studentId && item.role === "student" ? { ...item, ageGroup } : item
+    )));
+  };
+
+  const saveSchedule = (schedule) => {
+    setSchedules((current) => [...current.filter((item) => item.id !== schedule.id), schedule]);
+  };
+
+  const removeSchedule = (scheduleId) => {
+    setSchedules((current) => current.filter((item) => item.id !== scheduleId));
+  };
+
+  const delegateActivity = (activityId, teacherEmail, teacherName) => {
+    setActivities((current) => current.map((item) => (
+      item.id === activityId ? { ...item, teacherEmail, teacherName } : item
+    )));
+  };
+
+  const createStaff = async (profile) => {
+    const email = profile.email.trim().toLowerCase();
+    const existing = accounts.find((item) => item.email === email);
+    if (existing?.role === "student") {
+      return { ok: false, message: "Ese correo ya pertenece a un estudiante." };
+    }
+    if (existing?.lockedUsername && profile.staffKind !== "temporary" && existing.staffKind === "temporary") {
+      return { ok: false, message: "Ese usuario temporal se mantiene entre períodos. Solo cambia la clave." };
+    }
+    if (!profile.password && !existing?.passwordHash) {
+      return { ok: false, message: "Define una contraseña." };
+    }
+    const passwordHash = profile.password
+      ? await hashSecret(profile.password, email)
+      : existing.passwordHash;
+    const staffKind = profile.staffKind || "permanent";
+    const next = {
+      id: existing?.id || crypto.randomUUID(),
+      role: staffKind === "admin" ? "admin" : "teacher",
+      staffKind,
+      firstName: (profile.firstName || existing?.firstName || "").trim(),
+      lastName: (profile.lastName || existing?.lastName || "").trim(),
+      email,
+      passwordHash,
+      access: profile.access || existing?.access || ACCESS_PRESETS[staffKind] || ACCESS_PRESETS.teacher,
+      lockedUsername: staffKind === "temporary" || Boolean(existing?.lockedUsername),
+      slot: existing?.slot || profile.slot || null,
+      createdAt: existing?.createdAt || Date.now(),
+    };
+    setAccounts((current) => [...current.filter((item) => item.email !== email), next]);
+    return { ok: true };
+  };
+
+  const resetStaffPassword = async (email, password) => {
+    const account = accounts.find((item) => item.email === email.trim().toLowerCase());
+    if (!account || account.role === "student") {
+      return { ok: false, message: "No hay esa credencial de equipo." };
+    }
+    if (!password || password.length < 6) {
+      return { ok: false, message: "La clave nueva debe tener al menos 6 caracteres." };
+    }
+    const passwordHash = await hashSecret(password, account.email);
+    setAccounts((current) => current.map((item) => (item.email === account.email ? { ...item, passwordHash } : item)));
+    return { ok: true };
+  };
+
+  const updateStaffAccess = (email, access) => {
+    setAccounts((current) => current.map((item) => (item.email === email ? { ...item, access } : item)));
+  };
+
   const students = useMemo(
     () => accounts
       .filter((item) => item.role === "student")
+      .map(({ passwordHash, ...rest }) => rest),
+    [accounts],
+  );
+
+  const staff = useMemo(
+    () => accounts
+      .filter((item) => item.role === "teacher" || item.role === "admin")
       .map(({ passwordHash, ...rest }) => rest),
     [accounts],
   );
@@ -262,6 +401,7 @@ export function GameProvider({ children }) {
       hydrated,
       user,
       students,
+      staff,
       stats,
       progress,
       tests,
@@ -270,6 +410,7 @@ export function GameProvider({ children }) {
       attendance,
       activities,
       activityDone,
+      schedules,
       noticeSeen,
       visibleCourses,
       acknowledgeNotice,
@@ -286,8 +427,15 @@ export function GameProvider({ children }) {
       saveAttendance,
       saveActivity,
       completeActivity,
+      updateStudentGroup,
+      saveSchedule,
+      removeSchedule,
+      delegateActivity,
+      createStaff,
+      resetStaffPassword,
+      updateStaffAccess,
     }),
-    [hydrated, user, students, stats, progress, tests, attempts, messages, attendance, activities, activityDone, noticeSeen, visibleCourses],
+    [hydrated, user, students, staff, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, noticeSeen, visibleCourses],
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

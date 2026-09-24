@@ -4,6 +4,7 @@ import { BrandLockup, RainbowTitle, Wordmark } from "../components/Brand";
 import { SiteFooter } from "../components/SiteFooter";
 import { LANDING_COURSES } from "../data/courses";
 import { useGame } from "../context/GameContext";
+import { homePath } from "../utils/roles";
 
 function ScrollFillBar({ sectionRef }) {
   const [fill, setFill] = useState(0);
@@ -44,7 +45,7 @@ function ScrollFillBar({ sectionRef }) {
 
 export default function FifLearning() {
   const { user } = useGame();
-  const startTo = user?.role === "teacher" ? "/profesores/panel" : user ? "/app/cursos" : "/login";
+  const startTo = user ? homePath(user) : "/login";
   const createTo = user ? startTo : "/registro";
   const progressNoteRef = useRef(null);
 
@@ -55,7 +56,7 @@ export default function FifLearning() {
         <BrandLockup to="/fif-learning" />
         <div className="header-actions">
           <Link to="/" className="text-link">La fundación</Link>
-          <Link to="/profesores" className="text-link">Zona de docentes</Link>
+          <Link to="/profesores" className="text-link">Docentes y coordinación</Link>
           <Link to={startTo} className="btn btn-blue login-chip">Iniciar sesión</Link>
         </div>
       </header>

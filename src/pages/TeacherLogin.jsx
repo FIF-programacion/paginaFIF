@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BrandLockup, RainbowTitle } from "../components/Brand";
 import { useGame } from "../context/GameContext";
+import { DEFAULT_ADMIN, DEFAULT_TEMP_PASSWORD, DEFAULT_TEMP_VOLUNTEERS } from "../data/staff";
+import { homePath } from "../utils/roles";
 
 export default function TeacherLogin() {
   const { login, register } = useGame();
@@ -34,11 +36,11 @@ export default function TeacherLogin() {
           setError(result.message);
           return;
         }
-        if (result.account.role !== "teacher") {
+        if (result.account.role === "student") {
           setError("Esta cuenta es de estudiante. Usa Iniciar sesión del inicio.");
           return;
         }
-        navigate("/profesores/panel");
+        navigate(homePath(result.account));
         return;
       }
       if (!form.firstName || !form.lastName || !form.email || !form.password) {
@@ -49,8 +51,8 @@ export default function TeacherLogin() {
         setError("Confirma que eres docente de la fundación y acepta privacidad y términos.");
         return;
       }
-      await register({ ...form, role: "teacher", consents: { privacy: true, staff: true } });
-      navigate("/profesores/panel");
+      const account = await register({ ...form, role: "teacher", staffKind: "teacher", consents: { privacy: true, staff: true } });
+      navigate(homePath(account));
     } finally {
       setBusy(false);
     }
@@ -64,9 +66,9 @@ export default function TeacherLogin() {
       </header>
       <RainbowTitle
         parts={[
-          { text: "Zona", color: "#047857" },
-          { text: "de", color: "#1d4ed8" },
-          { text: "docentes", color: "#9d174d" },
+          { text: "Docentes", color: "#047857" },
+          { text: "y", color: "#1d4ed8" },
+          { text: "coordinación", color: "#9d174d" },
         ]}
       />
       <form className="onboard-grid" onSubmit={onSubmit}>
@@ -107,8 +109,12 @@ export default function TeacherLogin() {
           )}
           {error && <p className="error" role="alert">{error}</p>}
           <button className="btn btn-green" type="submit" disabled={busy}>
-            {busy ? "Un momento…" : mode === "entrar" ? "Entrar a docentes" : "Crear acceso docente"}
+            {busy ? "Un momento…" : mode === "entrar" ? "Entrar" : "Crear acceso docente"}
           </button>
+          <p className="login-hint">
+            Coordinación FIF: {DEFAULT_ADMIN.email} / {DEFAULT_ADMIN.password}.
+            Voluntarios temporales: {DEFAULT_TEMP_VOLUNTEERS.map((item) => item.email).join(", ")} / {DEFAULT_TEMP_PASSWORD}.
+          </p>
         </div>
         <img src="/images/detective-clipboard.jpg" alt="Ilustración de un detective revisando una lista" className="detect-img" />
       </form>

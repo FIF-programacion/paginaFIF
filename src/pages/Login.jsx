@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { RainbowTitle } from "../components/Brand";
 import { useGame } from "../context/GameContext";
+import { homePath } from "../utils/roles";
 
 export default function Login() {
   const { login } = useGame();
@@ -20,7 +21,7 @@ export default function Login() {
       setError(result.message);
       return;
     }
-    navigate(result.account.role === "teacher" ? "/profesores/panel" : "/app/cursos");
+    navigate(homePath(result.account));
   };
 
   return (
@@ -42,7 +43,7 @@ export default function Login() {
           {error && <p className="error" role="alert">{error}</p>}
           <button className="btn btn-green" type="submit" disabled={busy}>{busy ? "Entrando…" : "Iniciar sesión"}</button>
           <p>¿Aún no tienes cuenta? <Link to="/registro">Crear cuenta de estudiante</Link></p>
-          <p>¿Eres docente? <Link to="/profesores">Zona de docentes</Link></p>
+          <p>¿Eres docente o coordinación FIF? <Link to="/profesores">Zona de docentes</Link></p>
         </div>
         <img src="/images/detective-glass.jpg" alt="Ilustración de un detective con lupa" className="detect-img" />
       </form>

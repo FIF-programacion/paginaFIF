@@ -1,12 +1,13 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { AppHeader } from "./AppHeader";
 import { useGame } from "../context/GameContext";
+import { homePath } from "../utils/roles";
 
 export default function AppShell() {
   const { user, hydrated } = useGame();
   if (!hydrated) return <p className="sr-only">Cargando</p>;
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role === "teacher") return <Navigate to="/profesores/panel" replace />;
+  if (user.role === "teacher" || user.role === "admin") return <Navigate to={homePath(user)} replace />;
 
   return (
     <div className="app-shell">

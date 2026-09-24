@@ -330,6 +330,7 @@ html.lp-html {
   justify-self: start;
   align-items: flex-start;
   text-align: left;
+  margin-right: auto;
 }
 
 .lp-about-block {
@@ -365,6 +366,18 @@ html.lp-html {
   color: #111;
   font-size: 16px;
   line-height: 1.7;
+}
+
+.lp-about-band.is-left .lp-about-copy,
+.lp-about-band.is-left .lp-kicker {
+  text-align: left;
+  margin-right: auto;
+}
+
+.lp-about-band.is-right .lp-about-copy,
+.lp-about-band.is-right .lp-kicker {
+  text-align: right;
+  margin-left: auto;
 }
 
 .lp-about-band:nth-child(3) {
@@ -446,6 +459,102 @@ html.lp-html {
 
 .lp-events {
   height: 320vh;
+}
+
+.lp-quotes {
+  min-height: 92vh;
+  display: flex;
+  align-items: center;
+  padding: 160px clamp(24px, 8vw, 120px) 140px;
+}
+
+.lp-quotes-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.15fr);
+  gap: clamp(48px, 8vw, 120px);
+  align-items: start;
+}
+
+.lp-quotes-title {
+  font-family: "Nunito", sans-serif;
+  font-size: clamp(56px, 7vw, 96px);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+  color: #111;
+  margin: 0 0 28px;
+}
+
+.lp-quotes-lead,
+.lp-page .lp-quotes-lead {
+  margin: 0;
+  max-width: 22ch;
+  color: #6b6b6b;
+  font-size: clamp(20px, 2vw, 26px);
+  line-height: 1.5;
+}
+
+.lp-quotes-nav {
+  display: flex;
+  gap: 16px;
+  margin-top: 56px;
+}
+
+.lp-quotes-nav button {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  border: 1px solid #d8d8d8;
+  background: #fff;
+  color: #111;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.lp-quotes-nav button:hover {
+  border-color: #111;
+}
+
+.lp-quotes-card {
+  margin: 0;
+}
+
+.lp-quotes-mark {
+  display: block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(96px, 9vw, 140px);
+  line-height: 0.45;
+  color: var(--lp-blue);
+  margin-bottom: 28px;
+}
+
+.lp-quotes-text,
+.lp-page .lp-quotes-text {
+  margin: 0;
+  font-family: "Nunito", sans-serif;
+  font-size: clamp(32px, 4.2vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.18;
+  color: #111;
+}
+
+.lp-quotes-who {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 40px;
+}
+
+.lp-quotes-who strong {
+  font-size: clamp(20px, 1.8vw, 26px);
+}
+
+.lp-quotes-who span {
+  color: #6b6b6b;
+  font-size: clamp(18px, 1.5vw, 22px);
 }
 
 .lp-events-pin .lp-kicker {
@@ -568,7 +677,7 @@ html.lp-html {
 
 /* Velocity + donate: tight spacing */
 .lp-velocity-section {
-  padding: 18px 0 8px;
+  padding: 18px 0 100px;
   overflow: hidden;
   color: var(--lp-gold);
 }
@@ -601,11 +710,11 @@ html.lp-html {
 }
 
 .lp-donate {
-  padding: 48px clamp(24px, 8vw, 100px) 80px;
+  padding: 48px clamp(24px, 8vw, 100px) 40px;
 }
 
 .lp-allies {
-  padding: 220px clamp(24px, 8vw, 100px) 32px;
+  padding: 220px clamp(24px, 8vw, 100px) 150px;
 }
 
 .lp-plain {
@@ -866,8 +975,14 @@ html.lp-html {
   .lp-media,
   .lp-contact,
   .lp-about-band,
-  .lp-about-band.is-right {
+  .lp-about-band.is-right,
+  .lp-quotes-grid {
     grid-template-columns: 1fr;
+  }
+
+  .lp-quotes {
+    min-height: auto;
+    padding: 96px 24px 88px;
   }
 
   .lp-about-band.is-right .lp-about-block,

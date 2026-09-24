@@ -5,6 +5,7 @@ import { SiteFooter } from "../components/SiteFooter";
 import { KineticText } from "../components/KineticText";
 import { VelocityText } from "../components/VelocityText";
 import { ScrollSplitEvents } from "../components/ScrollSplitEvents";
+import { Testimonials } from "../components/Testimonials";
 import { Wordmark } from "../components/Brand";
 import { ORG, assistanceWhatsAppUrl } from "../data/org";
 import { useSlowPageScroll } from "../hooks/useSlowPageScroll";
@@ -15,6 +16,7 @@ const SECTIONS = [
   { id: "nosotros", title: "Nosotros" },
   { id: "proyectos", title: "Proyectos" },
   { id: "eventos", title: "Eventos" },
+  { id: "testimonios", title: "Testimonios" },
   { id: "dona", title: "Dona ahora" },
   { id: "colaboradores", title: "Colaboradores" },
   { id: "multimedia", title: "Multimedia" },
@@ -24,28 +26,24 @@ const SECTIONS = [
 
 const ABOUT_BANDS = [
   {
-    kicker: "Nosotros",
-    title: "Quiénes somos",
+    title: "Nosotros",
     text: "Somos una fundación comprometida con brindar oportunidades de aprendizaje, creatividad y desarrollo personal a niños y jóvenes. Creemos en el poder de la educación y el arte como herramientas para transformar vidas y construir comunidades más solidarias y conscientes.",
     image: "/images/Image1.jpg",
     side: "left",
   },
   {
-    kicker: "Misión",
     title: "Misión",
     text: "Ser un espacio educativo innovador que nutre el potencial y el desarrollo integral de los niños, fomentando el amor por el aprendizaje, el pensamiento crítico y un carácter fuerte.",
     image: "/images/Image2.jpg",
     side: "right",
   },
   {
-    kicker: "Enfoque",
-    title: "Nuestro trabajo",
+    title: "Enfoque",
     text: "Nuestro trabajo se enfoca en crear espacios donde cada participante pueda descubrir su potencial, fortalecer su confianza y compartir con otros sus talentos. Desde nuestros inicios, hemos buscado ser un punto de encuentro entre la enseñanza, la expresión y la colaboración. Cada actividad que realizamos nace del deseo de inspirar curiosidad, empatía y sentido de pertenencia. En nuestra fundación, aprender también significa disfrutar, explorar y crecer juntos.",
     image: "/images/Image3.jpg",
     side: "left",
   },
   {
-    kicker: "Visión",
     title: "Visión",
     text: "Ser reconocida en Ecuador como la fundación líder en el desarrollo integral de la niñez, transformando la educación en una aventura de vida. Aspiramos a que cada niño de FIF se convierta en un agente de cambio, capaz de destacar en cualquier ámbito, con una capacidad crítica mejorada y una visión equilibrada y creativa del mundo.",
     image: "/images/Image4.jpg",
@@ -267,7 +265,6 @@ export default function Landing() {
           {ABOUT_BANDS.map((item) => (
             <div className={`lp-about-band is-${item.side}`} key={item.title}>
               <article className="lp-about-block">
-                <p className="lp-kicker">{item.kicker}</p>
                 <KineticText
                   text={item.title}
                   splitBy="words"
@@ -331,6 +328,8 @@ export default function Landing() {
             registerHref: assistanceWhatsAppUrl(`Hola, quiero inscribirme en ${event.title}.`),
           }))}
         />
+
+        <Testimonials />
 
         <section className="lp-velocity-section">
           <VelocityText text="DONA AHORA" />
