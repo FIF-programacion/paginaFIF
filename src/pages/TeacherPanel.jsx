@@ -28,9 +28,11 @@ export default function TeacherPanel() {
     attendance,
     activities,
     schedules,
+    submissions,
     saveTest,
     saveAttendance,
     saveActivity,
+    gradeSubmission,
     logout,
   } = useGame();
   const access = useMemo(() => staffAccess(user), [user]);
@@ -40,6 +42,7 @@ export default function TeacherPanel() {
     { id: "notas", key: "grades", label: "Calificaciones" },
     { id: "asistencia", key: "attendance", label: "Asistencia en clase" },
     { id: "actividades", key: "activities", label: "Actividades" },
+    { id: "revisar", key: "activities", label: "Revisar entregas" },
     { id: "horarios", key: "schedules", label: "Horarios" },
   ].filter((item) => access[item.key]), [access]);
   const [tab, setTab] = useState("crear");
@@ -61,6 +64,7 @@ CORRECTA: B`);
   const [activityType, setActivityType] = useState("tarea");
   const [activityDue, setActivityDue] = useState("");
   const [activityText, setActivityText] = useState("");
+  const [reviewDrafts, setReviewDrafts] = useState({});
 
   const courseOptions = coursesForSubject(subjectId);
   const mine = tests.filter((test) => test.teacherEmail === user?.email);
@@ -442,6 +446,65 @@ CORRECTA: B`);
                 <p>{item.description}</p>
               </li>
             ))}
+          </ul>
+        </section>
+      )}
+
+      {tab === "revisar" && (
+        <section className="teacher-board">
+          <h2>Entregas de estudiantes</h2>
+          <p>Revisa el texto y los archivos. Pon una nota de 0 a 10; el estudiante la verá en Actividades.</p>
+          {submissions.filter((item) => item.teacherEmail === user.email).length === 0 && <p>Aún no hay entregas para tus actividades.</p>}
+          <ul className="activity-list">
+            {submissions.filter((item) => item.teacherEmail === user.email).slice().reverse().map((item) => {
+              const draft = reviewDrafts[item.id] || { grade: item.grade ?? "", comment: item.teacherComment || "" };
+              return (
+                <li key={item.id}>
+                  <strong>{item.activityTitle || "Actividad"}</strong>
+                  <p>{item.studentName} · {item.studentEmail}</p>
+                  <div className="work-preview" dangerouslySetInnerHTML={{ __html: item.textHtml || "<p>Sin texto.</p>" }} />
+                  <div className="work-files">
+                    {(item.files || []).map((file) => (
+                      file.type?.startsWith("image/")
+                        ? <img key={file.name} src={file.dataUrl} alt={file.name} />
+                        : <a key={file.name} href={file.dataUrl} download={file.name}>{file.name}</a>
+                    ))}
+                  </div>
+                  {item.grade != null && <p>Nota actual: <span className="grade-pill">{item.grade}/10</span></p>}
+                  <div className="teacher-filters">
+                    <label>
+                      Nota /10
+                      <input
+                        className="pill-input"
+                        type="number"
+                        min="0"
+                        max="10"
+                        value={draft.grade}
+                        onChange={(event) => setReviewDrafts((current) => ({ ...current, [item.id]: { ...draft, grade: event.target.value } }))}
+                      />
+                    </label>
+                    <label>
+                      Comentario
+                      <input
+                        className="pill-input"
+                        value={draft.comment}
+                        onChange={(event) => setReviewDrafts((current) => ({ ...current, [item.id]: { ...draft, comment: event.target.value } }))}
+                      />
+                    </label>
+                  </div>
+                  <button
+                    className="btn btn-green"
+                    type="button"
+                    onClick={() => {
+                      const result = gradeSubmission(item.id, draft.grade, draft.comment, user.email);
+                      setFeedback(result.ok ? `Nota ${draft.grade}/10 enviada a ${item.studentName}.` : result.message);
+                    }}
+                  >
+                    Guardar calificación
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}

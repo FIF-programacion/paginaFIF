@@ -36,6 +36,7 @@ export function CourseCover({ type, title, compact = false, progress }) {
         </div>
       )}
       {type === "books" && <div className="books-art" />}
+      {type === "music" && <div className="music-art" aria-hidden="true">♪ ♫</div>}
       {type === "shapes" && (
         <div className="shapes-art">
           <span className="tri" />

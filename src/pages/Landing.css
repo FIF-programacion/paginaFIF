@@ -195,6 +195,7 @@ html.lp-html {
 
 .lp-kinetic {
   display: block;
+  position: relative;
   margin: 0;
   max-width: 42ch;
   color: inherit;
@@ -320,6 +321,7 @@ html.lp-html {
   justify-self: end;
   align-items: flex-end;
   text-align: right;
+  margin-left: auto;
 }
 
 .lp-about-band.is-right .lp-about-photo {
@@ -348,16 +350,20 @@ html.lp-html {
   margin-right: 0;
 }
 
-.lp-about-band.is-left .lp-about-title {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
+.lp-about-band.is-left .lp-about-title,
+.lp-about-band.is-left .lp-about-copy {
+  display: block;
+  text-align: left;
+  margin-right: auto;
+  margin-left: 0;
 }
 
-.lp-about-band.is-right .lp-about-title {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+.lp-about-band.is-right .lp-about-title,
+.lp-about-band.is-right .lp-about-copy {
+  display: block;
+  text-align: right;
+  margin-left: auto;
+  margin-right: 0;
 }
 
 .lp-about-copy {

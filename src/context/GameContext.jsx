@@ -77,6 +77,7 @@ export function GameProvider({ children }) {
   const [activities, setActivities] = useState([]);
   const [activityDone, setActivityDone] = useState([]);
   const [schedules, setSchedules] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
   const [noticeSeen, setNoticeSeen] = useState(true);
   const [hydrated, setHydrated] = useState(false);
 
@@ -107,10 +108,10 @@ export function GameProvider({ children }) {
         setStats({ points: 45, badges: 1, days: 1, lastActive: todayKey(), earnedBadges: ["primera-leccion"] });
         setProgress({
           ...emptyProgress(),
-          "ingles-1": { completed: ["1", "2", "3"], unlocked: true },
-          matematica: { completed: ["1"], unlocked: true },
-          "lenguaje-1": { completed: [], unlocked: true },
-          "arte-1": { completed: [], unlocked: true },
+          "matematica-practica": { completed: ["1"], unlocked: true },
+          "musica-teoria": { completed: [], unlocked: true },
+          "arte-practica": { completed: [], unlocked: true },
+          "programacion-teoria": { completed: [], unlocked: true },
         });
         setHydrated(true);
         return;
@@ -129,6 +130,7 @@ export function GameProvider({ children }) {
       setActivities(saved?.activities || []);
       setActivityDone(saved?.activityDone || []);
       setSchedules(saved?.schedules || []);
+      setSubmissions(saved?.submissions || []);
       setHydrated(true);
     };
 
@@ -155,9 +157,10 @@ export function GameProvider({ children }) {
         activities,
         activityDone,
         schedules,
+        submissions,
       }),
     );
-  }, [accounts, sessionId, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, hydrated]);
+  }, [accounts, sessionId, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, submissions, hydrated]);
 
   const acknowledgeNotice = () => {
     localStorage.setItem(NOTICE_KEY, "1");
@@ -306,10 +309,43 @@ export function GameProvider({ children }) {
   };
 
   const completeActivity = (activityId, studentEmail) => {
+    const submitted = submissions.some((item) => item.activityId === activityId && item.studentEmail === studentEmail);
+    if (!submitted) return { ok: false, message: "Primero sube tu tarea." };
     setActivityDone((current) => {
       if (current.some((item) => item.activityId === activityId && item.studentEmail === studentEmail)) return current;
       return [...current, { activityId, studentEmail, completedAt: Date.now() }];
     });
+    return { ok: true };
+  };
+
+  const submitActivityWork = (payload) => {
+    const id = `${payload.activityId}|${payload.studentEmail}`;
+    setSubmissions((current) => {
+      const previous = current.find((item) => item.id === id);
+      return [
+        ...current.filter((item) => item.id !== id),
+        {
+          ...previous,
+          ...payload,
+          id,
+          submittedAt: Date.now(),
+          grade: previous?.grade ?? null,
+          teacherComment: previous?.teacherComment || "",
+        },
+      ];
+    });
+    return { ok: true };
+  };
+
+  const gradeSubmission = (submissionId, grade, teacherComment, gradedBy) => {
+    const score = Math.min(10, Math.max(0, Number(grade)));
+    if (Number.isNaN(score)) return { ok: false, message: "Pon una nota de 0 a 10." };
+    setSubmissions((current) => current.map((item) => (
+      item.id === submissionId
+        ? { ...item, grade: score, teacherComment, gradedBy, gradedAt: Date.now() }
+        : item
+    )));
+    return { ok: true };
   };
 
   const updateStudentGroup = (studentId, ageGroup) => {
@@ -411,6 +447,7 @@ export function GameProvider({ children }) {
       activities,
       activityDone,
       schedules,
+      submissions,
       noticeSeen,
       visibleCourses,
       acknowledgeNotice,
@@ -427,6 +464,8 @@ export function GameProvider({ children }) {
       saveAttendance,
       saveActivity,
       completeActivity,
+      submitActivityWork,
+      gradeSubmission,
       updateStudentGroup,
       saveSchedule,
       removeSchedule,
@@ -435,7 +474,7 @@ export function GameProvider({ children }) {
       resetStaffPassword,
       updateStaffAccess,
     }),
-    [hydrated, user, students, staff, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, noticeSeen, visibleCourses],
+    [hydrated, user, students, staff, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, submissions, noticeSeen, visibleCourses],
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

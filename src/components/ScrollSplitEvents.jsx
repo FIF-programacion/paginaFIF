@@ -62,10 +62,10 @@ export function ScrollSplitEvents({ imageSrc, cards }) {
                     {card.date} <span>|</span> {card.place}
                   </p>
                   <a className="lp-event-more" href={card.moreHref || "#contacto"}>
-                    More info
+                    Más info
                   </a>
                   <a className="lp-event-register" href={card.registerHref} target="_blank" rel="noreferrer">
-                    Register Now &gt;
+                    Inscribirme &gt;
                   </a>
                 </div>
               </motion.div>

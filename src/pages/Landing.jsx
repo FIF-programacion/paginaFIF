@@ -58,27 +58,33 @@ const PROJECT_IMAGES = [
   "/images/Image4.jpg",
   "/images/Image5.jpg",
   "/images/proyectos-profes.jpg",
+  "/images/proyecto-arte.jpg",
+  "/images/proyecto-musica.jpg",
+  "/images/proyecto-familias.jpg",
+  "/images/proyecto-mates.jpg",
+  "/images/team.jpg",
+  "/images/family-alone.jpg",
 ];
 
 const EVENTS = [
   {
-    title: "Soul Concert",
-    date: "mar, 09 ene",
-    place: "Mountain View",
+    title: "Taller sabatino de refuerzo",
+    date: "Sábados, 8:00 am – 1:00 pm",
+    place: "Quito",
     bgColor: "#5b9cf5",
     textColor: "#ffffff",
   },
   {
-    title: "Modern Ballet",
-    date: "mar, 06 feb",
-    place: "Flatiron District",
+    title: "Campamento matemático FIF",
+    date: "Vacaciones escolares",
+    place: "Quito y salidas de campo",
     bgColor: "#9ee0c8",
     textColor: "#16362d",
   },
   {
-    title: "Album Launch",
-    date: "sáb, 17 mar",
-    place: "West Village",
+    title: "Conversando con los Profes",
+    date: "Encuentros y podcast",
+    place: "FIF y Rumiñahui FM",
     bgColor: "#f3a3a0",
     textColor: "#4a1f1c",
   },
@@ -420,6 +426,8 @@ export default function Landing() {
                 <a href={`tel:${ORG.phone.replace(/\s/g, "")}`}>{ORG.phone}</a>
                 <a href={`mailto:${ORG.email}`}>{ORG.email}</a>
                 <a href={wa} target="_blank" rel="noreferrer">WhatsApp</a>
+                <p>{ORG.legalAddress}</p>
+                <p>{ORG.ruc}</p>
               </article>
               <article className="lp-contact-card">
                 <h3>Horarios</h3>

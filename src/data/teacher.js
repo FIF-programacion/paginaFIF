@@ -1,11 +1,10 @@
 import { COURSES } from "./courses";
 
 export const SUBJECTS = [
-  { id: "ingles", label: "Inglés", courses: ["ingles-1", "ingles-2", "ingles-avanzado"] },
-  { id: "matematica", label: "Matemática", courses: ["matematica", "matematica-cotidiana", "algebra", "geometria"] },
-  { id: "lenguaje", label: "Lenguaje", courses: ["lenguaje-1"] },
-  { id: "arte", label: "Arte", courses: ["arte-1", "historia-arte"] },
-  { id: "programacion", label: "Programación", courses: ["programacion", "programacion-2"] },
+  { id: "matematica", label: "Matemática", courses: ["matematica-teoria", "matematica-practica", "matematica-lecturas", "geometria", "algebra", "matematica-cotidiana"] },
+  { id: "musica", label: "Música", courses: ["musica-teoria", "musica-practica", "musica-lecturas"] },
+  { id: "arte", label: "Arte", courses: ["arte-teoria", "arte-practica", "arte-lecturas", "historia-arte"] },
+  { id: "programacion", label: "Programación", courses: ["programacion-teoria", "programacion-practica", "programacion-lecturas", "programacion-2"] },
 ];
 
 export const QUESTION_TYPES = [
