@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 
-const SPEED = 0.32;
-const EASE = 0.1;
-const MAX_STEP = 90;
+const SPEED = 0.95;
+const EASE = 0.20;
+const MAX_STEP = 210;
 
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;

@@ -51,6 +51,21 @@ const ABOUT_BANDS = [
   },
 ];
 
+const TEAM = [
+  {
+    name: "Diego y Gaby",
+    image: "/images/Diego_Gaby.avif",
+  },
+  {
+    name: "Anabelle Chacon",
+    image: "/images/Anabelle_Chacon.avif",
+  },
+  {
+    name: "Alex Pico",
+    image: "/images/Alex_Pico.avif",
+  },
+];
+
 const PROJECT_IMAGES = [
   "/images/Image1.jpg",
   "/images/Image2.jpg",
@@ -167,7 +182,7 @@ export default function Landing() {
   const wa = assistanceWhatsAppUrl("Hola FIF, quiero conocer más sobre la fundación.");
 
   const shrink = clamp((heroProgress - 0.08) / 0.5);
-  const fade = clamp((heroProgress - 0.84) / 0.14);
+  const fade = clamp((heroProgress - 0.94) / 0.06);
   const scale = 1 - shrink * 0.36;
   const copyOpacity = 1 - Math.min(1, heroProgress / 0.18);
 
@@ -267,7 +282,8 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="lp-about" id="nosotros">
+        <div id="nosotros">
+          <section className="lp-about">  
           {ABOUT_BANDS.map((item) => (
             <div className={`lp-about-band is-${item.side}`} key={item.title}>
               <article className="lp-about-block">
@@ -278,28 +294,93 @@ export default function Landing() {
                   className="lp-about-title"
                   as="h2"
                 />
-                <KineticText
-                  text={item.text}
-                  splitBy="words"
-                  direction={item.side}
-                  stagger={0.018}
+                <motion.p
                   className="lp-about-copy"
-                  as="p"
-                />
+                  initial={{
+                    opacity: 0,
+                    y: 22,
+                  }}
+                  whileInView={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  viewport={{
+                    once: false,
+                    amount: 0.3,
+                  }}
+                  transition={{
+                    duration: 0.7,
+                    delay: 0.12,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
+                  {item.text}
+                </motion.p>
               </article>
               <motion.figure
                 className="lp-about-photo"
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.35 }}
-                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                initial={{
+                  opacity: 0,
+                  x: item.side === "left" ? 70 : -70,
+                  scale: 0.96,
+                }}
+                whileInView={{
+                  opacity: 1,
+                  x: 0,
+                  scale: 1,
+                }}
+                viewport={{
+                  once: false,
+                  amount: 0.2,
+                }}
+                transition={{
+                  duration: 0.85,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
               >
                 <img src={item.image} alt="" />
               </motion.figure>
             </div>
           ))}
         </section>
+          
+        <section className="lp-team">
+          <FadeIn>
+            <div className="lp-team-head">
+              <p className="lp-kicker">Las personas detrás de FIF</p>
+              <h2>Nuestro equipo</h2>
+              <p>
+                Nuestro equipo está formado por docentes, voluntarios y coordinadores
+                que comparten la misma pasión: enseñar, acompañar y crear espacios
+                donde los niños y jóvenes puedan crecer.
+              </p>
+            </div>
+          </FadeIn>
 
+          <div className="lp-team-grid">
+            {TEAM.map((member, index) => (
+              <motion.article
+                className="lp-team-card"
+                key={member.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{
+                  duration: 0.6,
+                  delay: index * 0.1,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                <img src={member.image} alt={member.name} />
+
+                <div className="lp-team-name">
+                  <h3>{member.name}</h3>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+        </section>
+      </div>
         <section className="lp-projects" id="proyectos">
           <div className="lp-projects-head">
             <h2>Nuestros proyectos</h2>
