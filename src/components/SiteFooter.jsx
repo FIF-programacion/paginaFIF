@@ -3,35 +3,48 @@ import { ORG } from "../data/org";
 
 export function SiteFooter() {
   return (
-    <footer className="landing-footer legal-footer">
-      <div>
-        <h3>La fundación</h3>
-        <p>{ORG.name}.</p>
-        <p>{ORG.country}.</p>
-        <p>{ORG.legalAddress}.</p>
-        <p>{ORG.ruc}.</p>
-        <Link to="/legal/contacto">Contacto.</Link>
+    <footer className="fif-footer">
+      <div className="fif-footer-content">
+
+        <div className="fif-footer-brand">
+          <h2>FIF</h2>
+          <p>
+            Educación, familia y oportunidades
+            <br />
+            para crecer juntos.
+          </p>
+          <span>Quito, Ecuador</span>
+        </div>
+
+        <div className="fif-footer-column">
+          <h3>Fundación</h3>
+          <Link to="/">Nosotros</Link>
+          <Link to="/legal/contacto">Contacto</Link>
+          <Link to="/dona/individual">Donar</Link>
+        </div>
+
+        <div className="fif-footer-column">
+          <h3>Plataforma</h3>
+          <Link to="/fif-learning">FIF Learning</Link>
+          <Link to="/profesores">Docentes</Link>
+          <Link to="/login">Iniciar sesión</Link>
+          <Link to="/app/asistencia">Asistencia</Link>
+        </div>
+
+        <div className="fif-footer-column">
+          <h3>Legal</h3>
+          <Link to="/legal/terminos">Términos</Link>
+          <Link to="/legal/privacidad">Privacidad</Link>
+          <Link to="/legal/cookies">Cookies</Link>
+          <Link to="/legal/reembolsos">Reembolsos</Link>
+          <Link to="/legal/avisos">Avisos</Link>
+        </div>
+
       </div>
-      <div>
-        <h3>Plataforma</h3>
-        <Link to="/">Sitio de la fundación.</Link>
-        <Link to="/fif-learning">FIF Learning.</Link>
-        <Link to="/profesores">Zona de docentes.</Link>
-        <Link to="/app/asistencia">Asistencia.</Link>
-      </div>
-      <div>
-        <h3>Legal</h3>
-        <Link to="/legal/terminos">Términos y condiciones.</Link>
-        <Link to="/legal/privacidad">Política de privacidad.</Link>
-        <Link to="/legal/cookies">Política de cookies.</Link>
-        <Link to="/legal/reembolsos">Política de reembolsos.</Link>
-        <Link to="/legal/avisos">Avisos y riesgos.</Link>
-      </div>
-      <div>
-        <h3>Actualización</h3>
-        <p>Textos legales actualizados el {ORG.lastUpdated}.</p>
-        <p>FIF Learning web.</p>
-        <p>No hay app para Android publicada por ahora.</p>
+
+      <div className="fif-footer-bottom">
+        <p>© 2026 {ORG.name}</p>
+        <p>Fundación Integral de Familias · Ecuador</p>
       </div>
     </footer>
   );
