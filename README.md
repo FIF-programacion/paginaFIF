@@ -2,6 +2,8 @@
 
 Plataforma web de la **Fundación Integral de Familias (FIF)** en Ecuador. Incluye el sitio institucional (landing con scroll y animaciones) y **FIF Learning**, el portal digital de refuerzo académico para estudiantes y docentes.
 
+Aplicacion en vercel https: https://fif-web-org.vercel.app/
+
 Repositorio en GitHub: [https://github.com/ArielBourgeat/FIF-WEB.git](https://github.com/ArielBourgeat/FIF-WEB.git)
 
 Es una aplicación de una sola página (SPA) que corre en el navegador: landing de la fundación, portal de aprendizaje, registro, cursos gamificados, zona de docentes, donaciones, certificados PDF y páginas legales.
