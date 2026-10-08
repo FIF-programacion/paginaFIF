@@ -1970,6 +1970,25 @@ h3,
   font-size: 13px;
 }
 
+.admin-gate {
+  color: rgba(255, 255, 255, 0.28);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-gate:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.admin-gate-light {
+  color: #9aa3b2;
+}
+
+.admin-gate-light:hover {
+  color: #4b5563;
+}
+
 /* TABLET */
 
 @media (max-width: 900px) {

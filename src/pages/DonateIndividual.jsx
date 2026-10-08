@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ORG, assistanceWhatsAppUrl } from "../data/org";
+import { RequestFormModal } from "../components/RequestFormModal";
+import { ORG } from "../data/org";
 import "./Landing.css";
 
 const AMOUNTS = [10, 20, 50];
@@ -9,11 +10,9 @@ export default function DonateIndividual() {
   const [frequency, setFrequency] = useState("once");
   const [amount, setAmount] = useState(10);
   const [custom, setCustom] = useState("");
-  const value = amount === "other" ? Number(custom) || 0 : amount;
-  const label = frequency === "monthly" ? "mensual" : "única";
-  const href = assistanceWhatsAppUrl(
-    `Hola FIF, quiero hacer una donación individual ${label} de $${value}.`,
-  );
+  const [open, setOpen] = useState(false);
+  const value = amount === "other" ? Number(custom) || "" : amount;
+  const label = frequency === "monthly" ? "Donación mensual" : "Donación única";
 
   return (
     <div className="donate-page">
@@ -42,7 +41,7 @@ export default function DonateIndividual() {
           <p className="donate-label">Monto</p>
           <div className="donate-options donate-amounts">
             {AMOUNTS.map((item) => (
-              <button key={item} type="button" className={amount === item ? "is-on" : ""} onClick={() => setAmount(item)}>
+              <button key={item} type="button" className={amount === item ? "is-on" : ""} onClick={() => { setAmount(item); setOpen(true); }}>
                 ${item}
               </button>
             ))}
@@ -61,15 +60,22 @@ export default function DonateIndividual() {
             />
           )}
 
-          <a className="donate-submit" href={href} target="_blank" rel="noreferrer">
-            Donar ${value || "—"}
-          </a>
+          <button className="donate-submit" type="button" onClick={() => setOpen(true)}>
+            Continuar con ${value || "—"}
+          </button>
           <p className="donate-note">
-            El aporte se coordina por WhatsApp con {ORG.email}. Aún no hay cobro en línea.
+            No hay cobro en la web. Al elegir un monto se abre un formulario y el aporte se coordina por WhatsApp con {ORG.email}.
           </p>
         </section>
         <img src="/images/dona-aula.png" alt="Niñas estudiando en un taller de FIF" className="donate-photo" />
       </main>
+      {open && (
+        <RequestFormModal
+          packageName={label}
+          initial={{ amount: value }}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </div>
   );
 }

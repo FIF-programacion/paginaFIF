@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useGame } from "../context/GameContext";
-import { COURSES } from "../data/courses";
+import { COURSES, courseAgeKey } from "../data/courses";
 import { ageLabel } from "../data/org";
 import { ACTIVITY_TYPES, QUESTION_TYPES, SUBJECTS, coursesForSubject, emptyQuestion, isQuestionReady, normalizeQuestion } from "../data/teacher";
-import { WEEKDAYS } from "../data/staff";
+import { BOARD_COLUMNS, CONTENT_KINDS, TEAMS, WEEKDAYS, teamById, teamLabel } from "../data/staff";
 import { parseTestCode } from "../utils/parseTestCode";
-import { staffAccess } from "../utils/roles";
+import { isStaff, staffAccess } from "../utils/roles";
 import { makeTestCode } from "../utils/security";
+import "./Admin.css";
 
 function todayInput() {
   return new Date().toISOString().slice(0, 10);
@@ -33,19 +34,40 @@ export default function TeacherPanel() {
     saveAttendance,
     saveActivity,
     gradeSubmission,
+    boardTasks,
+    syllabusItems,
+    contentItems,
+    saveBoardTask,
+    removeBoardTask,
+    saveSyllabusItem,
+    removeSyllabusItem,
+    saveContentItem,
+    removeContentItem,
     logout,
   } = useGame();
   const access = useMemo(() => staffAccess(user), [user]);
-  const tabs = useMemo(() => [
-    { id: "crear", key: "tests", label: "Crear prueba" },
-    { id: "codigo", key: "tests", label: "Crear con código" },
-    { id: "notas", key: "grades", label: "Calificaciones" },
-    { id: "asistencia", key: "attendance", label: "Asistencia en clase" },
-    { id: "actividades", key: "activities", label: "Actividades" },
-    { id: "revisar", key: "activities", label: "Revisar entregas" },
-    { id: "horarios", key: "schedules", label: "Horarios" },
-  ].filter((item) => access[item.key]), [access]);
-  const [tab, setTab] = useState("crear");
+  const team = teamById(user?.teamId);
+  const teaches = Boolean(team?.teaches && (user?.duty || "teacher") === "teacher");
+  const tabs = useMemo(() => {
+    const next = [{ id: "tablero", label: "Tablero" }];
+    if (team?.teaches) next.push({ id: "silabo", label: "Sílabo" });
+    if (team?.id === "multimedia") next.push({ id: "contenido", label: "Contenido" });
+    if (teaches) {
+      next.push(
+        ...[
+          { id: "crear", key: "tests", label: "Crear prueba" },
+          { id: "codigo", key: "tests", label: "Crear con código" },
+          { id: "notas", key: "grades", label: "Calificaciones" },
+          { id: "asistencia", key: "attendance", label: "Asistencia" },
+          { id: "actividades", key: "activities", label: "Actividades" },
+          { id: "revisar", key: "activities", label: "Entregas" },
+          { id: "horarios", key: "schedules", label: "Horarios" },
+        ].filter((item) => access[item.key]),
+      );
+    }
+    return next;
+  }, [access, team, teaches]);
+  const [tab, setTab] = useState("tablero");
   const [subjectId, setSubjectId] = useState(SUBJECTS[0].id);
   const [courseId, setCourseId] = useState(SUBJECTS[0].courses[0]);
   const [title, setTitle] = useState("");
@@ -65,6 +87,9 @@ CORRECTA: B`);
   const [activityDue, setActivityDue] = useState("");
   const [activityText, setActivityText] = useState("");
   const [reviewDrafts, setReviewDrafts] = useState({});
+  const [taskDraft, setTaskDraft] = useState({ title: "", notes: "", status: "todo" });
+  const [syllabusDraft, setSyllabusDraft] = useState({ title: "", body: "" });
+  const [contentDraft, setContentDraft] = useState({ title: "", kind: "podcast", url: "", notes: "" });
 
   const courseOptions = coursesForSubject(subjectId);
   const mine = tests.filter((test) => test.teacherEmail === user?.email);
@@ -75,7 +100,7 @@ CORRECTA: B`);
   const visibleStudents = students.filter((student) => {
     const course = COURSES.find((item) => item.id === courseId);
     if (!course) return true;
-    return course.ageGroups.includes(student.ageGroup || "over12");
+    return course.ageGroups.includes(courseAgeKey(student.ageGroup));
   });
 
   useEffect(() => {
@@ -97,7 +122,11 @@ CORRECTA: B`);
   }, [tabs, tab]);
 
   if (!hydrated) return null;
-  if (!user || user.role !== "teacher") return <Navigate to={user?.role === "admin" ? "/coordinacion" : "/profesores"} replace />;
+  if (!user || !isStaff(user)) return <Navigate to={user?.role === "admin" ? "/admin/panel" : "/profesores"} replace />;
+
+  const teamTasks = boardTasks.filter((item) => item.teamId === (user.teamId || ""));
+  const teamSyllabus = syllabusItems.filter((item) => item.teamId === (user.teamId || "")).slice().reverse();
+  const teamContent = contentItems.filter((item) => item.teamId === (user.teamId || "")).slice().reverse();
 
   const changeSubject = (nextId) => {
     setSubjectId(nextId);
@@ -209,29 +238,209 @@ CORRECTA: B`);
   };
 
   return (
-    <div className="app-shell teacher-shell">
-      <header className="app-header">
-        <div className="app-header-top">
-          <h1 className="course-title" style={{ margin: 0 }}>DOCENTES FIF</h1>
-          <div className="header-actions">
-            <Link className="btn btn-blue login-chip" to="/fif-learning">Volver al portal</Link>
-            <button className="btn btn-green login-chip" type="button" onClick={logout}>Cerrar sesión</button>
-          </div>
-        </div>
-        <p>Hola, {user.firstName}. Coordinación define tus accesos y las actividades que te delega.</p>
-      </header>
-      <nav className="app-nav">
+    <div className="ad-shell">
+      <aside className="ad-side">
+        <strong>EQUIPO FIF</strong>
+        <p className="ad-side-meta">{teamLabel(user.teamId)} · {user.firstName}</p>
         {tabs.map((item) => (
-          <button key={item.id} type="button" className={tab === item.id ? "active" : ""} onClick={() => setTab(item.id)}>
+          <button key={item.id} type="button" className={tab === item.id ? "is-on" : ""} onClick={() => setTab(item.id)}>
             {item.label}
           </button>
         ))}
-      </nav>
+        <Link to="/fif-learning">Portal público</Link>
+        <button type="button" onClick={logout}>Cerrar sesión</button>
+      </aside>
+      <div className="ad-main">
+        <div className="ad-top">
+          <div>
+            <p className="ad-kicker">{team?.blurb || "Coordinación asigna tu equipo y accesos."}</p>
+            <h1>{tabs.find((item) => item.id === tab)?.label}</h1>
+          </div>
+          <p>{TEAMS.find((item) => item.id === user.teamId)?.label || "Sin equipo asignado"}</p>
+        </div>
+      {feedback && <p className="ad-error" role="status" style={{ color: "#166534" }}>{feedback}</p>}
+      {!user.teamId && (
+        <section className="ad-card">
+          <p>Coordinación aún no te asignó un equipo (Artes, Programación, Matemática o Multimedia). Cuando lo haga verás el tablero y las herramientas de ese equipo.</p>
+        </section>
+      )}
 
-      {feedback && <p className="feedback ok" role="status">{feedback}</p>}
+      {tab === "tablero" && user.teamId && (
+        <section className="ad-card">
+          <h2>Organización del equipo</h2>
+          <div className="teacher-filters">
+            <label>
+              Tarea
+              <input value={taskDraft.title} onChange={(event) => setTaskDraft((current) => ({ ...current, title: event.target.value }))} />
+            </label>
+            <label>
+              Columna
+              <select value={taskDraft.status} onChange={(event) => setTaskDraft((current) => ({ ...current, status: event.target.value }))}>
+                {BOARD_COLUMNS.map((column) => <option key={column.id} value={column.id}>{column.label}</option>)}
+              </select>
+            </label>
+          </div>
+          <label>
+            Notas
+            <textarea value={taskDraft.notes} onChange={(event) => setTaskDraft((current) => ({ ...current, notes: event.target.value }))} />
+          </label>
+          <button
+            className="ad-btn"
+            type="button"
+            onClick={() => {
+              if (!taskDraft.title.trim()) {
+                setFeedback("La tarjeta necesita un título.");
+                return;
+              }
+              saveBoardTask({
+                id: crypto.randomUUID(),
+                teamId: user.teamId,
+                title: taskDraft.title.trim(),
+                notes: taskDraft.notes.trim(),
+                status: taskDraft.status,
+                ownerEmail: user.email,
+                ownerName: `${user.firstName} ${user.lastName}`,
+                createdAt: Date.now(),
+              });
+              setTaskDraft({ title: "", notes: "", status: "todo" });
+              setFeedback("Tarjeta añadida al tablero.");
+            }}
+          >
+            Añadir al tablero
+          </button>
+          <div className="ad-kanban">
+            {BOARD_COLUMNS.map((column) => (
+              <div key={column.id} className="ad-kanban-col">
+                <h3>{column.label}</h3>
+                {teamTasks.filter((item) => item.status === column.id).map((item) => (
+                  <article key={item.id} className="ad-kanban-card">
+                    <strong>{item.title}</strong>
+                    {item.notes && <p>{item.notes}</p>}
+                    <small>{item.ownerName}</small>
+                    <select
+                      value={item.status}
+                      onChange={(event) => saveBoardTask({ ...item, status: event.target.value })}
+                    >
+                      {BOARD_COLUMNS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
+                    </select>
+                    <button className="ad-btn ad-btn-ghost" type="button" onClick={() => removeBoardTask(item.id)}>Quitar</button>
+                  </article>
+                ))}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {tab === "silabo" && (
+        <section className="ad-card">
+          <h2>Sílabo colaborativo · {teamLabel(user.teamId)}</h2>
+          <p>El equipo carga unidades, objetivos y secuencia. Programación también puede anotar el desarrollo de la web aquí o en el tablero.</p>
+          <label>
+            Unidad / bloque
+            <input value={syllabusDraft.title} onChange={(event) => setSyllabusDraft((current) => ({ ...current, title: event.target.value }))} />
+          </label>
+          <label>
+            Contenido
+            <textarea rows={5} value={syllabusDraft.body} onChange={(event) => setSyllabusDraft((current) => ({ ...current, body: event.target.value }))} />
+          </label>
+          <button
+            className="ad-btn"
+            type="button"
+            onClick={() => {
+              if (!syllabusDraft.title.trim() || !syllabusDraft.body.trim()) {
+                setFeedback("Completa título y contenido de la unidad.");
+                return;
+              }
+              saveSyllabusItem({
+                id: crypto.randomUUID(),
+                teamId: user.teamId,
+                title: syllabusDraft.title.trim(),
+                body: syllabusDraft.body.trim(),
+                updatedBy: `${user.firstName} ${user.lastName}`,
+                updatedAt: Date.now(),
+              });
+              setSyllabusDraft({ title: "", body: "" });
+              setFeedback("Unidad añadida al sílabo.");
+            }}
+          >
+            Publicar unidad
+          </button>
+          {teamSyllabus.length === 0 && <p>Aún no hay unidades en este sílabo.</p>}
+          {teamSyllabus.map((item) => (
+            <article key={item.id} className="cred-card">
+              <strong>{item.title}</strong>
+              <p>{item.body}</p>
+              <small>{item.updatedBy} · {formatWhen(item.updatedAt)}</small>
+              <button className="ad-btn ad-btn-ghost" type="button" onClick={() => removeSyllabusItem(item.id)}>Quitar</button>
+            </article>
+          ))}
+        </section>
+      )}
+
+      {tab === "contenido" && (
+        <section className="ad-card">
+          <h2>Producción multimedia</h2>
+          <p>Podcast, video, redes y piezas. Multimedia no da clases; este es el seguimiento de contenidos.</p>
+          <div className="teacher-filters">
+            <label>
+              Título
+              <input value={contentDraft.title} onChange={(event) => setContentDraft((current) => ({ ...current, title: event.target.value }))} />
+            </label>
+            <label>
+              Tipo
+              <select value={contentDraft.kind} onChange={(event) => setContentDraft((current) => ({ ...current, kind: event.target.value }))}>
+                {CONTENT_KINDS.map((kind) => <option key={kind.id} value={kind.id}>{kind.label}</option>)}
+              </select>
+            </label>
+          </div>
+          <label>
+            Enlace
+            <input value={contentDraft.url} onChange={(event) => setContentDraft((current) => ({ ...current, url: event.target.value }))} />
+          </label>
+          <label>
+            Notas
+            <textarea value={contentDraft.notes} onChange={(event) => setContentDraft((current) => ({ ...current, notes: event.target.value }))} />
+          </label>
+          <button
+            className="ad-btn"
+            type="button"
+            onClick={() => {
+              if (!contentDraft.title.trim()) {
+                setFeedback("Pon un título al contenido.");
+                return;
+              }
+              saveContentItem({
+                id: crypto.randomUUID(),
+                teamId: user.teamId || "multimedia",
+                ...contentDraft,
+                title: contentDraft.title.trim(),
+                ownerName: `${user.firstName} ${user.lastName}`,
+                createdAt: Date.now(),
+              });
+              setContentDraft({ title: "", kind: "podcast", url: "", notes: "" });
+              setFeedback("Pieza cargada.");
+            }}
+          >
+            Registrar pieza
+          </button>
+          {teamContent.length === 0 && <p>Aún no hay piezas registradas.</p>}
+          <ul className="activity-list">
+            {teamContent.map((item) => (
+              <li key={item.id}>
+                <strong>{item.title}</strong>
+                <p>{CONTENT_KINDS.find((kind) => kind.id === item.kind)?.label} · {item.ownerName}</p>
+                {item.url && <p><a href={item.url} target="_blank" rel="noreferrer">{item.url}</a></p>}
+                {item.notes && <p>{item.notes}</p>}
+                <button className="ad-btn ad-btn-ghost" type="button" onClick={() => removeContentItem(item.id)}>Quitar</button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {tab === "crear" && (
-        <section className="teacher-board">
+        <section className="ad-card">
           <div className="teacher-filters">
             <label>
               Materia
@@ -300,7 +509,7 @@ CORRECTA: B`);
       )}
 
       {tab === "codigo" && (
-        <section className="teacher-board">
+        <section className="ad-card">
           <h2>Pegar prueba en código de texto</h2>
           <p>Usa TITULO, PREGUNTA, opciones A) B) C) y CORRECTA. Separa preguntas con una línea en blanco.</p>
           <label htmlFor="code-test">Código de la prueba</label>
@@ -310,7 +519,7 @@ CORRECTA: B`);
       )}
 
       {tab === "notas" && (
-        <section className="teacher-board">
+        <section className="ad-card">
           <h2>Calificaciones</h2>
           {published.length === 0 && <p>Todavía no hay pruebas publicadas en este dispositivo.</p>}
           {published.map((test) => {
@@ -356,7 +565,7 @@ CORRECTA: B`);
       )}
 
       {tab === "asistencia" && (
-        <section className="teacher-board">
+        <section className="ad-card">
           <div className="teacher-filters">
             <label>
               Materia
@@ -407,7 +616,7 @@ CORRECTA: B`);
       )}
 
       {tab === "actividades" && (
-        <section className="teacher-board">
+        <section className="ad-card">
           <div className="teacher-filters">
             <label>
               Materia
@@ -451,7 +660,7 @@ CORRECTA: B`);
       )}
 
       {tab === "revisar" && (
-        <section className="teacher-board">
+        <section className="ad-card">
           <h2>Entregas de estudiantes</h2>
           <p>Revisa el texto y los archivos. Pon una nota de 0 a 10; el estudiante la verá en Actividades.</p>
           {submissions.filter((item) => item.teacherEmail === user.email).length === 0 && <p>Aún no hay entregas para tus actividades.</p>}
@@ -510,7 +719,7 @@ CORRECTA: B`);
       )}
 
       {tab === "horarios" && (
-        <section className="teacher-board">
+        <section className="ad-card">
           <h2>Horarios asignados</h2>
           {mySchedules.length === 0 && <p>Coordinación aún no te asignó horarios en este dispositivo.</p>}
           <ul className="activity-list">
@@ -526,6 +735,7 @@ CORRECTA: B`);
           </ul>
         </section>
       )}
+      </div>
     </div>
   );
 }

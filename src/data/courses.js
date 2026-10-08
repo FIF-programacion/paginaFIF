@@ -837,21 +837,28 @@ export const LANDING_COURSES = COURSES.map((course) => ({
 
 export const DAILY_GOALS = ["5 minutos", "10 minutos", "15 minutos", "20 minutos"];
 
+export function courseAgeKey(ageGroup) {
+  if (ageGroup === "inicial" || ageGroup === "under12") return "under12";
+  return "over12";
+}
+
 export function coursesForAge(ageGroup) {
-  return COURSES.filter((course) => course.ageGroups.includes(ageGroup || "over12"));
+  const key = courseAgeKey(ageGroup);
+  return COURSES.filter((course) => course.ageGroups.includes(key));
 }
 
 export function courseWithLessons(course, ageGroup) {
   if (!course) return null;
-  const group = course.ageGroups.includes(ageGroup) ? ageGroup : course.ageGroups[0];
+  const key = courseAgeKey(ageGroup);
+  const group = course.ageGroups.includes(key) ? key : course.ageGroups[0];
   return { ...course, lessons: course.lessonsByAge[group] || [] };
 }
 
-export function getCourse(id, ageGroup = "over12") {
+export function getCourse(id, ageGroup = "regular") {
   return courseWithLessons(COURSES.find((course) => course.id === id), ageGroup);
 }
 
-export function getLesson(courseId, lessonId, ageGroup = "over12") {
+export function getLesson(courseId, lessonId, ageGroup = "regular") {
   const course = getCourse(courseId, ageGroup);
   return course?.lessons.find((lesson) => lesson.id === String(lessonId));
 }

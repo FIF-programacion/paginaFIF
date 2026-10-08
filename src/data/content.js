@@ -41,7 +41,7 @@ export const PARENT_GUIDE_SLIDES = [
   {
     title: "Acompañar, no reemplazar",
     heading: "FIF Learning es refuerzo en casa",
-    text: "La plataforma apoya la práctica diaria. No sustituye la escuela ni un informe oficial. Si hay menos de 12 años, el registro pide tu autorización.",
+    text: "La plataforma apoya la práctica diaria. No sustituye la escuela ni un informe oficial. Coordinación FIF crea tu cuenta y te da el acceso.",
   },
   {
     title: "Cuidar la cuenta",
@@ -69,7 +69,7 @@ export const HELP_ITEMS = [
     title: "Zona de docentes",
     color: "#b7dbff",
     textColor: "#1e3a8a",
-    body: "Si eres docente de la fundación, entra a Profesores para crear pruebas, pegar un examen en código de texto y revisar calificaciones. El acceso de docente es distinto al de estudiante.",
+    body: "El equipo FIF entra con la cuenta que entrega coordinación. Docentes de matemática, arte y programación ven aula, sílabo y tablero. Multimedia sigue podcast y contenidos. Nadie crea su propia cuenta.",
   },
   {
     id: "alumnos",

@@ -30,6 +30,12 @@ html.lp-html {
   pointer-events: auto;
 }
 
+.lp-header-actions {
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+
 .lp-brand {
   display: flex;
   align-items: center;
@@ -74,6 +80,11 @@ html.lp-html {
 .lp-hero-copy .lp-hero-cta-learning {
   background: var(--lp-blue);
   color: #fff;
+}
+
+.lp-hero-copy .lp-hero-cta-enroll {
+  background: var(--lp-gold);
+  color: var(--lp-navy);
 }
 
 .lp-nav {
@@ -1176,6 +1187,9 @@ html.lp-html {
 }
 
 .lp-donate-card .lp-hero-cta {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
   background: var(--lp-gold);
   color: #111;
 }
@@ -1264,6 +1278,18 @@ html.lp-html {
 .lp-contact-card > a {
   justify-content: flex-start;
   word-break: break-word;
+}
+
+.lp-admin-ghost {
+  margin-top: 18px !important;
+  color: #9bb4c9 !important;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lp-admin-ghost:hover {
+  color: #5b7a94 !important;
 }
 
 .lp-contact ul {
@@ -1523,6 +1549,7 @@ html.lp-html {
   background: #f5c518;
   color: #10233a;
   text-align: center;
+  cursor: pointer;
 }
 
 .donate-note {

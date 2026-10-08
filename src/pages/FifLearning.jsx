@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { BrandLockup, RainbowTitle, Wordmark } from "../components/Brand";
 import { SiteFooter } from "../components/SiteFooter";
-import { LANDING_COURSES } from "../data/courses";
+import { LANDING_COURSES, courseAgeKey } from "../data/courses";
 import { useGame } from "../context/GameContext";
 import { homePath } from "../utils/roles";
 
@@ -46,7 +46,6 @@ function ScrollFillBar({ sectionRef }) {
 export default function FifLearning() {
   const { user } = useGame();
   const startTo = user ? homePath(user) : "/login";
-  const createTo = user ? startTo : "/registro";
   const progressNoteRef = useRef(null);
 
   return (
@@ -56,7 +55,8 @@ export default function FifLearning() {
         <BrandLockup to="/fif-learning" />
         <div className="header-actions">
           <Link to="/" className="text-link">La fundación</Link>
-          <Link to="/profesores" className="text-link">Docentes y coordinación</Link>
+          <Link to="/profesores" className="text-link">Equipo FIF</Link>
+          <Link to="/admin" className="admin-gate admin-gate-light">Coordinación</Link>
           <Link to={startTo} className="btn btn-blue login-chip">Iniciar sesión</Link>
         </div>
       </header>
@@ -74,8 +74,8 @@ export default function FifLearning() {
               ]}
             />
             <div className="hero-actions">
-              <Link to={startTo} className="btn btn-green btn-wide">Empezar ahora</Link>
-              <Link to={createTo} className="btn btn-green btn-wide">Crear cuenta de estudiante</Link>
+              <Link to={startTo} className="btn btn-green btn-wide">Iniciar sesión</Link>
+              <Link to="/inscripciones" className="btn btn-green btn-wide">Inscribirme</Link>
             </div>
           </div>
         </section>
@@ -148,20 +148,20 @@ export default function FifLearning() {
               no equivale a un título oficial.
             </p>
             <div className="course-list">
-              {(user?.ageGroup ? LANDING_COURSES.filter((course) => course.ages.includes(user.ageGroup)) : LANDING_COURSES).map((course) => (
+              {(user?.ageGroup ? LANDING_COURSES.filter((course) => course.ages.includes(courseAgeKey(user.ageGroup))) : LANDING_COURSES).map((course) => (
                 <Link
                   key={course.id}
-                  to={user ? `/app/curso/${course.id}` : "/registro"}
+                  to={user ? `/app/curso/${course.id}` : "/login"}
                   className="course-chip"
                   style={{ background: course.color, color: "#111827" }}
                 >
                   {course.title}
                   <span className="chip-age">
                     {course.ages.includes("under12") && course.ages.includes("over12")
-                      ? "Todas las edades"
+                      ? "Inicial y regular"
                       : course.ages.includes("under12")
-                        ? "Menos de 12"
-                        : "12 años o más"}
+                        ? "Inicial / nivelación"
+                        : "Grupo Regular"}
                   </span>
                 </Link>
               ))}
@@ -177,7 +177,7 @@ export default function FifLearning() {
               { text: "APRENDER AHORA", color: "#1d4ed8" },
             ]}
           />
-          <Link to={createTo} className="btn btn-green btn-wide">Crear cuenta</Link>
+          <Link to={startTo} className="btn btn-green btn-wide">Iniciar sesión</Link>
         </section>
       </main>
       <SiteFooter />

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { CourseCover } from "../components/CourseCover";
-import { COURSES, getCourse } from "../data/courses";
+import { COURSES, courseAgeKey, getCourse } from "../data/courses";
 import { ACTIVITY_TYPES } from "../data/teacher";
 import { useGame } from "../context/GameContext";
 
@@ -23,7 +23,7 @@ export default function Dashboard() {
   const pendingTeacher = activities
     .filter((item) => {
       const course = COURSES.find((entry) => entry.id === item.courseId);
-      const matchesGroup = !course || course.ageGroups.includes(user?.ageGroup || "over12");
+      const matchesGroup = !course || course.ageGroups.includes(courseAgeKey(user?.ageGroup));
       const finished = activityDone.some((row) => row.activityId === item.id && row.studentEmail === user?.email);
       return matchesGroup && !finished;
     })

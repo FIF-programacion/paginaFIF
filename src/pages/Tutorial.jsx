@@ -13,7 +13,7 @@ export default function Tutorial() {
   const slide = TUTORIAL_SLIDES[index];
   const percents = [70, 82, 92];
 
-  if (!user) return <Navigate to="/registro" replace />;
+  if (!user) return <Navigate to="/login" replace />;
 
   const next = () => {
     if (index >= TUTORIAL_SLIDES.length - 1) navigate("/bienvenida");

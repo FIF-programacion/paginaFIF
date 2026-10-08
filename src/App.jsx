@@ -20,7 +20,9 @@ import ExercisePage from "./pages/exercises/ExercisePage";
 import CourseComplete from "./pages/CourseComplete";
 import TeacherLogin from "./pages/TeacherLogin";
 import TeacherPanel from "./pages/TeacherPanel";
+import AdminLogin from "./pages/AdminLogin";
 import AdminPanel from "./pages/AdminPanel";
+import Enrollment from "./pages/Enrollment";
 import TakeTest from "./pages/TakeTest";
 import StudentActivities from "./pages/StudentActivities";
 import StudentSchedules from "./pages/StudentSchedules";
@@ -40,9 +42,13 @@ export default function App() {
         <Route path="/verificar" element={<Verify />} />
         <Route path="/tutorial/:step" element={<Tutorial />} />
         <Route path="/bienvenida" element={<Welcome />} />
+        <Route path="/inscripciones" element={<Enrollment />} />
         <Route path="/profesores" element={<TeacherLogin />} />
-        <Route path="/profesores/panel" element={<TeacherPanel />} />
-        <Route path="/coordinacion" element={<AdminPanel />} />
+        <Route path="/equipo" element={<TeacherPanel />} />
+        <Route path="/profesores/panel" element={<Navigate to="/equipo" replace />} />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin/panel" element={<AdminPanel />} />
+        <Route path="/coordinacion" element={<Navigate to="/admin/panel" replace />} />
         <Route path="/legal/privacidad" element={<PrivacyPage />} />
         <Route path="/legal/terminos" element={<TermsPage />} />
         <Route path="/legal/cookies" element={<CookiesPage />} />

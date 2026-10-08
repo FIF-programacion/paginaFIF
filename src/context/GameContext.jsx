@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { COURSES, coursesForAge, getCourse } from "../data/courses";
-import { ACCESS_PRESETS, DEFAULT_ADMIN, DEFAULT_TEMP_PASSWORD, DEFAULT_TEMP_VOLUNTEERS } from "../data/staff";
+import { ACCESS_PRESETS, DEFAULT_ADMIN, DEFAULT_TEMP_PASSWORD, DEFAULT_TEMP_VOLUNTEERS, accessForDuty } from "../data/staff";
 import { hashSecret } from "../utils/security";
 
 const STORAGE_KEY = "fif-learning-state-v2";
@@ -49,8 +49,10 @@ async function ensureDefaultStaff(accounts) {
     if (hasEmail(slot.email)) continue;
     next.push({
       id: `staff-temp-${slot.slot}`,
-      role: "teacher",
+      role: "staff",
       staffKind: "temporary",
+      duty: "member",
+      teamId: "",
       firstName: slot.firstName,
       lastName: slot.lastName,
       email: slot.email,
@@ -78,6 +80,10 @@ export function GameProvider({ children }) {
   const [activityDone, setActivityDone] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [submissions, setSubmissions] = useState([]);
+  const [enrollments, setEnrollments] = useState([]);
+  const [boardTasks, setBoardTasks] = useState([]);
+  const [syllabusItems, setSyllabusItems] = useState([]);
+  const [contentItems, setContentItems] = useState([]);
   const [noticeSeen, setNoticeSeen] = useState(true);
   const [hydrated, setHydrated] = useState(false);
 
@@ -98,7 +104,7 @@ export function GameProvider({ children }) {
           lastName: "Estudiante",
           email: "ariel@correo.com",
           passwordHash: "preview",
-          ageGroup: "over12",
+          ageGroup: "regular",
           dailyGoal: "5 minutos",
           createdAt: Date.now(),
         };
@@ -117,7 +123,11 @@ export function GameProvider({ children }) {
         return;
       }
 
-      const accounts = await ensureDefaultStaff(saved?.accounts || []);
+      const accounts = await ensureDefaultStaff(
+        (saved?.accounts || []).map((item) => (
+          item.role === "teacher" ? { ...item, role: "staff", duty: item.duty || "teacher", teamId: item.teamId || "" } : item
+        )),
+      );
       if (cancelled) return;
       setAccounts(accounts);
       setSessionId(saved?.sessionId || null);
@@ -131,6 +141,10 @@ export function GameProvider({ children }) {
       setActivityDone(saved?.activityDone || []);
       setSchedules(saved?.schedules || []);
       setSubmissions(saved?.submissions || []);
+      setEnrollments(saved?.enrollments || []);
+      setBoardTasks(saved?.boardTasks || []);
+      setSyllabusItems(saved?.syllabusItems || []);
+      setContentItems(saved?.contentItems || []);
       setHydrated(true);
     };
 
@@ -158,9 +172,13 @@ export function GameProvider({ children }) {
         activityDone,
         schedules,
         submissions,
+        enrollments,
+        boardTasks,
+        syllabusItems,
+        contentItems,
       }),
     );
-  }, [accounts, sessionId, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, submissions, hydrated]);
+  }, [accounts, sessionId, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, submissions, enrollments, boardTasks, syllabusItems, contentItems, hydrated]);
 
   const acknowledgeNotice = () => {
     localStorage.setItem(NOTICE_KEY, "1");
@@ -172,12 +190,14 @@ export function GameProvider({ children }) {
     const passwordHash = await hashSecret(profile.password, email);
     const existing = accounts.find((item) => item.email === email);
     const id = existing?.id || crypto.randomUUID();
-    const role = profile.role === "admin" ? "teacher" : (profile.role || "student");
-    const staffKind = role === "teacher" ? (profile.staffKind || "teacher") : null;
+    const role = profile.role === "admin" ? "staff" : (profile.role === "teacher" ? "staff" : (profile.role || "student"));
+    const staffKind = role === "staff" ? (profile.staffKind || "permanent") : null;
     const nextUser = {
       id,
       role,
       staffKind,
+      duty: role === "staff" ? (profile.duty || "teacher") : null,
+      teamId: role === "staff" ? (profile.teamId || "") : null,
       firstName: profile.firstName.trim(),
       lastName: profile.lastName.trim(),
       email,
@@ -186,7 +206,8 @@ export function GameProvider({ children }) {
       dailyGoal: profile.dailyGoal || null,
       tutorName: profile.tutorName || "",
       tutorEmail: profile.tutorEmail || "",
-      access: role === "teacher" ? (profile.access || ACCESS_PRESETS[staffKind] || ACCESS_PRESETS.teacher) : undefined,
+      tutorialSeen: role === "student" ? Boolean(existing?.tutorialSeen) : undefined,
+      access: role === "staff" ? (profile.access || accessForDuty(profile.duty || "teacher", profile.teamId)) : undefined,
       lockedUsername: Boolean(profile.lockedUsername),
       consents: profile.consents || {},
       createdAt: existing?.createdAt || Date.now(),
@@ -216,6 +237,41 @@ export function GameProvider({ children }) {
 
   const logout = () => setSessionId(null);
 
+  const markTutorialSeen = () => {
+    if (!sessionId) return;
+    setAccounts((current) => current.map((item) => (item.id === sessionId ? { ...item, tutorialSeen: true } : item)));
+  };
+
+  const createStudent = async (profile) => {
+    const email = profile.email.trim().toLowerCase();
+    if (accounts.some((item) => item.email === email)) {
+      return { ok: false, message: "Ese correo ya está en uso." };
+    }
+    if (!profile.firstName || !profile.lastName || !profile.password || !profile.ageGroup) {
+      return { ok: false, message: "Completa nombre, correo, clave y grupo." };
+    }
+    if (profile.password.length < 6) {
+      return { ok: false, message: "La clave debe tener al menos 6 caracteres." };
+    }
+    const passwordHash = await hashSecret(profile.password, email);
+    const next = {
+      id: crypto.randomUUID(),
+      role: "student",
+      firstName: profile.firstName.trim(),
+      lastName: profile.lastName.trim(),
+      email,
+      passwordHash,
+      ageGroup: profile.ageGroup,
+      dailyGoal: profile.dailyGoal || "10 minutos",
+      tutorName: profile.tutorName || "",
+      tutorEmail: profile.tutorEmail || "",
+      tutorialSeen: false,
+      createdAt: Date.now(),
+    };
+    setAccounts((current) => [...current, next]);
+    return { ok: true };
+  };
+
   const markAttendance = () => {
     const today = todayKey();
     setStats((current) => {
@@ -227,7 +283,7 @@ export function GameProvider({ children }) {
     });
   };
 
-  const visibleCourses = coursesForAge(user?.ageGroup || "over12");
+  const visibleCourses = coursesForAge(user?.ageGroup || "regular");
 
   const completeLesson = (courseId, lessonId, points = 15) => {
     markAttendance();
@@ -244,7 +300,7 @@ export function GameProvider({ children }) {
         : [...currentEntry.completed, String(lessonId)];
       const next = { ...current, [courseId]: { ...currentEntry, completed: nextCompleted, unlocked: true } };
       if (course && nextCompleted.length >= course.lessons.length) {
-        const catalog = coursesForAge(user?.ageGroup || "over12");
+        const catalog = coursesForAge(user?.ageGroup || "regular");
         const index = catalog.findIndex((item) => item.id === courseId);
         const following = catalog[index + 1];
         if (following) {
@@ -384,15 +440,19 @@ export function GameProvider({ children }) {
       ? await hashSecret(profile.password, email)
       : existing.passwordHash;
     const staffKind = profile.staffKind || "permanent";
+    const duty = profile.duty || existing?.duty || (staffKind === "temporary" ? "member" : "teacher");
+    const teamId = profile.teamId ?? existing?.teamId ?? "";
     const next = {
       id: existing?.id || crypto.randomUUID(),
-      role: staffKind === "admin" ? "admin" : "teacher",
+      role: staffKind === "admin" ? "admin" : "staff",
       staffKind,
+      duty,
+      teamId,
       firstName: (profile.firstName || existing?.firstName || "").trim(),
       lastName: (profile.lastName || existing?.lastName || "").trim(),
       email,
       passwordHash,
-      access: profile.access || existing?.access || ACCESS_PRESETS[staffKind] || ACCESS_PRESETS.teacher,
+      access: profile.access || existing?.access || accessForDuty(duty, teamId),
       lockedUsername: staffKind === "temporary" || Boolean(existing?.lockedUsername),
       slot: existing?.slot || profile.slot || null,
       createdAt: existing?.createdAt || Date.now(),
@@ -418,6 +478,65 @@ export function GameProvider({ children }) {
     setAccounts((current) => current.map((item) => (item.email === email ? { ...item, access } : item)));
   };
 
+  const updateStaffTeam = (email, patch) => {
+    setAccounts((current) => current.map((item) => {
+      if (item.email !== email) return item;
+      const duty = patch.duty || item.duty || "member";
+      const teamId = patch.teamId ?? item.teamId ?? "";
+      return {
+        ...item,
+        ...patch,
+        duty,
+        teamId,
+        access: patch.access || accessForDuty(duty, teamId),
+      };
+    }));
+  };
+
+  const saveBoardTask = (task) => {
+    setBoardTasks((current) => {
+      const exists = current.some((item) => item.id === task.id);
+      if (exists) return current.map((item) => (item.id === task.id ? { ...item, ...task } : item));
+      return [...current, task];
+    });
+  };
+
+  const removeBoardTask = (taskId) => {
+    setBoardTasks((current) => current.filter((item) => item.id !== taskId));
+  };
+
+  const saveSyllabusItem = (item) => {
+    setSyllabusItems((current) => {
+      const exists = current.some((row) => row.id === item.id);
+      if (exists) return current.map((row) => (row.id === item.id ? { ...row, ...item } : row));
+      return [...current, item];
+    });
+  };
+
+  const removeSyllabusItem = (itemId) => {
+    setSyllabusItems((current) => current.filter((item) => item.id !== itemId));
+  };
+
+  const saveContentItem = (item) => {
+    setContentItems((current) => {
+      const exists = current.some((row) => row.id === item.id);
+      if (exists) return current.map((row) => (row.id === item.id ? { ...row, ...item } : row));
+      return [...current, item];
+    });
+  };
+
+  const removeContentItem = (itemId) => {
+    setContentItems((current) => current.filter((item) => item.id !== itemId));
+  };
+
+  const saveEnrollment = (enrollment) => {
+    setEnrollments((current) => [...current, enrollment]);
+  };
+
+  const updateEnrollmentStatus = (enrollmentId, status) => {
+    setEnrollments((current) => current.map((item) => (item.id === enrollmentId ? { ...item, status } : item)));
+  };
+
   const students = useMemo(
     () => accounts
       .filter((item) => item.role === "student")
@@ -427,7 +546,7 @@ export function GameProvider({ children }) {
 
   const staff = useMemo(
     () => accounts
-      .filter((item) => item.role === "teacher" || item.role === "admin")
+      .filter((item) => item.role === "staff" || item.role === "teacher" || item.role === "admin")
       .map(({ passwordHash, ...rest }) => rest),
     [accounts],
   );
@@ -448,12 +567,18 @@ export function GameProvider({ children }) {
       activityDone,
       schedules,
       submissions,
+      enrollments,
+      boardTasks,
+      syllabusItems,
+      contentItems,
       noticeSeen,
       visibleCourses,
       acknowledgeNotice,
       register,
       login,
       logout,
+      markTutorialSeen,
+      createStudent,
       completeLesson,
       isLessonOpen,
       isLessonDone,
@@ -473,8 +598,17 @@ export function GameProvider({ children }) {
       createStaff,
       resetStaffPassword,
       updateStaffAccess,
+      updateStaffTeam,
+      saveEnrollment,
+      updateEnrollmentStatus,
+      saveBoardTask,
+      removeBoardTask,
+      saveSyllabusItem,
+      removeSyllabusItem,
+      saveContentItem,
+      removeContentItem,
     }),
-    [hydrated, user, students, staff, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, submissions, noticeSeen, visibleCourses],
+    [hydrated, user, students, staff, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, submissions, enrollments, boardTasks, syllabusItems, contentItems, noticeSeen, visibleCourses],
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

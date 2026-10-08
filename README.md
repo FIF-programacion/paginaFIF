@@ -134,6 +134,27 @@ La app queda en `http://127.0.0.1:5173/`.
 | `npm run build` | Genera `dist/` para publicar |
 | `npm run preview` | Sirve `dist/` en local |
 
+### 3.1 Accesos de prueba
+
+Estas cuentas se crean solas la primera vez que se abre la app en un navegador (`src/data/staff.js`). Las claves **no** se muestran en las pantallas de login. Si ya había datos en `localStorage` y faltan estas cuentas, recarga la página: el seed las vuelve a insertar.
+
+No hay estudiante de demostración: hay que crear uno en `/registro`.
+
+| Rol | Entrada | Correo | Contraseña |
+|---|---|---|---|
+| Coordinación (admin) | `/admin` | `coordinacion@fif.org` | `FIFCoord2026` |
+| Voluntario temporal 1 | `/profesores` | `voluntario1@fif.org` | `FIFVoluntario2026` |
+| Voluntario temporal 2 | `/profesores` | `voluntario2@fif.org` | `FIFVoluntario2026` |
+| Voluntario temporal 3 | `/profesores` | `voluntario3@fif.org` | `FIFVoluntario2026` |
+
+Dónde está el acceso de coordinación (discreto):
+
+- Pie del sitio: enlace **Coordinación**
+- Landing `/`: en Contacto, texto bajo el RUC
+- Portal `/fif-learning`: al lado de **Docentes**
+
+Docentes y coordinación no comparten login. Un admin no entra por `/profesores`; un docente no entra por `/admin`. Tras iniciar sesión, coordinación va a `/admin/panel` y el docente a `/profesores/panel`.
+
 ---
 
 ## 4. Dos entradas: fundación y portal
@@ -143,7 +164,9 @@ La app queda en `http://127.0.0.1:5173/`.
 | `/` | Landing institucional de la **Fundación Integral de Familias** |
 | `/fif-learning` | Landing **FIF Learning**: portal de aprendizaje, registro e inicio de sesión |
 | `/login` y `/registro` | Acceso de estudiantes (se entra desde FIF Learning) |
+| `/inscripciones` | Formulario público de inscripción (5 pasos) |
 | `/profesores` | Acceso de docentes |
+| `/admin` | Acceso de coordinación (escondido; ver 3.1) |
 | `/dona/individual` | Formulario de donación individual |
 | `/dona/paquetes` | Paquetes para organizaciones |
 

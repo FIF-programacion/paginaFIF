@@ -21,12 +21,13 @@ export function SiteFooter() {
           <Link to="/">Nosotros</Link>
           <Link to="/legal/contacto">Contacto</Link>
           <Link to="/dona/individual">Donar</Link>
+          <Link to="/inscripciones">Inscripciones</Link>
         </div>
 
         <div className="fif-footer-column">
           <h3>Plataforma</h3>
           <Link to="/fif-learning">FIF Learning</Link>
-          <Link to="/profesores">Docentes</Link>
+          <Link to="/profesores">Equipo FIF</Link>
           <Link to="/login">Iniciar sesión</Link>
           <Link to="/app/asistencia">Asistencia</Link>
         </div>
@@ -45,6 +46,7 @@ export function SiteFooter() {
       <div className="fif-footer-bottom">
         <p>© 2026 {ORG.name}</p>
         <p>Fundación Integral de Familias · Ecuador</p>
+        <Link to="/admin" className="admin-gate">Coordinación</Link>
       </div>
     </footer>
   );

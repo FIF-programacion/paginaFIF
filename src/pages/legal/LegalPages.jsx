@@ -161,12 +161,20 @@ export function RefundsPage() {
 export function NoticesPage() {
   return (
     <LegalLayout title="Avisos, riesgos y cumplimiento">
+      <h2>Datos institucionales publicados</h2>
+      <ul>
+        <li>Nombre: {ORG.name}.</li>
+        <li>Domicilio: {ORG.legalAddress}. Personería jurídica por Acuerdo Ministerial N.º 203 del 15 de octubre de 2010 (MIES).</li>
+        <li>Correo: {ORG.email}. Teléfono / WhatsApp: {ORG.phone}.</li>
+        <li>El número de RUC aún no ha sido entregado por la fundación para publicación. Cuando exista, se actualizará este aviso, el pie de página y el contacto.</li>
+      </ul>
       <h2>Antes de un lanzamiento público hay que completar</h2>
       <ul>
-        <li>Domicilio legal, RUC y correo institucional reales (hoy están pendientes a propósito).</li>
-        <li>Un servidor y copias de seguridad si se van a tratar datos fuera del navegador.</li>
+        <li>Publicar el RUC cuando la fundación lo confirme.</li>
+        <li>Migrar los datos desde AWS a una base propia e interrumpir el uso de solo almacenamiento local del navegador.</li>
+        <li>Servidor, autenticación real y copias de seguridad.</li>
         <li>Registro o análisis de impacto si el volumen de datos de menores lo exige.</li>
-        <li>Contrato con docentes y autorización de imagen si se suben fotos reales.</li>
+        <li>Contrato con docentes y autorización de imagen si se publican fotos reales.</li>
       </ul>
       <h2>Riesgos que ya se mitigaron en el código</h2>
       <ul>
@@ -175,19 +183,22 @@ export function NoticesPage() {
         <li>No se prometen títulos oficiales ni “transformación de vida” como resultado garantizado.</li>
         <li>No hay analítica de terceros ni fuentes descargadas desde Google en tiempo de uso.</li>
         <li>La ayuda ya no aparenta enviar correos a un servidor.</li>
+        <li>Las claves de demostración no se muestran en las pantallas de inicio de sesión.</li>
+        <li>El alta pública de estudiantes y docentes está cerrada: las cuentas las crea coordinación.</li>
       </ul>
       <h2>Riesgos que siguen abiertos</h2>
       <ul>
         <li>El almacenamiento local no es un expediente seguro ni multi-dispositivo.</li>
         <li>El hash de contraseña en el cliente no reemplaza autenticación de servidor.</li>
         <li>Varias personas en el mismo navegador pueden ver el progreso guardado.</li>
-        <li>Las ilustraciones deben seguir siendo originales o licenciadas por la fundación.</li>
+        <li>Las ilustraciones y fotos deben ser originales, licenciadas o contar con cesión de imagen.</li>
       </ul>
       <h2>Normas de referencia</h2>
       <p>
         Ecuador: LOPDP, Código de la Niñez y Adolescencia, Ley de Comercio Electrónico. Si hay
         usuarios en la Unión Europea, también GDPR. Si hay menores en EE.UU., COPPA.
       </p>
+      <p>Textos de este aviso actualizados el {ORG.lastUpdated}.</p>
     </LegalLayout>
   );
 }

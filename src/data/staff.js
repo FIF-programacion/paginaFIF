@@ -11,11 +11,58 @@ export const ACCESS_PRESETS = {
   teacher: { tests: true, grades: true, attendance: true, activities: true, schedules: true },
   permanent: { tests: true, grades: true, attendance: true, activities: true, schedules: true },
   temporary: { tests: false, grades: false, attendance: true, activities: true, schedules: true },
+  member: { tests: false, grades: false, attendance: false, activities: false, schedules: false },
 };
+
+export const TEAMS = [
+  { id: "matematica", label: "Matemática", teaches: true, blurb: "Clases, sílabo y olimpiadas." },
+  { id: "arte", label: "Artes", teaches: true, blurb: "Clases, sílabo y producción creativa." },
+  { id: "programacion", label: "Programación", teaches: true, blurb: "Clases, sílabo y desarrollo de la web FIF." },
+  { id: "multimedia", label: "Multimedia", teaches: false, blurb: "Podcast, contenido, redes y piezas de comunicación." },
+];
+
+export const DUTIES = [
+  { id: "teacher", label: "Docente" },
+  { id: "member", label: "Miembro de la fundación" },
+];
+
+export const BOARD_COLUMNS = [
+  { id: "todo", label: "Por hacer" },
+  { id: "in_progress", label: "En curso" },
+  { id: "review", label: "Revisión" },
+  { id: "completed", label: "Hecho" },
+];
+
+export const CONTENT_KINDS = [
+  { id: "podcast", label: "Podcast" },
+  { id: "video", label: "Video / YouTube" },
+  { id: "social", label: "Redes" },
+  { id: "diseno", label: "Diseño" },
+  { id: "otro", label: "Otro" },
+];
+
+export function teamById(id) {
+  return TEAMS.find((item) => item.id === id) || null;
+}
+
+export function teamLabel(id) {
+  return teamById(id)?.label || "Sin equipo";
+}
+
+export function dutyLabel(id) {
+  return DUTIES.find((item) => item.id === id)?.label || "Miembro";
+}
+
+export function accessForDuty(duty, teamId) {
+  const team = teamById(teamId);
+  if (duty === "teacher" && team?.teaches) return { ...ACCESS_PRESETS.teacher };
+  return { ...ACCESS_PRESETS.member };
+}
 
 export const STAFF_KIND_LABEL = {
   admin: "Coordinación FIF",
-  teacher: "Profesor",
+  teacher: "Docente",
+  staff: "Equipo FIF",
   permanent: "Voluntario permanente",
   temporary: "Voluntario temporal",
 };

@@ -4,10 +4,10 @@ import { StepBar } from "../components/AppHeader";
 import { useGame } from "../context/GameContext";
 
 export default function Welcome() {
-  const { user } = useGame();
+  const { user, markTutorialSeen } = useGame();
   const navigate = useNavigate();
 
-  if (!user) return <Navigate to="/registro" replace />;
+  if (!user) return <Navigate to="/login" replace />;
 
   return (
     <div className="welcome-page">
@@ -32,7 +32,14 @@ export default function Welcome() {
         “Practicar un poco cada día construye el hábito de aprender. El equipo FIF te acompaña en el camino.”
       </blockquote>
       <div className="center-btn">
-        <button className="btn btn-green" type="button" onClick={() => navigate("/app/cursos")}>
+        <button
+          className="btn btn-green"
+          type="button"
+          onClick={() => {
+            markTutorialSeen();
+            navigate("/app/cursos");
+          }}
+        >
           Ir a mis cursos
         </button>
       </div>

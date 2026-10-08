@@ -1,14 +1,14 @@
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { RainbowTitle } from "../components/Brand";
 import { StepBar } from "../components/AppHeader";
-import { ageLabel } from "../data/org";
+import { ageLabel, needsGuardianConsent } from "../data/org";
 import { useGame } from "../context/GameContext";
 
 export default function Verify() {
   const { user } = useGame();
   const navigate = useNavigate();
 
-  if (!user) return <Navigate to="/registro" replace />;
+  if (!user) return <Navigate to="/login" replace />;
 
   return (
     <div className="onboard">
@@ -29,11 +29,11 @@ export default function Verify() {
             <p className="pill-input" style={{ textAlign: "center" }}>{ageLabel(user.ageGroup)}</p>
             <p className="pill-input" style={{ textAlign: "center" }}>{user.dailyGoal}</p>
           </div>
-          {user.ageGroup === "under12" && (
+          {needsGuardianConsent(user.ageGroup) && (
             <p className="pill-input">Tutor: {user.tutorName} ({user.tutorEmail})</p>
           )}
           <div className="actions-row">
-            <button className="btn btn-blue" type="button" onClick={() => navigate("/registro")}>Regresar a editar</button>
+            <button className="btn btn-blue" type="button" onClick={() => navigate("/login")}>Volver al inicio de sesión</button>
             <button className="btn btn-green" type="button" onClick={() => navigate("/tutorial/1")}>Continuar al tutorial</button>
           </div>
         </div>

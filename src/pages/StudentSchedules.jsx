@@ -1,10 +1,10 @@
 import { useGame } from "../context/GameContext";
-import { ageLabel } from "../data/org";
+import { ageLabel, normalizeGroup } from "../data/org";
 import { WEEKDAYS } from "../data/staff";
 
 export default function StudentSchedules() {
   const { user, schedules } = useGame();
-  const mine = schedules.filter((item) => item.ageGroup === "all" || item.ageGroup === (user?.ageGroup || "over12"));
+  const mine = schedules.filter((item) => item.ageGroup === "all" || normalizeGroup(item.ageGroup) === normalizeGroup(user?.ageGroup));
 
   return (
     <section className="panel">

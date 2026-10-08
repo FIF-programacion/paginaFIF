@@ -64,7 +64,13 @@ export function ScrollSplitEvents({ imageSrc, cards }) {
                   <a className="lp-event-more" href={card.moreHref || "#contacto"}>
                     Más info
                   </a>
-                  <a className="lp-event-register" href={card.registerHref} target="_blank" rel="noreferrer">
+                  <a
+                    className="lp-event-register"
+                    href={card.registerHref || "#contacto"}
+                    {...(String(card.registerHref || "").startsWith("http")
+                      ? { target: "_blank", rel: "noreferrer" }
+                      : {})}
+                  >
                     Inscribirme &gt;
                   </a>
                 </div>

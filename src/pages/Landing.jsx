@@ -6,6 +6,7 @@ import { KineticText } from "../components/KineticText";
 import { VelocityText } from "../components/VelocityText";
 import { ScrollSplitEvents } from "../components/ScrollSplitEvents";
 import { Testimonials } from "../components/Testimonials";
+import { RequestFormModal } from "../components/RequestFormModal";
 import { Wordmark } from "../components/Brand";
 import { ORG, assistanceWhatsAppUrl } from "../data/org";
 import { useSlowPageScroll } from "../hooks/useSlowPageScroll";
@@ -83,25 +84,31 @@ const PROJECT_IMAGES = [
 
 const EVENTS = [
   {
-    title: "Taller sabatino de refuerzo",
-    date: "Sábados, 8:00 am – 1:00 pm",
-    place: "Quito",
+    title: "Clases y atención",
+    date: "Martes y jueves 3:00 pm – 5:00 pm",
+    place: "Sábados 7:30 am – 1:00 pm",
     bgColor: "#5b9cf5",
     textColor: "#ffffff",
+    moreHref: "#contacto",
+    registerHref: "#contacto",
   },
   {
-    title: "Campamento matemático FIF",
-    date: "Vacaciones escolares",
-    place: "Quito y salidas de campo",
+    title: "Conversando con los profes",
+    date: "Encuentros, invitados y podcasts",
+    place: "FIF y Rumiñahui FM",
     bgColor: "#9ee0c8",
     textColor: "#16362d",
+    moreHref: "#multimedia",
+    registerHref: "#multimedia",
   },
   {
-    title: "Conversando con los Profes",
-    date: "Encuentros y podcast",
-    place: "FIF y Rumiñahui FM",
+    title: "Concursos matemáticos",
+    date: "Olimpiadas y competencias escolares",
+    place: "Preparación y acompañamiento FIF",
     bgColor: "#f3a3a0",
     textColor: "#4a1f1c",
+    moreHref: "#contacto",
+    registerHref: "/inscripciones",
   },
 ];
 
@@ -116,7 +123,7 @@ const ALLIES = [
 const HOURS = [
   { day: "Martes", time: "3:00 pm – 5:00 pm" },
   { day: "Jueves", time: "3:00 pm – 5:00 pm" },
-  { day: "Sábado", time: "8:00 am – 1:00 pm" },
+  { day: "Sábado", time: "7:30 am – 1:00 pm" },
 ];
 
 function clamp(value) {
@@ -177,6 +184,7 @@ function FadeIn({ children, className = "" }) {
 export default function Landing() {
   const heroRef = useRef(null);
   const [active, setActive] = useState("inicio");
+  const [donateOpen, setDonateOpen] = useState(false);
   const heroProgress = usePinnedProgress(heroRef);
   const scrollToId = useSlowPageScroll();
   const wa = assistanceWhatsAppUrl("Hola FIF, quiero conocer más sobre la fundación.");
@@ -231,7 +239,10 @@ export default function Landing() {
           <img src="/images/LOGO_COLOR.png" alt="" />
           <span>FIF</span>
         </Link>
-        <a href="#dona" className="lp-chip" onClick={goTo("dona")}>Dona hoy</a>
+        <div className="lp-header-actions">
+          <Link to="/inscripciones" className="lp-chip">Inscripciones</Link>
+          <a href="#dona" className="lp-chip" onClick={goTo("dona")}>Dona hoy</a>
+        </div>
       </header>
 
       <nav className="lp-nav" aria-label="Secciones de la página">
@@ -274,6 +285,7 @@ export default function Landing() {
                 </h1>
                 <div className="lp-hero-actions">
                   <a href="#dona" className="lp-hero-cta" onClick={goTo("dona")}>Dona hoy</a>
+                  <Link to="/inscripciones" className="lp-hero-cta lp-hero-cta-enroll">Inscripciones</Link>
                   <Link to="/fif-learning" className="lp-hero-cta lp-hero-cta-learning">FIF LEARNING</Link>
                 </div>
                 <p className="lp-scroll-hint">Desliza</p>
@@ -407,14 +419,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <ScrollSplitEvents
-          imageSrc="/images/Image5.jpg"
-          cards={EVENTS.map((event) => ({
-            ...event,
-            moreHref: "#contacto",
-            registerHref: assistanceWhatsAppUrl(`Hola, quiero inscribirme en ${event.title}.`),
-          }))}
-        />
+        <ScrollSplitEvents imageSrc="/images/Image5.jpg" cards={EVENTS} />
 
         <Testimonials />
 
@@ -430,7 +435,7 @@ export default function Landing() {
               <article className="lp-donate-card">
                 <h3>Donación individual</h3>
                 <p>Un aporte único o mensual para seguir formando mentes curiosas.</p>
-                <Link to="/dona/individual" className="lp-hero-cta">Donar</Link>
+                <button type="button" className="lp-hero-cta" onClick={() => setDonateOpen(true)}>Donar</button>
               </article>
               <article className="lp-donate-card">
                 <h3>Organización</h3>
@@ -509,6 +514,7 @@ export default function Landing() {
                 <a href={wa} target="_blank" rel="noreferrer">WhatsApp</a>
                 <p>{ORG.legalAddress}</p>
                 <p>{ORG.ruc}</p>
+                <Link to="/admin" className="lp-admin-ghost">Coordinación</Link>
               </article>
               <article className="lp-contact-card">
                 <h3>Horarios</h3>
@@ -535,6 +541,7 @@ export default function Landing() {
         </section>
       </main>
       <SiteFooter />
+      {donateOpen && <RequestFormModal onClose={() => setDonateOpen(false)} />}
     </div>
   );
 }

@@ -42,8 +42,8 @@ export default function Login() {
           <input id="password" className="pill-input" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
           {error && <p className="error" role="alert">{error}</p>}
           <button className="btn btn-green" type="submit" disabled={busy}>{busy ? "Entrando…" : "Iniciar sesión"}</button>
-          <p>¿Aún no tienes cuenta? <Link to="/registro">Crear cuenta de estudiante</Link></p>
-          <p>¿Eres docente o coordinación FIF? <Link to="/profesores">Zona de docentes</Link></p>
+          <p>El acceso lo crea coordinación FIF. Si aún no lo tienes, completa la <Link to="/inscripciones">inscripción</Link>.</p>
+          <p>¿Eres del equipo? <Link to="/profesores">Entrar como equipo</Link></p>
         </div>
         <img src="/images/detective-glass.jpg" alt="Ilustración de un detective con lupa" className="detect-img" />
       </form>

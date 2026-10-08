@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { COURSES } from "../data/courses";
+import { COURSES, courseAgeKey } from "../data/courses";
 import { ACTIVITY_TYPES } from "../data/teacher";
 import { TextEditor } from "../components/TextEditor";
 import { useGame } from "../context/GameContext";
@@ -39,7 +39,7 @@ export default function StudentActivities() {
   const mine = activities.filter((item) => {
     const course = COURSES.find((course) => course.id === item.courseId);
     if (!course) return true;
-    return course.ageGroups.includes(user?.ageGroup || "over12");
+    return course.ageGroups.includes(courseAgeKey(user?.ageGroup));
   }).slice().reverse();
 
   const done = (activityId) => activityDone.some((item) => item.activityId === activityId && item.studentEmail === user.email);

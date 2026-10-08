@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ORG, assistanceWhatsAppUrl } from "../data/org";
+import { RequestFormModal } from "../components/RequestFormModal";
+import { ORG } from "../data/org";
 import "./Landing.css";
 
 const PACKAGES = [
@@ -10,6 +12,8 @@ const PACKAGES = [
 ];
 
 export default function DonatePackages() {
+  const [selected, setSelected] = useState(null);
+
   return (
     <div className="donate-page">
       <header className="donate-top">
@@ -20,28 +24,34 @@ export default function DonatePackages() {
           <h1>Paquetes de donación</h1>
           <p>
             Pensado para organizaciones, empresas y aliados que quieren acompañar a FIF con un
-            aporte definido. Elige un paquete y coordina el donativo con el equipo.
+            aporte definido. Elige un paquete: se abre un formulario. El donativo no se cobra en la web.
           </p>
           <div className="donate-packages">
             {PACKAGES.map((item) => (
-              <a
+              <button
                 key={item.name}
+                type="button"
                 className="donate-package"
-                href={assistanceWhatsAppUrl(`Hola FIF, queremos aportar con el paquete ${item.name} de $${item.amount}.`)}
-                target="_blank"
-                rel="noreferrer"
+                onClick={() => setSelected(item)}
               >
                 <h2>{item.name}</h2>
                 <p className="donate-price">${item.amount}</p>
                 <p>{item.text}</p>
                 <span>Elegir paquete</span>
-              </a>
+              </button>
             ))}
           </div>
           <p className="donate-note">Coordinación: {ORG.email} · {ORG.phone}</p>
         </section>
         <img src="/images/dona-aula.png" alt="Taller de la fundación" className="donate-photo" />
       </main>
+      {selected && (
+        <RequestFormModal
+          packageName={`Paquete ${selected.name}`}
+          initial={{ amount: selected.amount }}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </div>
   );
 }
