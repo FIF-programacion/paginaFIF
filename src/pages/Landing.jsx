@@ -10,6 +10,7 @@ import { RequestFormModal } from "../components/RequestFormModal";
 import { Wordmark } from "../components/Brand";
 import { ORG, assistanceWhatsAppUrl } from "../data/org";
 import { useSlowPageScroll } from "../hooks/useSlowPageScroll";
+import { PLATFORM_ENABLED } from "../config";
 import "./Landing.css";
 
 const SECTIONS = [
@@ -274,7 +275,7 @@ export default function Landing() {
                 opacity: 1 - fade,
               }}
             >
-              <video className="lp-hero-video" autoPlay muted loop playsInline poster="/images/Image1.jpg">
+              <video className="lp-hero-video" autoPlay muted loop playsInline poster="/videos/videoInicio-poster.jpg">
                 <source src="/videos/videoInicio.mp4" type="video/mp4" />
               </video>
               <div className="lp-hero-copy" style={{ opacity: copyOpacity }}>
@@ -286,7 +287,9 @@ export default function Landing() {
                 <div className="lp-hero-actions">
                   <a href="#dona" className="lp-hero-cta" onClick={goTo("dona")}>Dona hoy</a>
                   <Link to="/inscripciones" className="lp-hero-cta lp-hero-cta-enroll">Inscripciones</Link>
-                  <Link to="/fif-learning" className="lp-hero-cta lp-hero-cta-learning">FIF LEARNING</Link>
+                  {PLATFORM_ENABLED && (
+                    <Link to="/fif-learning" className="lp-hero-cta lp-hero-cta-learning">FIF LEARNING</Link>
+                  )}
                 </div>
                 <p className="lp-scroll-hint">Desliza</p>
               </div>
@@ -350,7 +353,7 @@ export default function Landing() {
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
-                <img src={item.image} alt="" />
+                <img src={item.image} alt="" loading="lazy" decoding="async" />
               </motion.figure>
             </div>
           ))}
@@ -383,7 +386,7 @@ export default function Landing() {
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
-                <img src={member.image} alt={member.name} />
+                <img src={member.image} alt={member.name} loading="lazy" decoding="async" />
 
                 <div className="lp-team-name">
                   <h3>{member.name}</h3>
@@ -403,14 +406,14 @@ export default function Landing() {
                 <div className="lp-fish-set">
                   {PROJECT_IMAGES.map((src) => (
                     <div className="lp-fish-cell" key={`${row}-a-${src}`}>
-                      <img src={src} alt="" />
+                      <img src={src} alt="" loading="lazy" decoding="async" />
                     </div>
                   ))}
                 </div>
                 <div className="lp-fish-set">
                   {PROJECT_IMAGES.map((src) => (
                     <div className="lp-fish-cell" key={`${row}-b-${src}`}>
-                      <img src={src} alt="" />
+                      <img src={src} alt="" loading="lazy" decoding="async" />
                     </div>
                   ))}
                 </div>
@@ -456,7 +459,7 @@ export default function Landing() {
               <div className="lp-ally-set">
                 {ALLIES.map((ally) => (
                   <figure key={ally.name} className="lp-ally">
-                    <img src={ally.src} alt="" />
+                    <img src={ally.src} alt="" loading="lazy" decoding="async" />
                     <figcaption>{ally.name}</figcaption>
                   </figure>
                 ))}
@@ -464,7 +467,7 @@ export default function Landing() {
               <div className="lp-ally-set" aria-hidden="true">
                 {ALLIES.map((ally) => (
                   <figure key={`${ally.name}-dup`} className="lp-ally">
-                    <img src={ally.src} alt="" />
+                    <img src={ally.src} alt="" loading="lazy" decoding="async" />
                     <figcaption>{ally.name}</figcaption>
                   </figure>
                 ))}
@@ -492,12 +495,16 @@ export default function Landing() {
 
         <section className="lp-portal" id="fif-learning">
           <div className="lp-portal-frame">
-            <img src="/images/Image1.jpg" alt="" />
+            <img src="/images/Image1.jpg" alt="" loading="lazy" decoding="async" />
             <div className="lp-portal-copy">
               <p className="lp-kicker">Portal</p>
               <h2 className="lp-portal-wordmark"><Wordmark size="lg" /></h2>
               <p>El espacio digital de refuerzo académico para estudiantes, familias y docentes.</p>
-              <Link to="/fif-learning" className="lp-hero-cta">Entrar al portal</Link>
+              {PLATFORM_ENABLED ? (
+                <Link to="/fif-learning" className="lp-hero-cta">Entrar al portal</Link>
+              ) : (
+                <span className="lp-hero-cta" aria-disabled="true">Muy pronto</span>
+              )}
             </div>
           </div>
         </section>
@@ -514,7 +521,7 @@ export default function Landing() {
                 <a href={wa} target="_blank" rel="noreferrer">WhatsApp</a>
                 <p>{ORG.legalAddress}</p>
                 <p>{ORG.ruc}</p>
-                <Link to="/admin" className="lp-admin-ghost">Coordinación</Link>
+                {PLATFORM_ENABLED && <Link to="/admin" className="lp-admin-ghost">Coordinación</Link>}
               </article>
               <article className="lp-contact-card">
                 <h3>Horarios</h3>

@@ -3,3 +3,6 @@ dist
 .DS_Store
 _design-preview
 _design-pdfs
+.env
+.env.local
+.env.*.local

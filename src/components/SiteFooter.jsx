@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { ORG } from "../data/org";
+import { PLATFORM_ENABLED } from "../config";
 
 export function SiteFooter() {
   return (
     <footer className="fif-footer">
-      <div className="fif-footer-content">
+      <div className={`fif-footer-content${PLATFORM_ENABLED ? "" : " is-compact"}`}>
 
         <div className="fif-footer-brand">
           <h2>FIF</h2>
@@ -24,13 +25,15 @@ export function SiteFooter() {
           <Link to="/inscripciones">Inscripciones</Link>
         </div>
 
-        <div className="fif-footer-column">
-          <h3>Plataforma</h3>
-          <Link to="/fif-learning">FIF Learning</Link>
-          <Link to="/profesores">Equipo FIF</Link>
-          <Link to="/login">Iniciar sesión</Link>
-          <Link to="/app/asistencia">Asistencia</Link>
-        </div>
+        {PLATFORM_ENABLED && (
+          <div className="fif-footer-column">
+            <h3>Plataforma</h3>
+            <Link to="/fif-learning">FIF Learning</Link>
+            <Link to="/profesores">Equipo FIF</Link>
+            <Link to="/login">Iniciar sesión</Link>
+            <Link to="/app/asistencia">Asistencia</Link>
+          </div>
+        )}
 
         <div className="fif-footer-column">
           <h3>Legal</h3>
@@ -46,7 +49,7 @@ export function SiteFooter() {
       <div className="fif-footer-bottom">
         <p>© 2026 {ORG.name}</p>
         <p>Fundación Integral de Familias · Ecuador</p>
-        <Link to="/admin" className="admin-gate">Coordinación</Link>
+        {PLATFORM_ENABLED && <Link to="/admin" className="admin-gate">Coordinación</Link>}
       </div>
     </footer>
   );

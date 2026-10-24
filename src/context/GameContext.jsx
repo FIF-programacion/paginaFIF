@@ -4,7 +4,6 @@ import { ACCESS_PRESETS, DEFAULT_ADMIN, DEFAULT_TEMP_PASSWORD, DEFAULT_TEMP_VOLU
 import { hashSecret } from "../utils/security";
 
 const STORAGE_KEY = "fif-learning-state-v2";
-const NOTICE_KEY = "fif-learning-notice-v1";
 
 const GameContext = createContext(null);
 
@@ -84,7 +83,6 @@ export function GameProvider({ children }) {
   const [boardTasks, setBoardTasks] = useState([]);
   const [syllabusItems, setSyllabusItems] = useState([]);
   const [contentItems, setContentItems] = useState([]);
-  const [noticeSeen, setNoticeSeen] = useState(true);
   const [hydrated, setHydrated] = useState(false);
 
   const user = accounts.find((item) => item.id === sessionId) || null;
@@ -93,7 +91,6 @@ export function GameProvider({ children }) {
     let cancelled = false;
     const preview = new URLSearchParams(window.location.search).get("preview") === "1";
     const saved = loadState();
-    setNoticeSeen(localStorage.getItem(NOTICE_KEY) === "1");
 
     const hydrate = async () => {
       if (preview) {
@@ -179,11 +176,6 @@ export function GameProvider({ children }) {
       }),
     );
   }, [accounts, sessionId, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, submissions, enrollments, boardTasks, syllabusItems, contentItems, hydrated]);
-
-  const acknowledgeNotice = () => {
-    localStorage.setItem(NOTICE_KEY, "1");
-    setNoticeSeen(true);
-  };
 
   const register = async (profile) => {
     const email = profile.email.trim().toLowerCase();
@@ -571,9 +563,7 @@ export function GameProvider({ children }) {
       boardTasks,
       syllabusItems,
       contentItems,
-      noticeSeen,
       visibleCourses,
-      acknowledgeNotice,
       register,
       login,
       logout,
@@ -608,7 +598,7 @@ export function GameProvider({ children }) {
       saveContentItem,
       removeContentItem,
     }),
-    [hydrated, user, students, staff, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, submissions, enrollments, boardTasks, syllabusItems, contentItems, noticeSeen, visibleCourses],
+    [hydrated, user, students, staff, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, submissions, enrollments, boardTasks, syllabusItems, contentItems, visibleCourses],
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

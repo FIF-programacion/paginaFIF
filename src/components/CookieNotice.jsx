@@ -1,22 +1,41 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useGame } from "../context/GameContext";
+
+const NOTICE_KEY = "fif-learning-notice-v1";
+
+function readSeen() {
+  try {
+    return localStorage.getItem(NOTICE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
 export function CookieNotice() {
-  const { noticeSeen, acknowledgeNotice, hydrated } = useGame();
-  if (!hydrated || noticeSeen) return null;
+  const [seen, setSeen] = useState(readSeen);
+  if (seen) return null;
+
+  const acknowledge = () => {
+    try {
+      localStorage.setItem(NOTICE_KEY, "1");
+    } catch {
+      // Sin almacenamiento (modo privado): el aviso se oculta solo en esta visita.
+    }
+    setSeen(true);
+  };
 
   return (
     <div className="cookie-banner" role="dialog" aria-labelledby="cookie-title" aria-describedby="cookie-text">
       <div>
         <h2 id="cookie-title">Almacenamiento necesario</h2>
         <p id="cookie-text">
-          FIF Learning usa almacenamiento local estrictamente necesario para tu cuenta, progreso y
-          el aviso de esta franja. No usamos cookies de publicidad ni de analítica. Puedes leer la{" "}
+          Este sitio usa almacenamiento local estrictamente necesario, por ejemplo para recordar que
+          viste esta franja. No usamos cookies de publicidad ni de analítica. Puedes leer la{" "}
           <Link to="/legal/cookies">política de cookies</Link> y la{" "}
           <Link to="/legal/privacidad">política de privacidad</Link>.
         </p>
       </div>
-      <button className="btn btn-blue" type="button" onClick={acknowledgeNotice}>
+      <button className="btn btn-blue" type="button" onClick={acknowledge}>
         Entendido
       </button>
     </div>

@@ -1882,6 +1882,12 @@ h3,
   align-items: start;
 }
 
+@media (min-width: 901px) {
+  .fif-footer-content.is-compact {
+    grid-template-columns: 1.8fr 1fr 1fr;
+  }
+}
+
 /* BRAND */
 
 .fif-footer-brand h2 {

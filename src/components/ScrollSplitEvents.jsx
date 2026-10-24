@@ -45,7 +45,7 @@ export function ScrollSplitEvents({ imageSrc, cards }) {
                   boxShadow,
                 }}
               >
-                <img src={imageSrc} alt="" className="lp-split-slice" />
+                <img src={imageSrc} alt="" className="lp-split-slice" loading="lazy" decoding="async" />
               </motion.div>
               <motion.div
                 className="lp-flip-face lp-flip-back"

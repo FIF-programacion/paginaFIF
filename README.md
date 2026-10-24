@@ -4,6 +4,9 @@ Plataforma web de la **Fundación Integral de Familias (FIF)** en Ecuador. Inclu
 
 Aplicacion en vercel https: https://fif-web-org.vercel.app/
 
+> **Estado actual:** en producción solo se publica el sitio institucional (landing, donaciones, inscripciones y legales). La plataforma FIF Learning está apagada con `VITE_ENABLE_PLATFORM=false` hasta migrarla a Supabase. Para trabajar en ella en local, crea `.env.local` con `VITE_ENABLE_PLATFORM=true`.
+> Guías: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) (Cloudflare Pages + dominio) y [docs/PLAN-SUPABASE.md](docs/PLAN-SUPABASE.md).
+
 Repositorio en GitHub: [https://github.com/ArielBourgeat/FIF-WEB.git](https://github.com/ArielBourgeat/FIF-WEB.git)
 
 Es una aplicación de una sola página (SPA) que corre en el navegador: landing de la fundación, portal de aprendizaje, registro, cursos gamificados, zona de docentes, donaciones, certificados PDF y páginas legales.
@@ -138,7 +141,7 @@ La app queda en `http://127.0.0.1:5173/`.
 
 ### 3.1 Accesos de prueba
 
-Estas cuentas se crean solas la primera vez que se abre la app en un navegador (`src/data/staff.js`). Las claves **no** se muestran en las pantallas de login. Si ya había datos en `localStorage` y faltan estas cuentas, recarga la página: el seed las vuelve a insertar.
+Solo existen con la plataforma encendida (`VITE_ENABLE_PLATFORM=true`, en local); se eliminarán al migrar a Supabase. Estas cuentas se crean solas la primera vez que se abre la app en un navegador (`src/data/staff.js`). Las claves **no** se muestran en las pantallas de login. Si ya había datos en `localStorage` y faltan estas cuentas, recarga la página: el seed las vuelve a insertar.
 
 No hay estudiante de demostración: hay que crear uno en `/registro`.
 

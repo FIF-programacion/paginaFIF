@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { LegalLayout } from "../../components/LegalLayout.jsx";
 import { ORG } from "../../data/org.js";
+import { PLATFORM_ENABLED } from "../../config.js";
 
 export function PrivacyPage() {
   return (
@@ -210,10 +211,12 @@ export function ContactPage() {
       <p>{ORG.legalAddress}</p>
       <p>{ORG.ruc}</p>
       <p>{ORG.email}</p>
-      <p>
-        También puedes usar <Link to="/app/asistencia">Asistencia FIF</Link> si ya tienes cuenta, o
-        la <Link to="/profesores">zona de docentes</Link>.
-      </p>
+      {PLATFORM_ENABLED && (
+        <p>
+          También puedes usar <Link to="/app/asistencia">Asistencia FIF</Link> si ya tienes cuenta, o
+          la <Link to="/profesores">zona de docentes</Link>.
+        </p>
+      )}
     </LegalLayout>
   );
 }

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { SiteFooter } from "../components/SiteFooter";
-import { useGame } from "../context/GameContext";
 import { assistanceWhatsAppUrl, formatEnrollmentPaymentMessage } from "../data/org";
 import { ACADEMIC_GOALS, ENROLLMENT_FEES, SCHOLARSHIPS, SCHOOL_TYPES, emptyEnrollment } from "../data/enrollments";
 import "./Enrollment.css";
@@ -25,7 +24,6 @@ function Field({ id, label, hint, children }) {
 }
 
 export default function Enrollment() {
-  const { saveEnrollment } = useGame();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(emptyEnrollment);
   const [error, setError] = useState("");
@@ -95,14 +93,11 @@ export default function Enrollment() {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
+    // Hasta tener Supabase la solicitud solo viaja por WhatsApp; no se guardan datos del menor en este navegador.
     const record = {
       ...form,
-      id: crypto.randomUUID(),
-      status: "pendiente",
-      createdAt: Date.now(),
       scholarshipLabels: form.scholarships.map((id) => SCHOLARSHIPS.find((item) => item.id === id)?.label || id),
     };
-    saveEnrollment(record);
     window.open(assistanceWhatsAppUrl(formatEnrollmentPaymentMessage(record)), "_blank", "noopener,noreferrer");
     setDone(true);
   };
