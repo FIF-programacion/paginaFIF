@@ -11,11 +11,6 @@ const TESTIMONIALS = [
     name: "Ana C.",
     role: "docente colaboradora",
   },
-  {
-    quote: "Trabajar con FIF es inspirador: niños y familias se empoderan y los resultados se ven en cada sonrisa y aprendizaje.",
-    name: "Claire Brooks",
-    role: "MI",
-  },
 ];
 
 export function Testimonials() {

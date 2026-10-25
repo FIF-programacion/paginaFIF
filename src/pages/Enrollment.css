@@ -125,8 +125,13 @@
 .en-goals label,
 .en-consent {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
+}
+
+.en-consent input {
+  flex-shrink: 0;
+  margin-top: 4px;
 }
 
 .en-note {

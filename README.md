@@ -2,12 +2,12 @@
 
 Plataforma web de la **Fundación Integral de Familias (FIF)** en Ecuador. Incluye el sitio institucional (landing con scroll y animaciones) y **FIF Learning**, el portal digital de refuerzo académico para estudiantes y docentes.
 
-Aplicacion en vercel https: https://fif-web-org.vercel.app/
+Sitio publicado: https://www.fundacionfif.org (Cloudflare Pages)
 
 > **Estado actual:** en producción solo se publica el sitio institucional (landing, donaciones, inscripciones y legales). La plataforma FIF Learning está apagada con `VITE_ENABLE_PLATFORM=false` hasta migrarla a Supabase. Para trabajar en ella en local, crea `.env.local` con `VITE_ENABLE_PLATFORM=true`.
 > Guías: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) (Cloudflare Pages + dominio) y [docs/PLAN-SUPABASE.md](docs/PLAN-SUPABASE.md).
 
-Repositorio en GitHub: [https://github.com/ArielBourgeat/FIF-WEB.git](https://github.com/ArielBourgeat/FIF-WEB.git)
+Repositorio en GitHub: [https://github.com/FIF-programacion/paginaFIF.git](https://github.com/FIF-programacion/paginaFIF.git)
 
 Es una aplicación de una sola página (SPA) que corre en el navegador: landing de la fundación, portal de aprendizaje, registro, cursos gamificados, zona de docentes, donaciones, certificados PDF y páginas legales.
 
@@ -37,7 +37,7 @@ No hay backend ni base de datos. Los datos de la plataforma educativa viven en e
 
 ## 2. GitHub: clonar, commit y push (Bash)
 
-Remoto: `https://github.com/ArielBourgeat/FIF-WEB.git`
+Remoto: `https://github.com/FIF-programacion/paginaFIF.git`
 
 Requisitos: Git instalado y una cuenta de GitHub con acceso al repositorio. En la primera subida GitHub pedirá autenticación (navegador, `gh auth login` o un personal access token).
 
@@ -53,14 +53,14 @@ git add .
 git status
 git commit -m "Sitio institucional FIF y portal FIF Learning"
 git branch -M main
-git remote add origin https://github.com/ArielBourgeat/FIF-WEB.git
+git remote add origin https://github.com/FIF-programacion/paginaFIF.git
 git push -u origin main
 ```
 
 Si `git remote add` dice que `origin` ya existe:
 
 ```bash
-git remote set-url origin https://github.com/ArielBourgeat/FIF-WEB.git
+git remote set-url origin https://github.com/FIF-programacion/paginaFIF.git
 git push -u origin main
 ```
 
@@ -105,8 +105,8 @@ git remote -v
 ### 2.4 Clonar el repo en otra máquina
 
 ```bash
-git clone https://github.com/ArielBourgeat/FIF-WEB.git
-cd FIF-WEB
+git clone https://github.com/FIF-programacion/paginaFIF.git
+cd paginaFIF
 npm install
 npm run dev
 ```
@@ -197,7 +197,7 @@ Fondo blanco, menú lateral de líneas (hover muestra el título), chip **Dona h
 | **FIF Learning (portal)** | Recuadro con foto de taller y wordmark de colores **FIF LEARNING**. Botón al portal `/fif-learning`. |
 | **Contacto** | Tres tarjetas: datos, horarios y redes. |
 
-Horarios: martes y jueves 3:00 pm – 5:00 pm; sábado 8:00 am – 1:00 pm.
+Horarios: martes y jueves 3:00 pm – 5:00 pm; sábado 8:00 am – 12:00 pm.
 
 Referencias de animación: [Kinetic Text Reveal](https://componentry.dev/docs/components/kinetic-text-reveal) y [Scroll Split Card](https://componentry.dev/docs/components/scroll-split-card).
 
@@ -315,7 +315,7 @@ Wordmark **FIF LEARNING**: cada letra con el color de marca (azul, verde, teal, 
 | `courses.js` | Materias, lecciones y ejercicios por edad |
 | `content.js` | Reexporta cursos; tutoriales y textos de Asistencia |
 
-Contacto institucional: `fundacionintegralfif@gmail.com`, `+593 96 265 9309` (WhatsApp `593962659309`).
+Contacto institucional: `fundacionintegralfif@gmail.com`, `+593 99 833 4440` (WhatsApp `593998334440`).
 
 Redes: Facebook, TikTok, LinkedIn, Instagram, YouTube y podcast en Spotify.
 

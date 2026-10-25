@@ -87,7 +87,7 @@ const EVENTS = [
   {
     title: "Clases y atención",
     date: "Martes y jueves 3:00 pm – 5:00 pm",
-    place: "Sábados 7:30 am – 1:00 pm",
+    place: "Sábados 8:00 am – 12:00 pm",
     bgColor: "#5b9cf5",
     textColor: "#ffffff",
     moreHref: "#contacto",
@@ -124,7 +124,7 @@ const ALLIES = [
 const HOURS = [
   { day: "Martes", time: "3:00 pm – 5:00 pm" },
   { day: "Jueves", time: "3:00 pm – 5:00 pm" },
-  { day: "Sábado", time: "7:30 am – 1:00 pm" },
+  { day: "Sábado", time: "8:00 am – 12:00 pm" },
 ];
 
 function clamp(value) {

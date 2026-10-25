@@ -62,7 +62,7 @@ export default function Enrollment() {
       return "Elige la modalidad y el contacto de emergencia.";
     }
     if (step === 5) {
-      if (!consent) return "Debes aceptar el uso de los datos para gestionar la inscripción.";
+      if (!consent) return "Marca la autorización del representante legal para enviar la inscripción.";
       if (!form.payName || !form.payPhone || !form.payEmail || !form.payAmount) {
         return "Completa el formulario de pago: nombre, celular, correo y cantidad.";
       }
@@ -331,7 +331,12 @@ export default function Enrollment() {
               </Field>
               <label className="en-consent">
                 <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} />
-                Acepto el uso de estos datos para la inscripción y autorizo enviar el formulario de pago por WhatsApp.
+                <span>
+                  Declaro ser representante legal del estudiante y autorizo a la Fundación Integral de Familias a
+                  tratar estos datos, incluida la información de emergencia, para gestionar la inscripción, según la{" "}
+                  <a href="/legal/privacidad" target="_blank" rel="noreferrer">política de privacidad</a>. Autorizo
+                  enviar el formulario por WhatsApp.
+                </span>
               </label>
             </>
           )}

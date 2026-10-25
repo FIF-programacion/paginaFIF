@@ -9,7 +9,7 @@ export const ORG = {
   email: "fundacionintegralfif@gmail.com",
   phone: "+593 99 833 4440",
   whatsappNumber: "593998334440",
-  lastUpdated: "26 de septiembre de 2026",
+  lastUpdated: "25 de octubre de 2026",
   social: {
     facebook: "https://www.facebook.com/fundacionfif/",
     tiktok: "https://www.tiktok.com/@fundacionfif",
