@@ -118,7 +118,6 @@ const ALLIES = [
   { name: "Manualidades Mil Travesuras", src: "/images/allies/mil-travesuras.png" },
   { name: "K-School", src: "/images/allies/k-school.png" },
   { name: "McGraw Hill ALEKS", src: "/images/allies/aleks.jpg" },
-  { name: "Donkey Burritos", src: "/images/allies/donkey-burritos.png" },
 ];
 
 const HOURS = [
@@ -186,6 +185,9 @@ export default function Landing() {
   const heroRef = useRef(null);
   const [active, setActive] = useState("inicio");
   const [donateOpen, setDonateOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuToggleRef = useRef(null);
+  const menuOverlayRef = useRef(null);
   const heroProgress = usePinnedProgress(heroRef);
   const scrollToId = useSlowPageScroll();
   const wa = assistanceWhatsAppUrl("Hola FIF, quiero conocer más sobre la fundación.");
@@ -231,20 +233,75 @@ export default function Landing() {
     scrollToId(id);
   };
 
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    menuOverlayRef.current?.querySelector('[aria-current="true"]')?.focus();
+    const onKey = (event) => {
+      if (event.key !== "Escape") return;
+      setMenuOpen(false);
+      menuToggleRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
+
   return (
     <div className="lp-page">
       <a className="skip-link" href="#contenido">Saltar al contenido</a>
 
       <header className="lp-header">
-        <Link to="/" className="lp-brand">
+        <Link to="/" className="lp-brand" aria-label="Fundación Integral de Familias, inicio">
           <img src="/images/LOGO_COLOR.png" alt="" />
-          <span>FIF</span>
         </Link>
         <div className="lp-header-actions">
           <Link to="/inscripciones" className="lp-chip">Inscripciones</Link>
           <a href="#dona" className="lp-chip" onClick={goTo("dona")}>Dona hoy</a>
+          <button
+            type="button"
+            ref={menuToggleRef}
+            className="lp-menu-toggle"
+            aria-label="Abrir menú de secciones"
+            aria-expanded={menuOpen}
+            aria-controls="lp-menu-overlay"
+            onClick={() => setMenuOpen(true)}
+          >
+            <span className="lp-menu-bars" aria-hidden="true" />
+          </button>
         </div>
       </header>
+
+      {menuOpen && (
+        <div
+          id="lp-menu-overlay"
+          ref={menuOverlayRef}
+          className="lp-menu-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Secciones de la página"
+          onClick={() => setMenuOpen(false)}
+        >
+          <button type="button" className="lp-menu-close" aria-label="Cerrar menú" onClick={() => setMenuOpen(false)}>
+            <span aria-hidden="true">×</span>
+          </button>
+          <ul className="lp-menu-list">
+            {SECTIONS.map((section) => (
+              <li key={section.id}>
+                <a
+                  href={`#${section.id}`}
+                  className={`lp-menu-link ${active === section.id ? "is-active" : ""}`}
+                  aria-current={active === section.id ? "true" : undefined}
+                  onClick={(event) => {
+                    goTo(section.id)(event);
+                    setMenuOpen(false);
+                  }}
+                >
+                  {section.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <nav className="lp-nav" aria-label="Secciones de la página">
         <p className="lp-nav-caption">Menu</p>
@@ -257,7 +314,6 @@ export default function Landing() {
                 aria-current={active === section.id ? "true" : undefined}
                 onClick={goTo(section.id)}
               >
-                <span className="lp-nav-line" aria-hidden="true" />
                 <span className="lp-nav-name">{section.title}</span>
               </a>
             </li>
@@ -456,22 +512,17 @@ export default function Landing() {
           </FadeIn>
           <div className="lp-ally-marquee">
             <div className="lp-ally-track">
-              <div className="lp-ally-set">
-                {ALLIES.map((ally) => (
-                  <figure key={ally.name} className="lp-ally">
-                    <img src={ally.src} alt="" loading="lazy" decoding="async" />
-                    <figcaption>{ally.name}</figcaption>
-                  </figure>
-                ))}
-              </div>
-              <div className="lp-ally-set" aria-hidden="true">
-                {ALLIES.map((ally) => (
-                  <figure key={`${ally.name}-dup`} className="lp-ally">
-                    <img src={ally.src} alt="" loading="lazy" decoding="async" />
-                    <figcaption>{ally.name}</figcaption>
-                  </figure>
-                ))}
-              </div>
+              {/* Dos mitades idénticas para el bucle; cada una repite los logos 3 veces para cubrir pantallas anchas. */}
+              {[0, 1].map((half) => (
+                <div className="lp-ally-set" key={half} aria-hidden={half === 1 ? "true" : undefined}>
+                  {[0, 1, 2].flatMap((copy) => ALLIES.map((ally) => (
+                    <figure key={`${copy}-${ally.name}`} className="lp-ally" aria-hidden={copy > 0 ? "true" : undefined}>
+                      <img src={ally.src} alt="" loading="lazy" decoding="async" />
+                      <figcaption>{ally.name}</figcaption>
+                    </figure>
+                  )))}
+                </div>
+              ))}
             </div>
           </div>
         </section>

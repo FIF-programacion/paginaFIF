@@ -14,6 +14,19 @@ export const ACADEMIC_GOALS = [
   { id: "otro", label: "Otro" },
 ];
 
+export const GRADES = [
+  "3ero EGB",
+  "4to EGB",
+  "5to EGB",
+  "6to EGB",
+  "7mo EGB",
+  "8vo EGB",
+  "9no EGB",
+  "10mo EGB",
+  "1ero de Bachillerato",
+  "Homeschooling",
+];
+
 export const SCHOOL_TYPES = [
   { id: "fiscal", label: "Fiscal" },
   { id: "particular", label: "Particular" },

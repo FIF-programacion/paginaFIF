@@ -1865,7 +1865,7 @@ h3,
 
 .fif-footer {
   width: 100%;
-  background: #3f788d;
+  background: #1e5bb8;
   color: #ffffff;
   padding: 70px 7% 28px;
   box-sizing: border-box;
@@ -1890,14 +1890,40 @@ h3,
 
 /* BRAND */
 
-.fif-footer-brand h2 {
+.fif-footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   margin: 0 0 18px;
+}
+
+/* El círculo es el contenedor; el logo (apaisado) queda entero dentro, sin recorte. */
+.fif-footer-logo-badge {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.fif-footer-logo-badge img {
+  display: block;
+  width: 66px;
+  height: auto;
+  max-width: none;
+}
+
+.fif-footer-brand h2 {
+  margin: 0;
 
   font-family: "Fredoka", sans-serif;
   font-size: 48px;
   line-height: 1;
 
-  color: #f3cd58;
+  color: #e8c36a;
 }
 
 .fif-footer-brand p {
@@ -1913,7 +1939,7 @@ h3,
 
 .fif-footer-brand span {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* COLUMNAS */
@@ -1931,7 +1957,7 @@ h3,
   font-family: "Fredoka", sans-serif;
   font-size: 19px;
 
-  color: #f3cd58;
+  color: #e8c36a;
 }
 
 .fif-footer-column a {
@@ -1961,7 +1987,7 @@ h3,
 
   padding-top: 22px;
 
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  border-top: 1px solid rgba(232, 195, 106, 0.35);
 
   display: flex;
   justify-content: space-between;
@@ -1972,7 +1998,7 @@ h3,
 .fif-footer-bottom p {
   margin: 0;
 
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.75);
   font-size: 13px;
 }
 
