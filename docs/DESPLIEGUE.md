@@ -45,11 +45,12 @@ En el proyecto de Pages → **Custom domains** → **Set up a custom domain**.
 
 El certificado HTTPS se emite solo. Agrega tanto `dominio` como `www.dominio` y redirige uno al otro (Rules → Redirect Rules).
 
-## 3. Después de conectar el dominio
+## 3. Estado actual del dominio
 
-- En `index.html`, añadir `og:url` y `og:image` con URL absoluta (`https://dominio/images/...`) para que el enlace se vea bien en WhatsApp y redes.
-- Actualizar el enlace del README.
-- Decidir qué hacer con el despliegue de Vercel (`fif-web-org.vercel.app`): desconectarlo o dejarlo solo para vistas previas, para no tener dos sitios públicos.
+- Dominio principal: `https://www.fundacionfif.org` (comprado en Cloudflare Registrar).
+- `fundacionfif.org` redirige con 301 a `www` mediante una Redirect Rule (`https://fundacionfif.org/*` → `https://www.fundacionfif.org/${1}`, conservando parámetros).
+- Vista previa para WhatsApp y redes: `public/images/og-image.jpg` (1200×630) y las etiquetas `og:*` de `index.html`. Si se cambia la imagen, WhatsApp y Facebook la guardan en caché unos días; en Facebook se fuerza con el [Sharing Debugger](https://developers.facebook.com/tools/debug/).
+- Pendiente: decidir qué hacer con el despliegue de Vercel (`fif-web-org.vercel.app`): desconectarlo o dejarlo solo para vistas previas, para no tener dos sitios públicos.
 
 ## Medios
 

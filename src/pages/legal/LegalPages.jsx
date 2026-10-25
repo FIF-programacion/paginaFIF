@@ -12,50 +12,76 @@ export function PrivacyPage() {
         {ORG.email}
       </p>
       <h2>2. Qué datos pedimos</h2>
-      <p>Solo pedimos lo necesario para operar esta versión educativa:</p>
-      <ul>
-        <li>Nombre y apellidos, para mostrar tu perfil y el certificado.</li>
-        <li>Correo, para entrar a la cuenta en este dispositivo.</li>
-        <li>Contraseña, que se guarda como resumen criptográfico y no en texto claro.</li>
-        <li>Grupo de edad (menos de 12 años o 12 años o más) y meta diaria, para elegir la dificultad.</li>
-        <li>Si la cuenta es de una persona menor de 12 años: nombre y correo de madre, padre o tutor, y su autorización.</li>
-        <li>Progreso de lecciones, puntos, racha, pruebas y mensajes de asistencia, en tu navegador.</li>
-      </ul>
-      <p>No pedimos cédula, ubicación, fotos ni datos de pago.</p>
-      <h2>3. Para qué los usamos</h2>
       <p>
-        Crear la cuenta, adaptar cursos, guardar progreso, emitir el certificado de finalización,
-        permitir pruebas de docentes y responder solicitudes de asistencia guardadas en el
-        dispositivo.
+        <strong>Formulario de inscripción.</strong> Para inscribir a un estudiante pedimos al
+        representante:
+      </p>
+      <ul>
+        <li>Datos del representante: nombres y apellidos, cédula o pasaporte, parentesco, celular / WhatsApp y correo.</li>
+        <li>Datos del estudiante: nombres y apellidos, cédula o documento de identidad, fecha de nacimiento, institución educativa (fiscal o particular), grado o curso, ciudad y sector de residencia.</li>
+        <li>Información académica: participación en concursos, preparación previa y expectativas.</li>
+        <li>Modalidad (presencial o virtual).</li>
+        <li>Contacto de emergencia (nombre, parentesco y celular) y, de forma opcional, información indispensable para actuar ante una emergencia, que puede incluir datos de salud.</li>
+        <li>Becas que se solicitan y datos para coordinar el pago de la inscripción: nombre, celular, correo y monto.</li>
+      </ul>
+      <p>
+        <strong>Formulario de donación.</strong> Nombre, celular, correo, monto y notas que quieras
+        agregar.
+      </p>
+      <p>
+        Este sitio no procesa pagos ni pide datos de tarjetas o cuentas bancarias: el pago se
+        coordina directamente con el equipo de la fundación.
+      </p>
+      <h2>3. Para qué los usamos</h2>
+      <ul>
+        <li>Gestionar la inscripción, asignar el grupo y el horario del estudiante, y comunicarnos con su representante.</li>
+        <li>Coordinar el pago de la inscripción, las becas y las donaciones.</li>
+        <li>Actuar ante una emergencia durante las actividades. La información de emergencia se usa solo cuando sea necesario para proteger el bienestar del estudiante.</li>
+      </ul>
+      <p>
+        No usamos estos datos con fines publicitarios. Cualquier uso con fines investigativos
+        requerirá una autorización específica.
       </p>
       <h2>4. Base legal (Ecuador)</h2>
       <p>
-        Tratamos datos según la Ley Orgánica de Protección de Datos Personales (LOPDP) y, cuando
-        aplica, el Código de la Niñez y Adolescencia. La base es tu consentimiento (y el de la
-        persona tutora si hay menores de 12 años) y la ejecución del servicio educativo solicitado.
+        Tratamos datos según la Ley Orgánica de Protección de Datos Personales (LOPDP) y el Código
+        de la Niñez y Adolescencia. La base es el consentimiento expreso del representante legal del
+        estudiante, que se otorga al enviar el formulario, y la gestión del servicio educativo
+        solicitado. La información de salud que se comparta voluntariamente se trata como dato
+        sensible.
       </p>
-      <h2>5. Dónde se guardan</h2>
+      <h2>5. Cómo se envían y dónde se guardan</h2>
       <p>
-        Esta versión funciona en el navegador (almacenamiento local). No hay servidor de la
-        fundación ni copias en la nube. Quien use el mismo computador puede ver esos datos. No es
-        un sistema de expediente oficial.
+        Al enviar un formulario, el sitio prepara un mensaje y abre WhatsApp para que tú lo envíes
+        al número institucional de la fundación ({ORG.phone}). El sitio no guarda esos datos en
+        servidores propios ni en tu navegador. La información queda en las conversaciones y
+        registros que maneja el equipo de coordinación de la fundación, con acceso limitado a las
+        personas que gestionan inscripciones, pagos y donaciones.
       </p>
-      <h2>6. Menores de 12 años</h2>
+      <h2>6. Destinatarios y transferencias</h2>
       <p>
-        El registro de menores de 12 años exige autorización de madre, padre o tutor. Sin esa
-        casilla marcada no se crea la cuenta.
+        No vendemos ni cedemos datos. WhatsApp (Meta) actúa como canal de envío y puede tratar
+        datos fuera de Ecuador según sus propias condiciones. El sitio se aloja en Cloudflare, que
+        puede registrar datos técnicos de conexión (como la dirección IP) por seguridad. No hay
+        analítica de terceros ni redes publicitarias, y las tipografías se sirven desde este mismo
+        sitio.
       </p>
-      <h2>7. Conservación y tus derechos</h2>
+      <h2>7. Conservación</h2>
       <p>
-        Los datos permanecen hasta que borres el almacenamiento del sitio o cierres la cuenta en
-        este dispositivo. Puedes pedir acceso, rectificación o supresión escribiendo por Asistencia
-        FIF o borrando los datos del navegador. La fundación debe habilitar un canal institucional
-        antes de un lanzamiento público con datos reales.
+        Conservamos los datos mientras el estudiante participe en las actividades de la fundación y
+        el tiempo adicional que exijan obligaciones legales o contables. Después se eliminan.
       </p>
-      <h2>8. Destinatarios y transferencias</h2>
+      <h2>8. Tus derechos</h2>
       <p>
-        No vendemos datos. No hay analítica de terceros ni redes publicitarias. Las tipografías se
-        sirven desde este mismo sitio.
+        Puedes solicitar acceso, rectificación, actualización, eliminación, oposición, portabilidad
+        o suspensión del tratamiento de tus datos o de los del estudiante que representas,
+        escribiendo a {ORG.email}. También puedes presentar un reclamo ante la Superintendencia de
+        Protección de Datos Personales.
+      </p>
+      <h2>9. Plataforma FIF Learning</h2>
+      <p>
+        La plataforma de aprendizaje en línea aún no está habilitada. Antes de abrirla
+        actualizaremos esta política con los datos de cuentas, progreso y tareas que necesite.
       </p>
       <p>
         <Link to="/legal/cookies">Política de cookies</Link> · <Link to="/legal/terminos">Términos</Link>
@@ -69,15 +95,20 @@ export function TermsPage() {
     <LegalLayout title="Términos y condiciones">
       <h2>1. Aceptación</h2>
       <p>
-        Al crear una cuenta o usar FIF Learning aceptas estos términos, la{" "}
-        <Link to="/legal/privacidad">privacidad</Link> y la{" "}
+        Al usar este sitio, enviar un formulario o, cuando esté habilitada, crear una cuenta en FIF
+        Learning, aceptas estos términos, la <Link to="/legal/privacidad">privacidad</Link> y la{" "}
         <Link to="/legal/cookies">política de cookies</Link>.
       </p>
       <h2>2. Qué es este servicio</h2>
       <p>
-        FIF Learning es una plataforma de refuerzo académico y práctica gamificada de {ORG.name}.
-        No es escuela presencial, no otorga títulos oficiales y no sustituye el currículo
-        ministerial.
+        Este sitio presenta a {ORG.name}, sus programas, inscripciones y donaciones. Las
+        inscripciones y donaciones se coordinan con el equipo de la fundación; el sitio no procesa
+        pagos.
+      </p>
+      <p>
+        FIF Learning, cuando esté habilitada, será una plataforma de refuerzo académico y práctica
+        gamificada. No es escuela presencial, no otorga títulos oficiales y no sustituye el
+        currículo ministerial.
       </p>
       <h2>3. Cuentas</h2>
       <p>
@@ -124,14 +155,18 @@ export function CookiesPage() {
       </p>
       <h2>Qué se guarda en tu dispositivo</h2>
       <ul>
-        <li>Cuenta (nombre, correo, resumen de contraseña, grupo de edad).</li>
-        <li>Progreso, puntos, racha, pruebas y calificaciones locales.</li>
-        <li>El aviso “Entendido” de esta política.</li>
+        <li>El aviso “Entendido” de esta política, para no mostrarlo en cada visita.</li>
+        {PLATFORM_ENABLED && (
+          <>
+            <li>Cuenta de FIF Learning (nombre, correo, resumen de contraseña, grupo).</li>
+            <li>Progreso, puntos, racha, pruebas y calificaciones.</li>
+          </>
+        )}
       </ul>
       <p>
-        Eso equivale a una cookie técnica: sin ello no puedes entrar ni continuar una lección. La
-        LOPDP y las normas de cookies exigen informar; no exigir un “acepto todo” si no hay
-        rastreo.
+        Eso equivale a una cookie técnica. Los formularios de inscripción y donación no guardan
+        datos en tu navegador. La LOPDP y las normas de cookies exigen informar; no exigir un
+        “acepto todo” si no hay rastreo.
       </p>
       <h2>Cómo borrarlo</h2>
       <p>En tu navegador: datos del sitio o almacenamiento local para esta dirección.</p>
@@ -143,13 +178,18 @@ export function RefundsPage() {
   return (
     <LegalLayout title="Política de reembolsos">
       <p>
-        FIF Learning, en esta versión, no cobra matrícula, suscripción ni compras dentro de la
-        web. No hay pagos ni pasarela. Por eso no hay reembolsos: no se recauda dinero.
+        Este sitio no procesa pagos ni tiene pasarela: no cobra dentro de la web. Los valores de
+        inscripción, mensualidades, la plataforma ALEKS y las donaciones se coordinan directamente
+        con el equipo de la fundación.
       </p>
       <p>
-        Si en el futuro la fundación ofrece un curso de pago, esta política debe actualizarse
-        antes de cobrar, con precio, plazo de desistimiento (cuando aplique la normativa de
-        comercio electrónico) y canal de devolución.
+        Las condiciones de devolución de la inscripción y las mensualidades las informa
+        coordinación al momento de coordinar el pago. Para consultas o solicitudes escribe a{" "}
+        {ORG.email} o al {ORG.phone}.
+      </p>
+      <p>
+        Las donaciones son aportes voluntarios. Si hubo un error en el monto o en el envío,
+        escríbenos para revisarlo.
       </p>
       <p>
         Un certificado descargable no es un bien físico ni un título oficial y no genera derecho a
@@ -167,32 +207,12 @@ export function NoticesPage() {
         <li>Nombre: {ORG.name}.</li>
         <li>Domicilio: {ORG.legalAddress}. Personería jurídica por Acuerdo Ministerial N.º 203 del 15 de octubre de 2010 (MIES).</li>
         <li>Correo: {ORG.email}. Teléfono / WhatsApp: {ORG.phone}.</li>
-        <li>El número de RUC aún no ha sido entregado por la fundación para publicación. Cuando exista, se actualizará este aviso, el pie de página y el contacto.</li>
       </ul>
-      <h2>Antes de un lanzamiento público hay que completar</h2>
+      <h2>Alcance</h2>
       <ul>
-        <li>Publicar el RUC cuando la fundación lo confirme.</li>
-        <li>Migrar los datos desde AWS a una base propia e interrumpir el uso de solo almacenamiento local del navegador.</li>
-        <li>Servidor, autenticación real y copias de seguridad.</li>
-        <li>Registro o análisis de impacto si el volumen de datos de menores lo exige.</li>
-        <li>Contrato con docentes y autorización de imagen si se publican fotos reales.</li>
-      </ul>
-      <h2>Riesgos que ya se mitigaron en el código</h2>
-      <ul>
-        <li>Se quitó un personaje con copyright de un estudio ajeno.</li>
-        <li>No hay reseñas inventadas ni app de Android anunciada como existente.</li>
-        <li>No se prometen títulos oficiales ni “transformación de vida” como resultado garantizado.</li>
-        <li>No hay analítica de terceros ni fuentes descargadas desde Google en tiempo de uso.</li>
-        <li>La ayuda ya no aparenta enviar correos a un servidor.</li>
-        <li>Las claves de demostración no se muestran en las pantallas de inicio de sesión.</li>
-        <li>El alta pública de estudiantes y docentes está cerrada: las cuentas las crea coordinación.</li>
-      </ul>
-      <h2>Riesgos que siguen abiertos</h2>
-      <ul>
-        <li>El almacenamiento local no es un expediente seguro ni multi-dispositivo.</li>
-        <li>El hash de contraseña en el cliente no reemplaza autenticación de servidor.</li>
-        <li>Varias personas en el mismo navegador pueden ver el progreso guardado.</li>
-        <li>Las ilustraciones y fotos deben ser originales, licenciadas o contar con cesión de imagen.</li>
+        <li>El sitio informa sobre la fundación y permite enviar solicitudes de inscripción y donación, que se coordinan por WhatsApp.</li>
+        <li>No se cobra dentro de la web y no se otorgan títulos oficiales.</li>
+        <li>No hay analítica de terceros ni publicidad.</li>
       </ul>
       <h2>Normas de referencia</h2>
       <p>
