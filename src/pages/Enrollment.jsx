@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { SiteFooter } from "../components/SiteFooter";
 import { assistanceWhatsAppUrl, formatEnrollmentPaymentMessage } from "../data/org";
-import { ACADEMIC_GOALS, ENROLLMENT_FEES, SCHOLARSHIPS, SCHOOL_TYPES, emptyEnrollment } from "../data/enrollments";
+import { ACADEMIC_GOALS, ENROLLMENT_FEES, GRADES, SCHOLARSHIPS, SCHOOL_TYPES, emptyEnrollment } from "../data/enrollments";
 import "./Enrollment.css";
 
 const STEPS = [
@@ -12,6 +12,37 @@ const STEPS = [
   { id: 4, title: "Modalidad y emergencia" },
   { id: 5, title: "Revisar y confirmar" },
 ];
+
+function capitalizeWords(value) {
+  return value.replace(/(^|[\s-])(\p{L})/gu, (_, separator, letter) => separator + letter.toUpperCase());
+}
+
+const PHONE_PREFIX = "+593";
+
+// Celular de Ecuador: el prefijo es fijo; se guarda "+593" + hasta 9 dígitos (o "" si no hay dígitos).
+function PhoneInput({ id, value, onChange }) {
+  const handleChange = (event) => {
+    let digits = event.target.value.replace(/\D/g, "");
+    if (digits.length > 9 && digits.startsWith("593")) digits = digits.slice(3);
+    digits = digits.replace(/^0+/, "").slice(0, 9);
+    onChange(digits ? PHONE_PREFIX + digits : "");
+  };
+
+  return (
+    <div className="en-phone">
+      <span className="en-phone-prefix">{PHONE_PREFIX}</span>
+      <input
+        id={id}
+        type="tel"
+        inputMode="numeric"
+        autoComplete="tel-national"
+        placeholder="99 123 4567"
+        value={value.slice(PHONE_PREFIX.length)}
+        onChange={handleChange}
+      />
+    </div>
+  );
+}
 
 function Field({ id, label, hint, children }) {
   return (
@@ -31,6 +62,14 @@ export default function Enrollment() {
   const [consent, setConsent] = useState(false);
 
   const set = (name, value) => setForm((current) => ({ ...current, [name]: value }));
+
+  // Campos de nombre: primera letra de cada palabra en mayúscula, sin mover el cursor.
+  const setName = (name) => (event) => {
+    const input = event.target;
+    const cursor = input.selectionStart;
+    set(name, capitalizeWords(input.value));
+    window.requestAnimationFrame(() => input.setSelectionRange(cursor, cursor));
+  };
 
   const toggleGoal = (id) => {
     setForm((current) => {
@@ -142,7 +181,7 @@ export default function Enrollment() {
           {step === 1 && (
             <div className="en-grid">
               <Field id="guardianName" label="Nombres y apellidos completos">
-                <input id="guardianName" value={form.guardianName} onChange={(event) => set("guardianName", event.target.value)} />
+                <input id="guardianName" autoComplete="name" value={form.guardianName} onChange={setName("guardianName")} />
               </Field>
               <Field id="guardianId" label="Cédula o pasaporte">
                 <input id="guardianId" value={form.guardianId} onChange={(event) => set("guardianId", event.target.value)} />
@@ -151,7 +190,7 @@ export default function Enrollment() {
                 <input id="relationship" value={form.relationship} onChange={(event) => set("relationship", event.target.value)} />
               </Field>
               <Field id="guardianPhone" label="Celular / WhatsApp">
-                <input id="guardianPhone" value={form.guardianPhone} onChange={(event) => set("guardianPhone", event.target.value)} />
+                <PhoneInput id="guardianPhone" value={form.guardianPhone} onChange={(value) => set("guardianPhone", value)} />
               </Field>
               <Field id="guardianEmail" label="Correo electrónico" hint="Se utilizará para la cuenta y para contactarte.">
                 <input id="guardianEmail" type="email" value={form.guardianEmail} onChange={(event) => set("guardianEmail", event.target.value)} />
@@ -163,7 +202,7 @@ export default function Enrollment() {
             <>
             <div className="en-grid">
               <Field id="studentName" label="Nombres y apellidos completos">
-                <input id="studentName" value={form.studentName} onChange={(event) => set("studentName", event.target.value)} />
+                <input id="studentName" value={form.studentName} onChange={setName("studentName")} />
               </Field>
               <Field id="studentId" label="Cédula o documento de identidad">
                 <input id="studentId" value={form.studentId} onChange={(event) => set("studentId", event.target.value)} />
@@ -196,7 +235,10 @@ export default function Enrollment() {
                 ))}
               </fieldset>
               <Field id="grade" label="Grado / curso actual">
-                <input id="grade" value={form.grade} onChange={(event) => set("grade", event.target.value)} />
+                <select id="grade" value={form.grade} onChange={(event) => set("grade", event.target.value)}>
+                  <option value="">Selecciona una opción</option>
+                  {GRADES.map((grade) => <option key={grade} value={grade}>{grade}</option>)}
+                </select>
               </Field>
               <Field id="city" label="Ciudad de residencia">
                 <input id="city" value={form.city} onChange={(event) => set("city", event.target.value)} />
@@ -252,13 +294,13 @@ export default function Enrollment() {
               <h2>Contacto de emergencia</h2>
               <div className="en-grid">
                 <Field id="emergencyName" label="Nombre y apellido">
-                  <input id="emergencyName" value={form.emergencyName} onChange={(event) => set("emergencyName", event.target.value)} />
+                  <input id="emergencyName" value={form.emergencyName} onChange={setName("emergencyName")} />
                 </Field>
                 <Field id="emergencyRelation" label="Parentesco">
                   <input id="emergencyRelation" value={form.emergencyRelation} onChange={(event) => set("emergencyRelation", event.target.value)} />
                 </Field>
                 <Field id="emergencyPhone" label="Número celular">
-                  <input id="emergencyPhone" value={form.emergencyPhone} onChange={(event) => set("emergencyPhone", event.target.value)} />
+                  <PhoneInput id="emergencyPhone" value={form.emergencyPhone} onChange={(value) => set("emergencyPhone", value)} />
                 </Field>
               </div>
               <Field id="emergencyNotes" label="En caso de emergencia, ¿existe alguna información indispensable que FIF deba conocer sobre el estudiante?">
@@ -314,10 +356,10 @@ export default function Enrollment() {
               <p className="en-note">No hay cobro en la web. Completa el formulario y se abre WhatsApp para coordinar el pago de la inscripción con FIF.</p>
               <div className="en-grid">
                 <Field id="payName" label="Nombres y apellidos">
-                  <input id="payName" value={form.payName} onChange={(event) => set("payName", event.target.value)} />
+                  <input id="payName" autoComplete="name" value={form.payName} onChange={setName("payName")} />
                 </Field>
                 <Field id="payPhone" label="Número celular">
-                  <input id="payPhone" value={form.payPhone} onChange={(event) => set("payPhone", event.target.value)} />
+                  <PhoneInput id="payPhone" value={form.payPhone} onChange={(value) => set("payPhone", value)} />
                 </Field>
                 <Field id="payEmail" label="Correo electrónico">
                   <input id="payEmail" type="email" value={form.payEmail} onChange={(event) => set("payEmail", event.target.value)} />

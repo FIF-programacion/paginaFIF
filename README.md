@@ -192,7 +192,7 @@ Fondo blanco, menú lateral de líneas (hover muestra el título), chip **Dona h
 | **Proyectos** | Título centrado y carrusel infinito tipo fisheye de fotos de talleres. |
 | **Eventos** | **Scroll Split Card**: 1) una imagen completa, 2) se parte en tres, 3) las tarjetas se voltean y muestran los tres eventos (Soul Concert, Modern Ballet, Album Launch). *More info* va a contacto; *Register Now* abre WhatsApp. |
 | **Dona ahora** | Franja dorada `DONA AHORA` + tarjetas de donación individual y organización. |
-| **Colaboradores** | Carrusel continuo de logos (USFQ PASEC, Mil Travesuras, K-School, ALEKS, Donkey Burritos). |
+| **Colaboradores** | Carrusel continuo de logos (USFQ PASEC, Mil Travesuras, K-School, ALEKS). |
 | **Multimedia** | Enlaces a podcast *Conversando con los Profes* y canal de YouTube. |
 | **FIF Learning (portal)** | Recuadro con foto de taller y wordmark de colores **FIF LEARNING**. Botón al portal `/fif-learning`. |
 | **Contacto** | Tres tarjetas: datos, horarios y redes. |

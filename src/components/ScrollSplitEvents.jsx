@@ -24,7 +24,7 @@ export function ScrollSplitEvents({ imageSrc, cards }) {
   return (
     <section className="lp-events" id="eventos" ref={ref}>
       <div className="lp-events-pin">
-        <p className="lp-kicker">Eventos</p>
+        <h2 className="lp-events-title">Eventos</h2>
         <motion.div className="lp-split" style={{ scale, transformStyle: "preserve-3d" }}>
           {lead.map((card, index) => (
             <motion.article

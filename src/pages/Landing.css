@@ -39,15 +39,17 @@ html.lp-html {
 .lp-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: var(--lp-blue);
-  font-family: "Fredoka", sans-serif;
-  font-weight: 700;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(16, 35, 58, 0.18);
 }
 
 .lp-brand img {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
 }
 
@@ -114,62 +116,189 @@ html.lp-html {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 14px;
+  gap: 4px;
 }
 
+/* Cada sección es un punto de carrusel; la activa y la señalada se abren como botón. */
 .lp-nav-link {
-  position: relative;
-  display: block;
-  height: 16px;
-  min-width: 52px;
-  color: inherit;
-}
-
-.lp-nav-line {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  width: 40px;
-  height: 2px;
-  border-radius: 99px;
-  background: currentColor;
-  opacity: 0.5;
-  transform: translateY(-50%);
-  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 30px;
+  outline: none;
 }
 
 .lp-nav-name {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translate(12px, -50%);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.lp-nav-link:hover .lp-nav-line,
-.lp-nav-link:focus-visible .lp-nav-line,
-.lp-nav-link.is-active:hover .lp-nav-line {
-  width: 0;
-  opacity: 0;
-}
-
-.lp-nav-link:hover .lp-nav-name,
-.lp-nav-link:focus-visible .lp-nav-name {
-  opacity: 1;
-  transform: translate(0, -50%);
-}
-
-.lp-nav-link.is-active .lp-nav-line {
-  width: 64px;
-  opacity: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  max-width: 12px;
+  height: 12px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 999px;
   background: var(--lp-blue);
+  color: transparent;
+  box-shadow: 0 2px 8px rgba(16, 35, 58, 0.25);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  transition:
+    max-width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.2s ease;
+}
+
+.lp-nav-list:hover .lp-nav-name,
+.lp-nav-list:focus-within .lp-nav-name,
+.lp-nav-link.is-active .lp-nav-name {
+  max-width: 220px;
+  height: 30px;
+  padding: 0 16px;
+  color: #fff;
+}
+
+.lp-nav-link:focus-visible .lp-nav-name {
+  outline: 2px solid var(--lp-blue);
+  outline-offset: 3px;
+}
+
+/* Menú para celulares: botón hamburguesa + overlay con las secciones. */
+.lp-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--lp-blue);
+  cursor: pointer;
+}
+
+.lp-menu-bars,
+.lp-menu-bars::before,
+.lp-menu-bars::after {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 99px;
+  background: #fff;
+}
+
+.lp-menu-bars {
+  position: relative;
+}
+
+.lp-menu-bars::before,
+.lp-menu-bars::after {
+  content: "";
+  position: absolute;
+  left: 0;
+}
+
+.lp-menu-bars::before {
+  top: -6px;
+}
+
+.lp-menu-bars::after {
+  top: 6px;
+}
+
+.lp-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 72px 24px 32px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: lp-menu-in 0.2s ease;
+}
+
+@keyframes lp-menu-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lp-menu-close {
+  position: fixed;
+  top: 16px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0 0 4px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--lp-blue);
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.lp-menu-list {
+  list-style: none;
+  margin: auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.lp-menu-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 210px;
+  padding: 12px 28px;
+  border-radius: 999px;
+  background: var(--lp-blue);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.lp-menu-link.is-active {
+  background: var(--lp-gold);
+  color: var(--lp-navy);
+}
+
+@media (max-width: 768px) {
+  .lp-nav {
+    display: none;
+  }
+
+  .lp-menu-toggle {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 769px) {
+  .lp-menu-overlay {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .lp-header-actions {
+    gap: 6px;
+  }
+
+  .lp-chip {
+    padding: 10px 14px;
+  }
 }
 
 .lp-kicker {
@@ -764,8 +893,14 @@ html.lp-html {
     padding: 0 20px 34px;
   }
 
-  .lp-projects-head h2 {
+  .lp-projects-head h2,
+  .lp-events-title {
     font-size: 34px;
+  }
+
+  .lp-events-title {
+    text-align: left;
+    padding: 0 20px;
   }
 
   .lp-fish {
@@ -986,11 +1121,15 @@ html.lp-html {
   }
 }
 
-.lp-events-pin .lp-kicker {
+/* Mismo estilo que el título de Proyectos. */
+.lp-events-title {
+  margin: 0 0 clamp(14px, 3vh, 32px);
   padding: 0 24px;
-  position: absolute;
-  top: 28px;
-  left: 8px;
+  text-align: center;
+  font-family: "Fredoka", sans-serif;
+  font-size: clamp(36px, 4vw, 58px);
+  line-height: 1;
+  color: var(--lp-blue);
 }
 
 .lp-events-pin {
@@ -1389,17 +1528,6 @@ html.lp-html {
   color: #fff;
 }
 
-@media (hover: none) {
-  .lp-nav-link.is-active .lp-nav-name {
-    opacity: 1;
-    transform: translate(0, -50%);
-  }
-  .lp-nav-link.is-active .lp-nav-line {
-    width: 0;
-    opacity: 0;
-  }
-}
-
 @media (max-width: 900px) {
   .lp-hero {
     height: auto;
@@ -1465,6 +1593,8 @@ html.lp-html {
   .lp-ally-track,
   .lp-velocity-track,
   .lp-scroll-hint::after { animation: none; }
+  .lp-nav-name { transition: none; }
+  .lp-menu-overlay { animation: none; }
 }
 
 /* Donate pages */

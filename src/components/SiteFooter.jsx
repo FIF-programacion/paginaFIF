@@ -8,7 +8,12 @@ export function SiteFooter() {
       <div className={`fif-footer-content${PLATFORM_ENABLED ? "" : " is-compact"}`}>
 
         <div className="fif-footer-brand">
-          <h2>FIF</h2>
+          <div className="fif-footer-logo">
+            <span className="fif-footer-logo-badge">
+              <img src="/images/LOGO_COLOR.png" alt="Logo de la Fundación Integral de Familias" loading="lazy" decoding="async" />
+            </span>
+            <h2>FIF</h2>
+          </div>
           <p>
             Educación, familia y oportunidades
             <br />
