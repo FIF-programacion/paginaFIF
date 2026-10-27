@@ -55,8 +55,10 @@ const ABOUT_BANDS = [
 
 const TEAM = [
   {
-    name: "Diego y Gaby",
+    name: "Gaby y Diego",
     image: "/images/Diego_Gaby.avif",
+    // La pareja está a la derecha de la foto: se desplaza el recorte para que quede centrada en la tarjeta.
+    position: "74% center",
   },
   {
     name: "Anabelle Chacon",
@@ -442,7 +444,13 @@ export default function Landing() {
                   ease: [0.22, 1, 0.36, 1],
                 }}
               >
-                <img src={member.image} alt={member.name} loading="lazy" decoding="async" />
+                <img
+                  src={member.image}
+                  alt={member.name}
+                  style={member.position ? { objectPosition: member.position } : undefined}
+                  loading="lazy"
+                  decoding="async"
+                />
 
                 <div className="lp-team-name">
                   <h3>{member.name}</h3>
