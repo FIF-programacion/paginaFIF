@@ -61,6 +61,7 @@ export function formatEnrollmentPaymentMessage(form) {
     `Correo: ${form.payEmail || form.guardianEmail}`,
     `Cantidad: $${form.payAmount}`,
     form.scholarshipLabels?.length ? `Becas solicitadas: ${form.scholarshipLabels.join(", ")}` : null,
+    "Documento: certificado de matrícula / declaración de homeschooling (se envía por este chat)",
     form.payNotes ? `Notas: ${form.payNotes}` : null,
   ].filter(Boolean).join("\n");
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { SiteFooter } from "../components/SiteFooter";
 import { assistanceWhatsAppUrl, formatEnrollmentPaymentMessage } from "../data/org";
-import { ACADEMIC_GOALS, ENROLLMENT_FEES, GRADES, SCHOLARSHIPS, SCHOOL_TYPES, emptyEnrollment } from "../data/enrollments";
+import { ACADEMIC_GOALS, ENROLLMENT_DOCUMENT, ENROLLMENT_FEES, GRADES, SCHOLARSHIPS, SCHOOL_TYPES, emptyEnrollment } from "../data/enrollments";
 import "./Enrollment.css";
 
 const STEPS = [
@@ -91,6 +91,9 @@ export default function Enrollment() {
     }
     if (step === 2 && (!form.studentName || !form.studentId || !form.birthDate || !form.school || !form.schoolType || !form.grade || !form.city || !form.sector)) {
       return "Completa los datos del estudiante, incluida la institución fiscal o particular.";
+    }
+    if (step === 2 && !form.documentWhatsApp) {
+      return `Confirma que enviarás por WhatsApp el ${ENROLLMENT_DOCUMENT.toLowerCase()}.`;
     }
     if (step === 3 && (!form.contests || !form.extraPrep || !form.goals.length)) {
       return "Indica la información académica y al menos una expectativa.";
@@ -245,6 +248,22 @@ export default function Enrollment() {
                 <input id="sector" value={form.sector} onChange={(event) => set("sector", event.target.value)} />
               </Field>
             </div>
+            <div className="en-document">
+              <h2>{ENROLLMENT_DOCUMENT}</h2>
+              <p className="en-note">
+                Es obligatorio. Si el estudiante asiste a una institución, envía el certificado de matrícula del año
+                en curso; si es Homeschooling, la declaración de homeschooling. Por ahora el documento se envía por
+                WhatsApp al número de la fundación, junto con esta inscripción.
+              </p>
+              <label className="en-consent">
+                <input
+                  type="checkbox"
+                  checked={form.documentWhatsApp}
+                  onChange={(event) => set("documentWhatsApp", event.target.checked)}
+                />
+                <span>Enviaré el {ENROLLMENT_DOCUMENT.toLowerCase()} por WhatsApp.</span>
+              </label>
+            </div>
             </>
           )}
 
@@ -314,6 +333,7 @@ export default function Enrollment() {
                 <div><dt>Nacimiento</dt><dd>{form.birthDate}</dd></div>
                 <div><dt>Institución</dt><dd>{form.school} · {form.schoolType === "fiscal" ? "Fiscal" : "Particular"}</dd></div>
                 <div><dt>Grado</dt><dd>{form.grade}</dd></div>
+                <div><dt>Documento</dt><dd>{ENROLLMENT_DOCUMENT} (se envía por WhatsApp)</dd></div>
                 <div><dt>Residencia</dt><dd>{form.city} · {form.sector}</dd></div>
                 <div><dt>Concursos</dt><dd>{form.contests === "si" ? "Sí" : "No"}</dd></div>
                 <div><dt>Preparación adicional</dt><dd>{form.extraPrep === "si" ? "Sí" : "No"}</dd></div>
