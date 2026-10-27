@@ -193,11 +193,11 @@ Fondo blanco, menú lateral de líneas (hover muestra el título), chip **Dona h
 | **Eventos** | **Scroll Split Card**: 1) una imagen completa, 2) se parte en tres, 3) las tarjetas se voltean y muestran los tres eventos (Soul Concert, Modern Ballet, Album Launch). *More info* va a contacto; *Register Now* abre WhatsApp. |
 | **Dona ahora** | Franja dorada `DONA AHORA` + tarjetas de donación individual y organización. |
 | **Colaboradores** | Carrusel continuo de logos (USFQ PASEC, Mil Travesuras, K-School, ALEKS). |
-| **Multimedia** | Enlaces a podcast *Conversando con los Profes* y canal de YouTube. |
+| **Multimedia** | Enlaces a podcast *Conversa con los Profes* y canal de YouTube. |
 | **FIF Learning (portal)** | Recuadro con foto de taller y wordmark de colores **FIF LEARNING**. Botón al portal `/fif-learning`. |
 | **Contacto** | Tres tarjetas: datos, horarios y redes. |
 
-Horarios: martes y jueves 3:00 pm – 5:00 pm; sábado 8:00 am – 12:00 pm.
+Horarios: martes y jueves 3:00 pm – 5:00 pm; sábado 8:30 am – 12:30 pm.
 
 Referencias de animación: [Kinetic Text Reveal](https://componentry.dev/docs/components/kinetic-text-reveal) y [Scroll Split Card](https://componentry.dev/docs/components/scroll-split-card).
 
