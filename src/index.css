@@ -27,6 +27,12 @@ body {
   font-family: "Nunito", sans-serif;
   color: var(--ink);
   background: #fff;
+  /* clip (no hidden) evita scroll horizontal sin romper los elementos sticky. */
+  overflow-x: clip;
+}
+
+html {
+  overscroll-behavior-y: none;
 }
 
 button,
@@ -162,8 +168,23 @@ h3,
   padding-right: 42px;
 }
 
-.page {
+/* El footer se pega al fondo aunque la página tenga poco contenido (sin franja blanca debajo). */
+.page,
+.en-page {
   min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page > :not(.skip-link),
+.en-page > :not(.skip-link) {
+  width: 100%;
+}
+
+.page > .fif-footer,
+.en-page > .fif-footer {
+  margin-top: auto;
 }
 
 /* Landing */
@@ -2030,6 +2051,48 @@ h3,
   }
 }
 
+/* CELULARES: una columna y todo el contenido del footer centrado */
+
+@media (max-width: 768px) {
+  .fif-footer-content {
+    grid-template-columns: 1fr;
+    gap: 38px;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .fif-footer-logo {
+    justify-content: center;
+  }
+
+  .fif-footer-brand p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .fif-footer-column {
+    align-items: center;
+  }
+
+  .fif-footer-bottom {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 7px;
+  }
+
+  .cookie-banner {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+}
+
 /* MOBILE */
 
 @media (max-width: 560px) {
@@ -2048,8 +2111,5 @@ h3,
 
   .fif-footer-bottom {
     margin-top: 40px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 7px;
   }
 }
