@@ -48,7 +48,6 @@ export const ENROLLMENT_FEES = {
 export const SCHOLARSHIPS = [
   { id: "olimpiadas40", label: "Participación en olimpiadas: 40%" },
   { id: "olimpiadas100", label: "Ganar olimpiadas: 100%" },
-  { id: "hermanos", label: "Beca hermanos: $10 menos a cada estudiante" },
 ];
 
 export function emptyEnrollment() {

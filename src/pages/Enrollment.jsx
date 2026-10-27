@@ -78,11 +78,9 @@ export default function Enrollment() {
     });
   };
 
-  const toggleScholarship = (id) => {
-    setForm((current) => {
-      const has = current.scholarships.includes(id);
-      return { ...current, scholarships: has ? current.scholarships.filter((item) => item !== id) : [...current.scholarships, id] };
-    });
+  // Las becas son excluyentes: se guarda como lista de 0 o 1 elemento.
+  const setScholarship = (id) => {
+    setForm((current) => ({ ...current, scholarships: id ? [id] : [] }));
   };
 
   const fees = ENROLLMENT_FEES[form.schoolType];
@@ -247,12 +245,6 @@ export default function Enrollment() {
                 <input id="sector" value={form.sector} onChange={(event) => set("sector", event.target.value)} />
               </Field>
             </div>
-            {fees && (
-              <div className="en-fees">
-                <p>Inscripción {form.schoolType === "fiscal" ? "fiscal" : "particular"}: <strong>${fees.inscription}</strong></p>
-                <p>{fees.extraLabel}: <strong>${fees.extra}</strong></p>
-              </div>
-            )}
             </>
           )}
 
@@ -336,18 +328,15 @@ export default function Enrollment() {
                 se utilizará únicamente cuando sea necesario para precautelar el bienestar del estudiante. Cualquier uso
                 de información con fines investigativos requerirá la autorización correspondiente.
               </p>
-              {fees && (
-                <div className="en-fees">
-                  <h2>Valores {form.schoolType === "fiscal" ? "fiscal" : "particular"}</h2>
-                  <p>Inscripción: <strong>${fees.inscription}</strong></p>
-                  <p>{fees.extraLabel}: <strong>${fees.extra}</strong></p>
-                </div>
-              )}
               <fieldset className="en-goals">
-                <legend>Información de becas (opcional)</legend>
+                <legend>Información de becas (opcional, solo una)</legend>
+                <label>
+                  <input type="radio" name="scholarship" checked={form.scholarships.length === 0} onChange={() => setScholarship("")} />
+                  Ninguna
+                </label>
                 {SCHOLARSHIPS.map((item) => (
                   <label key={item.id}>
-                    <input type="checkbox" checked={form.scholarships.includes(item.id)} onChange={() => toggleScholarship(item.id)} />
+                    <input type="radio" name="scholarship" checked={form.scholarships[0] === item.id} onChange={() => setScholarship(item.id)} />
                     {item.label}
                   </label>
                 ))}
@@ -369,7 +358,7 @@ export default function Enrollment() {
                 </Field>
               </div>
               <Field id="payNotes" label="Notas adicionales">
-                <textarea id="payNotes" rows={3} value={form.payNotes} onChange={(event) => set("payNotes", event.target.value)} placeholder="ALEKS, mensualidad, hermanos u otra indicación." />
+                <textarea id="payNotes" rows={3} value={form.payNotes} onChange={(event) => set("payNotes", event.target.value)} placeholder="ALEKS, mensualidad u otra indicación." />
               </Field>
               <label className="en-consent">
                 <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} />
@@ -380,6 +369,13 @@ export default function Enrollment() {
                   enviar el formulario por WhatsApp.
                 </span>
               </label>
+              {fees && (
+                <div className="en-fees">
+                  <h2>Valores {form.schoolType === "fiscal" ? "fiscal" : "particular"}</h2>
+                  <p>Inscripción: <strong>${fees.inscription}</strong></p>
+                  <p>{fees.extraLabel}: <strong>${fees.extra}</strong></p>
+                </div>
+              )}
             </>
           )}
 
