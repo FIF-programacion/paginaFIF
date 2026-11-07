@@ -1,3 +1,5 @@
+import { schoolTypeLabel } from "./enrollments";
+
 export const ORG = {
   name: "Fundación Integral de Familias",
   shortName: "FIF",
@@ -17,6 +19,13 @@ export const ORG = {
     instagram: "https://www.instagram.com/fundacionfif/",
     youtube: "https://www.youtube.com/@FundacionIntegralFIF",
     podcast: "https://open.spotify.com/show/2v44qnqooskw9bfnlnxdl4",
+    podcastPlatforms: [
+      { name: "Spotify", url: "https://open.spotify.com/show/2v44qnqooskw9bfnlnxdl4" },
+      { name: "Apple Podcasts", url: "https://podcasts.apple.com/podcast/id1508270930" },
+      { name: "YouTube", url: "https://www.youtube.com/@FundacionIntegralFIF" },
+      { name: "Amazon Music", url: "https://music.amazon.com/search/Conversa%20con%20los%20profes" },
+      { name: "Pocket Casts", url: "https://pca.st/itunes/1508270930" },
+    ],
   },
 };
 
@@ -55,7 +64,7 @@ export function formatEnrollmentPaymentMessage(form) {
     "Fundación Integral de Familias",
     "",
     `Estudiante: ${form.studentName}`,
-    `Institución: ${form.schoolType === "fiscal" ? "Fiscal" : "Particular"} · ${form.school}`,
+    `Institución: ${schoolTypeLabel(form.schoolType)} · ${form.school}`,
     `Representante: ${form.payName || form.guardianName}`,
     `Celular: ${form.payPhone || form.guardianPhone}`,
     `Correo: ${form.payEmail || form.guardianEmail}`,

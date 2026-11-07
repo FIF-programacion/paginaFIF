@@ -1,149 +1,91 @@
-# FIF Learning y Fundación Integral de Familias
+# Fundación Integral de Familias — sitio y FIF Learning
 
-Plataforma web de la **Fundación Integral de Familias (FIF)** en Ecuador. Incluye el sitio institucional (landing con scroll y animaciones) y **FIF Learning**, el portal digital de refuerzo académico para estudiantes y docentes.
+Sitio web de la **Fundación Integral de Familias (FIF)**, Ecuador.
 
-Sitio publicado: https://www.fundacionfif.org (Cloudflare Pages)
+- **Sitio publicado:** https://www.fundacionfif.org (Cloudflare Pages)
+- **Código:** https://github.com/FIF-programacion/paginaFIF
+- **Stack:** React 19, Vite 7, React Router 7, CSS propio, Framer Motion, jsPDF
 
-> **Estado actual:** en producción solo se publica el sitio institucional (landing, donaciones, inscripciones y legales). La plataforma FIF Learning está apagada con `VITE_ENABLE_PLATFORM=false` hasta migrarla a Supabase. Para trabajar en ella en local, crea `.env.local` con `VITE_ENABLE_PLATFORM=true`.
-> Guías: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) (Cloudflare Pages + dominio) y [docs/PLAN-SUPABASE.md](docs/PLAN-SUPABASE.md).
-
-Repositorio en GitHub: [https://github.com/FIF-programacion/paginaFIF.git](https://github.com/FIF-programacion/paginaFIF.git)
-
-Es una aplicación de una sola página (SPA) que corre en el navegador: landing de la fundación, portal de aprendizaje, registro, cursos gamificados, zona de docentes, donaciones, certificados PDF y páginas legales.
+Este README es la guía de entrada al proyecto: qué hay, dónde está, cómo se enciende FIF Learning, dónde viven los datos y con qué cuentas se prueba.
 
 ---
 
-## 1. Qué tecnologías se usan (y cuáles no)
+## Índice
 
-| Tecnología | ¿Se usa? | Para qué |
+1. [Estado del proyecto](#1-estado-del-proyecto)
+2. [Arrancar en local](#2-arrancar-en-local)
+3. [Usuarios de prueba](#3-usuarios-de-prueba)
+4. [Dónde están los datos (no hay base de datos todavía)](#4-dónde-están-los-datos-no-hay-base-de-datos-todavía)
+5. [Flujos](#5-flujos)
+6. [Mapa de archivos: qué editar](#6-mapa-de-archivos-qué-editar)
+7. [Rutas](#7-rutas)
+8. [Cursos y grupos](#8-cursos-y-grupos)
+9. [Git y publicación](#9-git-y-publicación)
+10. [Convención al cambiar algo](#10-convención-al-cambiar-algo)
+
+Más detalle de deploy y de la futura base: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) y [docs/PLAN-SUPABASE.md](docs/PLAN-SUPABASE.md).
+
+---
+
+## 1. Estado del proyecto
+
+Hay **dos capas** en el mismo código:
+
+| Capa | En producción (`fundacionfif.org`) | En local (`npm run dev`) |
 |---|---|---|
-| **HTML** | Sí | Cascarón (`index.html`) y el marcado que React genera |
-| **CSS** | Sí | Diseño global en `src/index.css` y la landing institucional en `src/pages/Landing.css` |
-| **JavaScript** | Sí | Lógica, estado, ejercicios, PDF, almacenamiento |
-| **React 19** | Sí | Componentes, pantallas y estado de la interfaz |
-| **React Router 7** | Sí | Rutas (`/`, `/fif-learning`, `/app/cursos`, `/dona/...`, `/profesores`, `/legal/...`) |
-| **Vite 7** | Sí | Servidor de desarrollo, empaquetado y recarga en caliente |
-| **Framer Motion** | Sí | Kinetic text, split + flip de eventos, revelados al scroll |
-| **jsPDF** | Sí | Certificado descargable |
-| **Fontsource (Fredoka y Nunito)** | Sí | Tipografías empaquetadas en el sitio |
-| **Web Crypto (navegador)** | Sí | Resumen SHA-256 de la contraseña |
-| **localStorage** | Sí | Cuenta, progreso, pruebas y avisos en este dispositivo |
-| **Git / GitHub** | Sí | Control de versiones y remoto `FIF-WEB` |
-| **Java** | **No** | Este proyecto **no usa Java**. Usa **JavaScript**. |
+| Sitio institucional (`/`, donaciones, inscripciones, legales) | Sí | Sí |
+| Panel **Coordinación** (`/admin`) | Sí (enlace en el pie) | Sí |
+| Portal **FIF Learning** (estudiantes, docentes, cursos) | Apagado | Encendido si `.env.local` tiene `VITE_ENABLE_PLATFORM=true` |
 
-No hay backend ni base de datos. Los datos de la plataforma educativa viven en el navegador. Las donaciones se coordinan por WhatsApp; no hay cobro en línea.
+El interruptor es `VITE_ENABLE_PLATFORM` (`src/config.js`). En Cloudflare debe quedar en `false` hasta migrar a Supabase. En local se pone `true` para trabajar el portal.
+
+FIF Learning **no aparece** en la landing pública (ni “Muy pronto”). Se entra por URL: `/fif-learning`, `/login`, `/profesores`.
+
+No hay cobro en la web. Inscripciones y donaciones se coordinan por WhatsApp.
 
 ---
 
-## 2. GitHub: clonar, commit y push (Bash)
+## 2. Arrancar en local
 
-Remoto: `https://github.com/FIF-programacion/paginaFIF.git`
-
-Requisitos: Git instalado y una cuenta de GitHub con acceso al repositorio. En la primera subida GitHub pedirá autenticación (navegador, `gh auth login` o un personal access token).
-
-### 2.1 Primera vez: crear el repositorio local y subirlo
-
-Desde la carpeta del proyecto (`FIF LEARNING WEB`):
-
-```bash
-cd "/c/Users/ariel/OneDrive/Documentos/Fundacion/FIF LEARNING WEB"
-
-git init
-git add .
-git status
-git commit -m "Sitio institucional FIF y portal FIF Learning"
-git branch -M main
-git remote add origin https://github.com/FIF-programacion/paginaFIF.git
-git push -u origin main
-```
-
-Si `git remote add` dice que `origin` ya existe:
-
-```bash
-git remote set-url origin https://github.com/FIF-programacion/paginaFIF.git
-git push -u origin main
-```
-
-Si el remoto de GitHub ya tiene un commit inicial (README automático) y el push es rechazado:
-
-```bash
-git pull origin main --allow-unrelated-histories
-git push -u origin main
-```
-
-### 2.2 Cada vez que haya cambios (commit y push)
-
-```bash
-git status
-git add .
-git commit -m "Describe el cambio"
-git push
-```
-
-Ejemplos de mensaje:
-
-```bash
-git commit -m "Ajustar alineación de Nosotros y espacio entre secciones"
-git commit -m "Corregir flip de eventos y wordmark del portal"
-```
-
-Para añadir solo archivos concretos:
-
-```bash
-git add README.md src/pages/Landing.jsx src/pages/Landing.css
-git commit -m "Documentar landing y actualizar Nosotros"
-git push
-```
-
-### 2.3 Ver historial y remoto
-
-```bash
-git log --oneline
-git remote -v
-```
-
-### 2.4 Clonar el repo en otra máquina
+Requisitos: **Node.js 22** (ver `.node-version`) y npm.
 
 ```bash
 git clone https://github.com/FIF-programacion/paginaFIF.git
 cd paginaFIF
 npm install
-npm run dev
 ```
 
-### 2.5 Qué no se versiona (`.gitignore`)
-
-- `node_modules/` — se regenera con `npm install`
-- `dist/` — se regenera con `npm run build`
-- `_design-preview/` y `_design-pdfs/` — temporales de diseño
-- `.DS_Store` — metadatos de macOS
-
-No hay `.env` con claves. Las cuentas de estudiantes y docentes se guardan solo en el navegador.
-
----
-
-## 3. Cómo arrancar el proyecto
-
-Requisitos: **Node.js** y **npm**.
+Para el **sitio institucional** basta con:
 
 ```bash
-npm install
 npm run dev
 ```
 
-La app queda en `http://127.0.0.1:5173/`.
+Abre `http://127.0.0.1:5173/`.
+
+Para **FIF Learning** (cursos, login, docentes), copia `.env.example` a `.env.local` y deja:
+
+```bash
+VITE_ENABLE_PLATFORM=true
+```
+
+Reinicia Vite (`Ctrl+C` y otra vez `npm run dev`). Vite solo lee `.env.local` al arrancar.
 
 | Script | Qué hace |
 |---|---|
-| `npm run dev` | Vite con recarga automática |
-| `npm run build` | Genera `dist/` para publicar |
+| `npm run dev` | Servidor con recarga, puerto `5173` |
+| `npm run build` | Genera `dist/` (lo que publica Cloudflare) |
 | `npm run preview` | Sirve `dist/` en local |
 
-### 3.1 Accesos de prueba
+`.env.local` **no se sube a git**. Nunca pongas claves `service_role` en un `VITE_`*.
 
-Solo existen con la plataforma encendida (`VITE_ENABLE_PLATFORM=true`, en local); se eliminarán al migrar a Supabase. Estas cuentas se crean solas la primera vez que se abre la app en un navegador (`src/data/staff.js`). Las claves **no** se muestran en las pantallas de login. Si ya había datos en `localStorage` y faltan estas cuentas, recarga la página: el seed las vuelve a insertar.
+---
 
-No hay estudiante de demostración: hay que crear uno en `/registro`.
+## 3. Usuarios de prueba
+
+Las cuentas semilla se crean solas la primera vez que se abre una ruta de plataforma en ese navegador (`src/data/staff.js` → `GameContext.jsx`). Las contraseñas **no** se muestran en las pantallas de login.
+
+Solo existen con la plataforma encendida, salvo Coordinación, que también entra en producción.
 
 | Rol | Entrada | Correo | Contraseña |
 |---|---|---|---|
@@ -152,35 +94,27 @@ No hay estudiante de demostración: hay que crear uno en `/registro`.
 | Voluntario temporal 2 | `/profesores` | `voluntario2@fif.org` | `FIFVoluntario2026` |
 | Voluntario temporal 3 | `/profesores` | `voluntario3@fif.org` | `FIFVoluntario2026` |
 
-Dónde está el acceso de coordinación (discreto):
+No hay estudiante de demostración fijo. El registro público (`/registro`) está **cerrado**. Para probar el portal de alumno:
 
-- Pie del sitio: enlace **Coordinación**
-- Landing `/`: en Contacto, texto bajo el RUC
-- Portal `/fif-learning`: al lado de **Docentes**
+1. Entra a Coordinación (`/admin`).
+2. Pestaña **Cuentas**.
+3. Crea un estudiante (nombre, correo, clave, grupo inicial o regular).
+4. Cierra sesión y entra en `/login` con esa cuenta.
 
-Docentes y coordinación no comparten login. Un admin no entra por `/profesores`; un docente no entra por `/admin`. Tras iniciar sesión, coordinación va a `/admin/panel` y el docente a `/profesores/panel`.
+Grupos:
 
----
+- **Inicial / nivelación** → ve Programación, Matemática, Música y **Arte**.
+- **Regular** → ve Programación, Matemática y Música. **No incluye Arte.**
 
-## 4. Dos entradas: fundación y portal
+Si las cuentas semilla no aparecen (por un `localStorage` viejo), recarga `/admin` o `/profesores`. El seed las vuelve a insertar si faltan. Para partir de cero: en DevTools → Application → Local Storage → borrar `fif-learning-state-v2`.
 
-| Ruta | Qué es |
-|---|---|
-| `/` | Landing institucional de la **Fundación Integral de Familias** |
-| `/fif-learning` | Landing **FIF Learning**: portal de aprendizaje, registro e inicio de sesión |
-| `/login` y `/registro` | Acceso de estudiantes (se entra desde FIF Learning) |
-| `/inscripciones` | Formulario público de inscripción (5 pasos) |
-| `/profesores` | Acceso de docentes |
-| `/admin` | Acceso de coordinación (escondido; ver 3.1) |
-| `/dona/individual` | Formulario de donación individual |
-| `/dona/paquetes` | Paquetes para organizaciones |
+Modo vista previa de estudiante (sin login): `/fif-learning?preview=1` o cualquier ruta de app con `?preview=1`. Usa un alumno ficticio `ariel@correo.com` solo en memoria; no se guarda.
 
-El menú lateral de la fundación incluye **FIF Learning**. Desde esa sección se entra al portal. Login y registro siguen en las mismas rutas de antes.
-
-Video del hero: `public/videos/videoInicio.mp4` (cubre todo el recuadro, `object-fit: cover`). Fotos de la landing: `public/images/Image1.jpg` … `Image5.jpg`.
+Docentes y coordinación **no** comparten login. Un admin no entra por `/profesores`; un docente no entra por `/admin`. Tras el login, coordinación va a `/admin/panel` y el equipo a `/equipo`.
 
 ---
 
+## 4. Dónde están los datos (no hay base de datos todavía)
 ## 5. Landing institucional (`/`): qué hay ahora
 
 Fondo blanco, menú lateral de líneas (hover muestra el título), chip **Dona hoy**. Scroll de página suavizado y más lento (`src/hooks/useSlowPageScroll.js`).
@@ -201,261 +135,267 @@ Horarios: martes y jueves 3:00 pm – 5:00 pm; sábado 8:30 am – 12:30 pm.
 
 Referencias de animación: [Kinetic Text Reveal](https://componentry.dev/docs/components/kinetic-text-reveal) y [Scroll Split Card](https://componentry.dev/docs/components/scroll-split-card).
 
----
-
-## 6. Estructura de carpetas
+**Hoy no hay Postgres, ni API, ni servidor propio.** Todo lo de FIF Learning vive en el **navegador**, en `localStorage`, clave:
 
 ```text
-FIF LEARNING WEB/
-├── index.html
-├── package.json
-├── package-lock.json
-├── vite.config.js
-├── .gitignore
-├── README.md
-├── Images/                 ← originales de trabajo
+fif-learning-state-v2
+```
+
+Lo escribe `src/context/GameContext.jsx`. Eso significa:
+
+- Lo que cree Coordinación (estudiantes, horarios, pruebas) **solo existe en ese computador/navegador**.
+- Otro dispositivo, otra persona o una ventana privada no lo ve.
+- Por eso el portal de estudiantes está apagado en el sitio público.
+
+### Qué se guarda en esa clave
+
+| Campo | Contenido |
+|---|---|
+| `accounts` | Usuarios: `student`, `staff`, `admin`. La contraseña va hasheada (SHA-256), no en texto |
+| `sessionId` | Quién está logueado |
+| `progress` | Lecciones hechas por curso (minijuegos) |
+| `stats` | Puntos, insignias, racha |
+| `tests` / `attempts` | Pruebas con código `FIF-XXXXX` y calificaciones |
+| `activities` / `submissions` / `activityDone` | Tareas, deberes, entregas |
+| `schedules` / `attendance` | Horarios y asistencia |
+| `enrollments` | Solicitudes de inscripción (si se guardan en este dispositivo) |
+| `boardTasks` / `syllabusItems` / `contentItems` | Tablero, sílabo y contenidos del equipo |
+
+### Qué no está en localStorage
+
+| Dato | Dónde está |
+|---|---|
+| Textos de la fundación, WhatsApp, redes | `src/data/org.js` (código) |
+| Cursos, lecciones, minijuegos | `src/data/courses.js` y `src/data/teacher.js` |
+| Tarifas de inscripción, tipos de colegio, becas internas | `src/data/enrollments.js` |
+| Cuentas semilla y equipos | `src/data/staff.js` |
+| Fotos, video, logos | `public/images/`, `public/videos/` |
+
+Inscripciones y donaciones **públicas** se van por WhatsApp (`src/data/org.js` → `assistanceWhatsAppUrl`). No se cobran en la web.
+
+### El plan de base de datos (aún no implementado)
+
+Cuando exista, será **Supabase** (Auth + Postgres + Storage). El modelo está en [docs/PLAN-SUPABASE.md](docs/PLAN-SUPABASE.md). Hasta entonces no hay `.env` de base de datos que rellenar: `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en `.env.example` están vacíos a propósito.
+
+---
+
+## 5. Flujos
+
+### 5.1 Visitante en el sitio público
+
+1. Entra a `/`.
+2. Puede donar (`/dona/individual`, `/dona/paquetes`) → formulario → WhatsApp.
+3. Puede inscribir a un estudiante (`/inscripciones`, 5 pasos) → WhatsApp. Tipo de institución: Fiscal, Particular, Homeschooling. **No pide becas**; las define Coordinación.
+4. Horario público: **sábado 7:30 am – 1:00 pm**.
+5. Pie → **Coordinación** → `/admin`.
+
+### 5.2 Coordinación
+
+1. `/admin` con `coordinacion@fif.org`.
+2. Revisa inscripciones, asigna grupo (inicial / regular), publica horarios, crea cuentas de estudiantes y de equipo (con equipo: matemática, artes, programación, multimedia; y deber: docente o miembro).
+
+### 5.3 Estudiante (solo local / cuando se encienda FIF Learning)
+
+1. Coordinación crea la cuenta.
+2. `/login` → tutorial la primera vez → `/app/cursos`.
+3. Ve las **materias** de su grupo (no la lista suelta de minijuegos).
+4. Dentro de cada materia (`/app/materia/:id`): pestaña **Aula** (trabajos del profesor), **Minijuegos**, **Código de prueba**.
+
+### 5.4 Equipo / docente
+
+1. Coordinación crea la cuenta con equipo y permisos.
+2. `/profesores` → `/equipo`.
+3. Según el equipo: tablero, sílabo, contenido, pruebas, asistencia, actividades, horarios.
+
+---
+
+## 6. Mapa de archivos: qué editar
+
+```text
+paginaFIF/
+├── index.html                 Cascarón HTML, título, #root
+├── package.json               Dependencias y scripts
+├── vite.config.js             Puerto 5173
+├── .env.example               Plantilla de variables (copiar a .env.local)
+├── .node-version              Node 22 para Cloudflare
+├── README.md                  Esta guía
+├── docs/
+│   ├── DESPLIEGUE.md          Cloudflare Pages + dominio
+│   └── PLAN-SUPABASE.md       Futura base de datos
 ├── public/
-│   ├── images/             ← logo, ilustraciones, foto de talleres, aliados
-│   │   └── allies/         ← logos de colaboradores
-│   └── videos/             ← videoInicio.mp4
-├── src/
-│   ├── main.jsx
-│   ├── App.jsx
-│   ├── index.css           ← estilos del portal, onboarding y app
-│   ├── hooks/
-│   │   └── useSlowPageScroll.js
-│   ├── components/
-│   ├── context/
-│   ├── data/
-│   ├── pages/
-│   │   ├── Landing.jsx     ← sitio de la fundación
-│   │   ├── Landing.css
-│   │   ├── FifLearning.jsx ← portal de aprendizaje
-│   │   ├── DonateIndividual.jsx
-│   │   ├── DonatePackages.jsx
-│   │   ├── exercises/
-│   │   └── legal/
-│   └── utils/
-├── dist/
-└── node_modules/
+│   ├── images/                Logo, fotos, aliados, equipo
+│   ├── videos/                videoInicio.mp4
+│   └── _headers               Caché y cabeceras en Pages
+└── src/
+    ├── main.jsx               Arranque React + Router + fuentes
+    ├── App.jsx                Rutas públicas + carga de la plataforma
+    ├── PlatformRoutes.jsx     Rutas de FIF Learning y Coordinación
+    ├── config.js              PLATFORM_ENABLED
+    ├── index.css              Estilos del portal, paneles, legales
+    ├── components/            Piezas reutilizables
+    ├── context/GameContext.jsx  Estado + localStorage
+    ├── data/                  Contenido y catálogos
+    ├── pages/                 Una pantalla por archivo
+    ├── hooks/                 Scroll de la landing
+    └── utils/                 Hash, PDF, roles, parser de pruebas
 ```
 
-### 6.1 Raíz
+### 6.1 “Quiero cambiar X” → archivo
 
-| Archivo | Qué maneja |
+| Quieres cambiar… | Archivo(s) |
 |---|---|
-| `index.html` | Idioma `es`, título, favicon, `#root` y carga de `src/main.jsx` |
-| `package.json` | Dependencias y scripts `dev` / `build` / `preview` |
-| `package-lock.json` | Versiones exactas de npm |
-| `vite.config.js` | Plugin de React, puerto `5173`, host local |
-| `.gitignore` | Excluye `node_modules`, `dist` y temporales |
+| Textos, horario, WhatsApp, redes, podcast | `src/data/org.js` y, si aplica, `src/pages/Landing.jsx` |
+| Secciones de la landing (equipo, eventos, menú) | `src/pages/Landing.jsx` + `src/pages/Landing.css` |
+| Tarjetas de eventos (textos, botones, color) | `EVENTS` en `Landing.jsx` y `ScrollSplitEvents.jsx` |
+| Formulario de donación | `src/components/RequestFormModal.jsx` |
+| Páginas de donación | `DonateIndividual.jsx`, `DonatePackages.jsx` |
+| Formulario de inscripción | `src/pages/Enrollment.jsx` + `Enrollment.css` + `src/data/enrollments.js` |
+| Legales | `src/pages/legal/LegalPages.jsx` |
+| Pie y enlace Coordinación | `src/components/SiteFooter.jsx` |
+| Encender/apagar FIF Learning | `.env.local` y `src/config.js` (el flag). Rutas en `App.jsx` / `PlatformRoutes.jsx` |
+| Materias que ve el estudiante | `src/data/teacher.js` (`SUBJECTS`) y `ageGroups` en `src/data/courses.js` |
+| Minijuegos / lecciones | `src/data/courses.js` |
+| Cuentas semilla y equipos | `src/data/staff.js` |
+| Lógica de login, progreso, pruebas | `src/context/GameContext.jsx` |
+| Panel de coordinación | `src/pages/AdminPanel.jsx` + `Admin.css` |
+| Panel de docentes | `src/pages/TeacherPanel.jsx` |
+| Hub de una materia (aula / juegos / código) | `src/pages/SubjectHub.jsx` |
+| Foto o video | Copiar a `public/images/` o `public/videos/` y usar `/images/archivo.ext` |
+| Color de marca de eventos | `--lp-brand` en `Landing.css` (RGB 240, 131, 0) |
 
-### 6.2 `public/`
-
-Se sirve en la URL raíz. Ejemplo: `public/images/LOGO_COLOR.png` → `/images/LOGO_COLOR.png`.
-
-Incluye el logo, ilustraciones, `Image1.jpg`–`Image5.jpg` para la landing y los recortes de colaboradores en `public/images/allies/`.
-
-### 6.3 `Images/`
-
-Origen de ilustraciones. La web en ejecución lee `public/images/`. Si se cambia un personaje, hay que copiarlo también a `public/images/` con el nombre que usa el código.
-
-### 6.4 `src/`
-
-| Carpeta / archivo | Qué maneja |
-|---|---|
-| `src/main.jsx` | Arranque: fuentes, CSS, `BrowserRouter`, montaje en `#root` |
-| `src/App.jsx` | Rutas y aviso de cookies |
-| `src/index.css` | Portal FIF Learning, dashboard, ejercicios, legal |
-| `src/pages/Landing.css` | Sitio institucional |
-| `src/hooks/` | Scroll lento de la landing |
-| `src/components/` | Piezas reutilizables de interfaz |
-| `src/context/` | Estado global (cuenta, progreso, pruebas) |
-| `src/data/` | Cursos, textos de ayuda y datos de la organización |
-| `src/pages/` | Una pantalla por archivo |
-| `src/utils/` | PDF, hash, parser de pruebas |
-
----
-
-## 7. HTML, CSS y React
-
-Hay un solo HTML de verdad: `index.html`. React construye el resto. Los `.jsx` mezclan JavaScript con etiquetas; Vite las transforma.
-
-El diseño del **portal** está en `src/index.css`. El de la **fundación** está en `src/pages/Landing.css`. No hay Tailwind: son clases clásicas (`.btn-green`, `.lp-hero`, `.app-nav`).
-
-Colores institucionales: azul `#1e5bb8` (logo), textos negro o azul, dorado `#e8c36a` / `#f0c014` para DONA AHORA y botones de registro a eventos. Fondo de la landing: blanco. Títulos de Nosotros en Fredoka azul; título de Inicio en Nunito.
-
-Wordmark **FIF LEARNING**: cada letra con el color de marca (azul, verde, teal, cian, púrpura, magenta, rojos).
-
----
-
-## 8. Componentes (`src/components`) y hooks
+### 6.2 `src/data` (catálogos)
 
 | Archivo | Función |
 |---|---|
-| `Brand.jsx` | Wordmark **FIF LEARNING** (letras de color) y logo de la fundación |
-| `AppHeader.jsx` | Cabecera del estudiante: puntos, menú, cierre de sesión |
-| `AppShell.jsx` | Envuelve `/app/*`: exige cuenta de estudiante |
-| `CourseCover.jsx` | Portadas ilustradas de cursos |
-| `SiteFooter.jsx` | Pie: cada ítem en su línea, enlaces a `/` y `/fif-learning` |
+| `org.js` | Nombre, correo, teléfono, WhatsApp, redes, plataformas del podcast, grupos de edad |
+| `courses.js` | Cada minijuego (teoría/práctica/lecturas) y a qué edad aplica |
+| `teacher.js` | Materias visibles (Programación, Matemática, Arte, Música) y tipos de actividad/pregunta |
+| `staff.js` | Equipos, permisos, días, cuenta admin y voluntarios de prueba |
+| `enrollments.js` | Pasos de inscripción, tarifas, tipos de institución, becas internas |
+| `content.js` | Textos de tutorial y Asistencia; reexporta cursos |
+
+### 6.3 `src/pages`
+
+Públicas: `Landing`, `Enrollment`, `DonateIndividual`, `DonatePackages`, `legal/LegalPages`.
+
+Plataforma: `FifLearning`, `Login`, `Register` (cerrado), `Tutorial`, `Welcome`, `Dashboard`, `SubjectHub`, `CourseMap`, `TakeTest`, `StudentActivities`, `StudentSchedules`, `TeacherLogin`, `TeacherPanel`, `AdminLogin`, `AdminPanel`.
+
+Ejercicios: `pages/exercises/MatchingExercise.jsx`, `TimedMathExercise.jsx`, `DeductorExercise.jsx`.
+
+### 6.4 `src/components`
+
+| Archivo | Función |
+|---|---|
+| `Brand.jsx` | Wordmark FIF LEARNING y logo |
+| `AppHeader.jsx` / `AppShell.jsx` | Marco del estudiante |
+| `SiteFooter.jsx` | Pie del sitio |
+| `RequestFormModal.jsx` | Formulario de donación → WhatsApp |
+| `ScrollSplitEvents.jsx` | Tarjetas de eventos |
+| `KineticText.jsx` / `VelocityText.jsx` | Animaciones de la landing |
+| `Testimonials.jsx` | Testimonios |
+| `CourseCover.jsx` | Portadas de cursos |
+| `TextEditor.jsx` | Editor de entregas |
 | `LegalLayout.jsx` | Plantilla de páginas legales |
-| `CookieNotice.jsx` | Aviso de almacenamiento estrictamente necesario |
-| `KineticText.jsx` | Reveal por palabras, blur y dirección (Nosotros) |
-| `VelocityText.jsx` | Franja DONA AHORA en movimiento |
-| `ScrollSplitEvents.jsx` | Imagen unificada → tres paneles → volteo 3D a tarjetas de evento |
-| `hooks/useSlowPageScroll.js` | Controla la velocidad del scroll en la landing |
+| `CookieNotice.jsx` | Aviso antiguo de almacenamiento; **ya no se muestra** |
 
----
-
-## 9. Datos (`src/data`)
+### 6.5 `src/utils`
 
 | Archivo | Función |
 |---|---|
-| `org.js` | Nombre, país, correo, teléfono, WhatsApp, redes, grupos de edad |
-| `courses.js` | Materias, lecciones y ejercicios por edad |
-| `content.js` | Reexporta cursos; tutoriales y textos de Asistencia |
-
-Contacto institucional: `fundacionintegralfif@gmail.com`, `+593 99 833 4440` (WhatsApp `593998334440`).
-
-Redes: Facebook, TikTok, LinkedIn, Instagram, YouTube y podcast en Spotify.
-
-Para añadir un ejercicio: editar `courses.js` y asignarlo al grupo de edad.
+| `security.js` | SHA-256 de contraseñas y códigos `FIF-XXXXX` |
+| `roles.js` | Quién es staff/admin y a qué ruta va después del login |
+| `parseTestCode.js` | Interpreta pruebas pegadas como texto |
+| `gradeTest.js` | Califica un intento |
+| `certificate.js` | PDF al terminar un minijuego/curso |
 
 ---
 
-## 10. Estado global (`src/context/GameContext.jsx`)
+## 7. Rutas
 
-Guarda en `localStorage` la clave `fif-learning-state-v2`:
+Definidas en `src/App.jsx` (públicas) y `src/PlatformRoutes.jsx` (plataforma).
 
-- Cuentas (estudiante o docente)
-- Sesión activa
-- Progreso, puntos, racha, insignias
-- Pruebas de docentes y calificaciones
-- Mensajes de asistencia (solo en el dispositivo)
+### Siempre disponibles
 
-Expone: `register`, `login`, `logout`, `completeLesson`, `courseStats`, `saveTest`, `saveAttempt`.
-
-El aviso de cookies usa `fif-learning-notice-v1`.
-
----
-
-## 11. Utilidades (`src/utils`)
-
-| Archivo | Función |
+| Ruta | Pantalla |
 |---|---|
-| `security.js` | SHA-256 de la contraseña y códigos `FIF-XXXXX` |
-| `parseTestCode.js` | Interpreta `TITULO` / `PREGUNTA` / `A)` / `CORRECTA` |
-| `certificate.js` | PDF de finalización de curso |
+| `/` | Landing institucional |
+| `/dona/individual` | Donación individual |
+| `/dona/paquetes` | Paquetes |
+| `/inscripciones` | Inscripción (5 pasos) |
+| `/legal/*` | Privacidad, términos, cookies, reembolsos, avisos, contacto |
+| `/admin` | Login de Coordinación |
+| `/admin/panel` | Panel de Coordinación |
+| `/coordinacion` | Redirige a `/admin/panel` |
 
----
+### Solo con `VITE_ENABLE_PLATFORM=true`
 
-## 12. Pantallas (`src/pages`) y rutas
-
-### Públicas — fundación
-
-| Ruta | Archivo | Qué hace |
-|---|---|---|
-| `/` | `Landing.jsx` | Sitio institucional completo (ver sección 5) |
-| `/dona/individual` | `DonateIndividual.jsx` | Frecuencia, monto y envío por WhatsApp |
-| `/dona/paquetes` | `DonatePackages.jsx` | Paquetes Taller, Aula, Programa, Comunidad |
-
-### Públicas — portal FIF Learning
-
-| Ruta | Archivo | Qué hace |
-|---|---|---|
-| `/fif-learning` | `FifLearning.jsx` | Portada del portal, método, cursos, registro |
-| `/login` | `Login.jsx` | Inicio de sesión |
-| `/registro` | `Register.jsx` | Alta de estudiante, edad, consentimientos |
-| `/verificar` | `Verify.jsx` | Confirmación de datos |
-| `/tutorial/:step` | `Tutorial.jsx` | Tres diapositivas de uso |
-| `/bienvenida` | `Welcome.jsx` | Mensaje de bienvenida |
-| `/profesores` | `TeacherLogin.jsx` | Acceso o alta de docente |
-| `/profesores/panel` | `TeacherPanel.jsx` | Crear pruebas y ver notas |
-| `/legal/privacidad` | `legal/LegalPages.jsx` | Política de privacidad |
-| `/legal/terminos` | igual | Términos y condiciones |
-| `/legal/cookies` | igual | Cookies y almacenamiento |
-| `/legal/reembolsos` | igual | Reembolsos (hoy no hay pagos en línea) |
-| `/legal/avisos` | igual | Riesgos y cumplimiento |
-| `/legal/contacto` | igual | Contacto |
-
-Los enlaces “volver” del portal apuntan a `/fif-learning`, no a `/`.
-
-### Estudiante (`/app`, protegido)
-
-| Ruta | Archivo | Qué hace |
-|---|---|---|
-| `/app/cursos` | `Dashboard.jsx` | Cursos en progreso |
-| `/app/progreso` | `Progress.jsx` | Kardex y certificado |
-| `/app/recursos` | `Resources.jsx` | Cursos de esa edad |
-| `/app/asistencia` | `Help.jsx` | Ayuda y WhatsApp |
-| `/app/prueba` | `TakeTest.jsx` | Prueba con código de docente |
-| `/app/curso/:id` | `CourseMap.jsx` | Mapa de lecciones |
-| `/app/curso/:id/leccion/:n` | `exercises/ExercisePage.jsx` | Matching, matemáticas o código |
-| `/app/curso/:id/completado` | `CourseComplete.jsx` | Felicitación + PDF |
-
-### Ejercicios
-
-| Archivo | Tipo |
+| Ruta | Pantalla |
 |---|---|
-| `MatchingExercise.jsx` | Relacionar frases |
-| `TimedMathExercise.jsx` | Operaciones con temporizador |
-| `DeductorExercise.jsx` | Completar bloques de código |
+| `/fif-learning` | Portada del portal |
+| `/login` | Estudiante |
+| `/registro` | Cerrado: manda a login o inscripciones |
+| `/tutorial/:step` | Tutorial post-login |
+| `/profesores` | Login del equipo |
+| `/equipo` | Panel del equipo |
+| `/app/cursos` | Materias del estudiante |
+| `/app/materia/:subjectId` | Aula + minijuegos + código |
+| `/app/curso/:courseId` | Mapa de un minijuego |
+| `/app/curso/:id/leccion/:n` | Ejercicio |
+| `/app/actividades` | Entregar tareas |
+| `/app/prueba` | Ingresar código de prueba |
+| `/app/horarios` | Horarios del grupo |
+| `/app/progreso` | Kardex y PDF |
+| `/app/asistencia` | Ayuda / WhatsApp |
 
 ---
 
-## 13. Cómo se relacionan las piezas
+## 8. Cursos y grupos
 
-```text
-index.html
-    → main.jsx (React + Router + CSS + fuentes)
-        → App.jsx (rutas)
-            → /                 Landing de la fundación
-            → /fif-learning     Portal FIF Learning
-            → /dona/*           Donaciones (WhatsApp)
-            → /app/*            Estudiante (GameContext + localStorage)
-            → /profesores       Docentes
-            → public/images     Ilustraciones y aliados
-            → utils/certificate.js  PDF al completar un curso
+El estudiante **no** ve 16 chips sueltos. Ve 3 o 4 **materias** (`SUBJECTS` en `teacher.js`):
+
+| Materia | Minijuegos de refuerzo | Quién la ve |
+|---|---|---|
+| Programación | teoría, práctica, lecturas, programación 2 | Inicial y regular |
+| Matemática | Combinatoria, Teoría de números, Geometría, Álgebra (sílabo olímpico FIF Learning) | Inicial y regular |
+| Música | teoría, práctica, lecturas | Inicial y regular |
+| Arte | teoría, práctica, lecturas, historia | **Solo inicial / nivelación** |
+
+`inicial` en el código se trata como `under12`; `regular` como `over12` (`courseAgeKey` en `courses.js`).
+
+Para añadir un minijuego: créalo en `courses.js`, agrégalo al array `COURSES` y enlázalo en `SUBJECTS` de `teacher.js`. Para quitar Arte del regular no hace falta tocar cada pantalla: basta con que esos cursos tengan `ageGroups: ["under12"]`.
+
+---
+
+## 9. Git y publicación
+
+Remoto de trabajo: `origin` → `https://github.com/FIF-programacion/paginaFIF.git` (rama `main`).
+
+Cada push a `main` vuelve a desplegar fundacionfif.org (Cloudflare Pages). Build: `npm run build`, salida `dist/`.
+
+```bash
+git status
+git add archivo1 archivo2 // git add .
+git commit -m "Describe el porqué del cambio"
+git push
 ```
 
-1. La persona llega a la fundación (`/`) o entra al portal (`/fif-learning`).
-2. El estudiante se registra, elige edad y practica en el mapa de cursos.
-3. Cada lección actualiza el progreso en `GameContext`.
-4. Al completar un curso puede descargar un PDF de reconocimiento (no es título oficial).
-5. El docente publica una prueba; el estudiante la toma con el código.
-6. Quien dona elige monto o paquete y el mensaje se abre en WhatsApp.
+No subas `.env.local`, `node_modules/` ni `dist/`.
+
+El repo anterior `ArielBourgeat/FIF-WEB` no es el que alimenta el dominio actual.
+
+Detalle del DNS y de las variables en Cloudflare: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md). Nota: ese documento es anterior a dejar Coordinación siempre encendida; si hay duda, manda esta guía.
 
 ---
 
-## 14. Librerías (`package.json`)
+## 10. Convención al cambiar algo
 
-**App**
+1. Identifica si es **sitio público** (Landing, donaciones, inscripción) o **plataforma** (GameContext, paneles, cursos).
+2. Cambia datos de contenido en `src/data/`, no los copies en cada página.
+3. Estilos de la fundación: `Landing.css`. Estilos del portal y paneles: `index.css` / `Admin.css` / `Enrollment.css`.
+4. Nueva pantalla: archivo en `src/pages/` y ruta en `App.jsx` o `PlatformRoutes.jsx`.
+5. Prueba en el navegador el flujo, no solo el archivo. Si tocaste la landing, revisa también donación, inscripción, contacto y el pie.
+6. FIF Learning: crea un estudiante de prueba en Coordinación y entra como alumno **y** como docente.
 
-- `react` / `react-dom` — interfaz
-- `react-router-dom` — navegación
-- `framer-motion` — animaciones de la landing
-- `jspdf` — PDF
-- `@fontsource/fredoka` y `@fontsource/nunito` — fuentes locales
+Tecnologías que **no** usa este repo: Java, Tailwind, backend propio, pasarela de pago.
 
-**Desarrollo**
-
-- `vite` — bundler y servidor
-- `@vitejs/plugin-react` — JSX y Fast Refresh
-
-No hay analítica de terceros.
-
----
-
-## 15. Convención al editar
-
-- **Nueva pantalla:** archivo en `src/pages` y ruta en `App.jsx`.
-- **Cambio de la landing institucional:** `src/pages/Landing.jsx` y `src/pages/Landing.css`.
-- **Cambio del portal FIF Learning:** `src/pages/FifLearning.jsx` y `src/index.css`.
-- **Nuevo curso o ejercicio:** `src/data/courses.js`.
-- **Nueva ilustración:** copiar a `public/images/` y usar `/images/nombre.ext`.
-- **Datos de la fundación o legales:** `src/data/org.js` y `src/pages/legal/LegalPages.jsx`.
-- **Video del hero:** `public/videos/videoInicio.mp4`.
-- **Fotos de la landing:** `public/images/Image1.jpg` a `Image5.jpg`.
-- **Subir cambios:** `git add` → `git commit` → `git push` (sección 2).
-
-Antes de un lanzamiento con pagos reales hay que conectar un procesador; hoy el botón de donar abre WhatsApp con el monto o el paquete elegido.
+Contacto institucional en código: `fundacionintegralfif@gmail.com`, WhatsApp `+593 99 833 4440`.

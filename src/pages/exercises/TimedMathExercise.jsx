@@ -57,7 +57,7 @@ export default function TimedMathExercise({ exercise, onSubmit }) {
       ))}
       <div className="notes">
         <label htmlFor="math-notes"><strong>Notas</strong></label>
-        <textarea id="math-notes" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Usa este espacio para calcular." />
+        <textarea id="math-notes" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Justifica: dibujo, tabla, casos o cálculo." />
       </div>
       {left === 0 && <p className="feedback bad">Se acabó el tiempo. Envía lo que lograste resolver.</p>}
       {feedback === "ok" && <p className="feedback ok">¡Impecable! Resolviste las ecuaciones.</p>}

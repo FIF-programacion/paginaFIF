@@ -7,10 +7,8 @@ import { VelocityText } from "../components/VelocityText";
 import { ScrollSplitEvents } from "../components/ScrollSplitEvents";
 import { Testimonials } from "../components/Testimonials";
 import { RequestFormModal } from "../components/RequestFormModal";
-import { Wordmark } from "../components/Brand";
 import { ORG, assistanceWhatsAppUrl } from "../data/org";
 import { useSlowPageScroll } from "../hooks/useSlowPageScroll";
-import { PLATFORM_ENABLED } from "../config";
 import "./Landing.css";
 
 const SECTIONS = [
@@ -22,7 +20,6 @@ const SECTIONS = [
   { id: "dona", title: "Dona ahora" },
   { id: "colaboradores", title: "Colaboradores" },
   { id: "multimedia", title: "Multimedia" },
-  { id: "fif-learning", title: "FIF Learning" },
   { id: "contacto", title: "Contacto" },
 ];
 
@@ -55,18 +52,23 @@ const ABOUT_BANDS = [
 
 const TEAM = [
   {
+    name: "Gabi y Diego",
+    image: "/images/Diego_Gaby.avif",
+    photoPosition: "center 70%",
     name: "Gaby y Diego",
     image: "/images/Diego_Gaby.avif",
     // La pareja está a la derecha de la foto: se desplaza el recorte para que quede centrada en la tarjeta.
     position: "74% center",
   },
   {
-    name: "Anabelle Chacon",
+    name: "Anabelle Chacón",
     image: "/images/Anabelle_Chacon.avif",
+    photoPosition: "center 22%",
   },
   {
     name: "Alex Pico",
     image: "/images/Alex_Pico.avif",
+    photoPosition: "center 12%",
   },
 ];
 
@@ -88,12 +90,15 @@ const PROJECT_IMAGES = [
 const EVENTS = [
   {
     title: "Clases y atención",
+    date: "Sábados 7:30 am – 1:00 pm",
+    place: "Fundación Integral de Familias",
     date: "Martes y jueves 3:00 pm – 5:00 pm",
     place: "Sábados 8:30 am – 12:30 pm",
     bgColor: "#5b9cf5",
     textColor: "#ffffff",
     moreHref: "#contacto",
     registerHref: "#contacto",
+    ctaLabel: "Ver horarios",
   },
   {
     title: "Conversa con los Profes",
@@ -102,6 +107,7 @@ const EVENTS = [
     textColor: "#16362d",
     moreHref: "#multimedia",
     registerHref: "#multimedia",
+    ctaLabel: "Escuchar",
   },
   {
     title: "Concursos matemáticos",
@@ -111,6 +117,7 @@ const EVENTS = [
     textColor: "#4a1f1c",
     moreHref: "#contacto",
     registerHref: "/inscripciones",
+    ctaLabel: "Inscribirme",
   },
 ];
 
@@ -122,6 +129,7 @@ const ALLIES = [
 ];
 
 const HOURS = [
+  { day: "Sábado", time: "7:30 am – 1:00 pm" },
   { day: "Martes", time: "3:00 pm – 5:00 pm" },
   { day: "Jueves", time: "3:00 pm – 5:00 pm" },
   { day: "Sábado", time: "8:30 am – 12:30 pm" },
@@ -161,6 +169,7 @@ function IconSocial({ name }) {
     tiktok: <path d="M14.2 3h3.1c.3 2.4 1.6 4.2 4.2 4.5v3.1c-1.4 0-2.7-.4-4.1-1.2v6.8A6.7 6.7 0 1 1 9.2 9.6v3.3a3.5 3.5 0 1 0 2.5 3.3V3Z" />,
     youtube: <path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4a2.5 2.5 0 0 0-1.8 1.8C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8ZM10 15V9l5.2 3L10 15Z" />,
     linkedin: <path d="M6.5 9H3.6v12h2.9V9ZM5 3.4A1.7 1.7 0 1 0 5 6.8 1.7 1.7 0 0 0 5 3.4ZM20.4 9c-2.3 0-3.7 1.2-4.3 2.4V9h-2.9v12h2.9v-6.4c0-1.7.9-2.8 2.4-2.8s2.2.9 2.2 2.8V21H21V14c0-3-1.5-5-4.6-5Z" />,
+    youtube: <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8ZM9.6 15.6V8.4L15.8 12Z" />,
   };
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="lp-social-icon">
@@ -305,8 +314,8 @@ export default function Landing() {
         </div>
       )}
 
-      <nav className="lp-nav" aria-label="Secciones de la página">
-        <p className="lp-nav-caption">Menu</p>
+      <nav className={`lp-nav${active === "inicio" ? " is-on-hero" : ""}`} aria-label="Secciones de la página">
+        <p className="lp-nav-caption">Menú</p>
         <ul className="lp-nav-list">
           {SECTIONS.map((section) => (
             <li key={section.id}>
@@ -345,9 +354,6 @@ export default function Landing() {
                 <div className="lp-hero-actions">
                   <a href="#dona" className="lp-hero-cta" onClick={goTo("dona")}>Dona hoy</a>
                   <Link to="/inscripciones" className="lp-hero-cta lp-hero-cta-enroll">Inscripciones</Link>
-                  {PLATFORM_ENABLED && (
-                    <Link to="/fif-learning" className="lp-hero-cta lp-hero-cta-learning">FIF LEARNING</Link>
-                  )}
                 </div>
                 <p className="lp-scroll-hint">Desliza</p>
               </div>
@@ -447,6 +453,9 @@ export default function Landing() {
                 <img
                   src={member.image}
                   alt={member.name}
+                  loading="lazy"
+                  decoding="async"
+                  style={member.photoPosition ? { objectPosition: member.photoPosition } : undefined}
                   style={member.position ? { objectPosition: member.position } : undefined}
                   loading="lazy"
                   decoding="async"
@@ -540,8 +549,22 @@ export default function Landing() {
             <p className="lp-kicker">Multimedia</p>
             <h2>Podcast y YouTube</h2>
             <div className="lp-media">
-              <a href={ORG.social.podcast} target="_blank" rel="noreferrer">
+              <div className="lp-media-block">
                 <span>Podcast</span>
+                <strong>Conversa con los profes</strong>
+                <p>Escúchalo en todas las plataformas donde está publicado.</p>
+                <div className="lp-podcast-links">
+                  {ORG.social.podcastPlatforms.map((platform) => (
+                    <a key={platform.name} href={platform.url} target="_blank" rel="noreferrer">
+                      {platform.name}
+                    </a>
+                  ))}
+                </div>
+              </div>
+              <a className="lp-media-youtube" href={ORG.social.youtube} target="_blank" rel="noreferrer">
+                <span className="lp-yt-badge" aria-hidden="true">
+                  <IconSocial name="youtube" />
+                </span>
                 <strong>Conversa con los Profes</strong>
               </a>
               <a href={ORG.social.youtube} target="_blank" rel="noreferrer">
@@ -550,22 +573,6 @@ export default function Landing() {
               </a>
             </div>
           </FadeIn>
-        </section>
-
-        <section className="lp-portal" id="fif-learning">
-          <div className="lp-portal-frame">
-            <img src="/images/Image1.jpg" alt="" loading="lazy" decoding="async" />
-            <div className="lp-portal-copy">
-              <p className="lp-kicker">Portal</p>
-              <h2 className="lp-portal-wordmark"><Wordmark size="lg" /></h2>
-              <p>El espacio digital de refuerzo académico para estudiantes, familias y docentes.</p>
-              {PLATFORM_ENABLED ? (
-                <Link to="/fif-learning" className="lp-hero-cta">Entrar al portal</Link>
-              ) : (
-                <span className="lp-hero-cta" aria-disabled="true">Muy pronto</span>
-              )}
-            </div>
-          </div>
         </section>
 
         <section className="lp-plain" id="contacto">
@@ -580,7 +587,6 @@ export default function Landing() {
                 <a href={wa} target="_blank" rel="noreferrer">WhatsApp</a>
                 <p>{ORG.legalAddress}</p>
                 <p>{ORG.ruc}</p>
-                {PLATFORM_ENABLED && <Link to="/admin" className="lp-admin-ghost">Coordinación</Link>}
               </article>
               <article className="lp-contact-card">
                 <h3>Horarios</h3>

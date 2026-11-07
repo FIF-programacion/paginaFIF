@@ -5,7 +5,7 @@ import { AGE_GROUPS, ageLabel, normalizeGroup } from "../data/org";
 import { ACCESS_KEYS, ACCESS_PRESETS, DEFAULT_ADMIN, DUTIES, STAFF_KIND_LABEL, TEAMS, WEEKDAYS, teamLabel } from "../data/staff";
 import { ACTIVITY_TYPES, SUBJECTS, coursesForSubject } from "../data/teacher";
 import { COURSES } from "../data/courses";
-import { ACADEMIC_GOALS, ENROLLMENT_STATUSES, statusLabel } from "../data/enrollments";
+import { ACADEMIC_GOALS, ENROLLMENT_STATUSES, schoolTypeLabel, statusLabel } from "../data/enrollments";
 import "./Admin.css";
 
 const TABS = [
@@ -48,9 +48,9 @@ export default function AdminPanel() {
   const [feedback, setFeedback] = useState("");
   const [schedule, setSchedule] = useState({
     title: "",
-    day: "martes",
-    startTime: "15:00",
-    endTime: "17:00",
+    day: "sabado",
+    startTime: "07:30",
+    endTime: "13:00",
     ageGroup: "all",
     teacherEmail: "",
     notes: "",
@@ -201,7 +201,7 @@ export default function AdminPanel() {
 
       {tab === "inscripciones" && (
         <section className="ad-card">
-          <p>Solicitudes enviadas desde el formulario público. Cambia el estado según la revisión.</p>
+          <p>Solicitudes enviadas desde el formulario público. Cambia el estado según la revisión. Las becas las define Coordinación aquí, no en el formulario público.</p>
           {enrollments.length === 0 && <p>Aún no hay inscripciones en este dispositivo.</p>}
           {enrollments.length > 0 && (
             <table className="ad-table">
@@ -221,7 +221,7 @@ export default function AdminPanel() {
                   <tr key={item.id}>
                     <td>{item.studentName}</td>
                     <td>{item.guardianName}<br /><small>{item.guardianEmail}</small></td>
-                    <td>{item.schoolType === "fiscal" ? "Fiscal" : item.schoolType === "particular" ? "Particular" : "—"}</td>
+                    <td>{schoolTypeLabel(item.schoolType)}</td>
                     <td>{item.modality === "virtual" ? "Virtual" : "Presencial"}</td>
                     <td>{new Date(item.createdAt).toLocaleDateString("es-EC")}</td>
                     <td>
@@ -256,7 +256,7 @@ export default function AdminPanel() {
                 <p><strong>Correo:</strong> {selected.guardianEmail}</p>
                 <p><strong>Documento del estudiante:</strong> {selected.studentId}</p>
                 <p><strong>Nacimiento:</strong> {selected.birthDate}</p>
-                <p><strong>Colegio:</strong> {selected.school} · {selected.schoolType === "fiscal" ? "Fiscal" : selected.schoolType === "particular" ? "Particular" : "—"} · {selected.grade}</p>
+                <p><strong>Colegio:</strong> {selected.school} · {schoolTypeLabel(selected.schoolType)} · {selected.grade}</p>
                 <p><strong>Pago:</strong> ${selected.payAmount || "—"} · {selected.payName} · {selected.payPhone}</p>
                 {selected.scholarshipLabels?.length > 0 && <p><strong>Becas:</strong> {selected.scholarshipLabels.join(" · ")}</p>}
                 {selected.payNotes && <p><strong>Notas de pago:</strong> {selected.payNotes}</p>}

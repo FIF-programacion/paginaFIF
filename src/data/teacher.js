@@ -1,10 +1,10 @@
-import { COURSES } from "./courses";
+import { COURSES, courseAgeKey } from "./courses";
 
 export const SUBJECTS = [
-  { id: "matematica", label: "Matemática", courses: ["matematica-teoria", "matematica-practica", "matematica-lecturas", "geometria", "algebra", "matematica-cotidiana"] },
-  { id: "musica", label: "Música", courses: ["musica-teoria", "musica-practica", "musica-lecturas"] },
-  { id: "arte", label: "Arte", courses: ["arte-teoria", "arte-practica", "arte-lecturas", "historia-arte"] },
-  { id: "programacion", label: "Programación", courses: ["programacion-teoria", "programacion-practica", "programacion-lecturas", "programacion-2"] },
+  { id: "programacion", label: "Programación", cover: "code", color: "#42a5f5", courses: ["programacion-teoria", "programacion-practica", "programacion-lecturas", "programacion-2"] },
+  { id: "matematica", label: "Matemática", cover: "chalkboard", color: "#ffd56a", courses: ["matematica-teoria", "matematica-practica", "geometria", "algebra"] },
+  { id: "arte", label: "Arte", cover: "starry", color: "#f06292", courses: ["arte-teoria", "arte-practica", "arte-lecturas", "historia-arte"] },
+  { id: "musica", label: "Música", cover: "music", color: "#4dd0e1", courses: ["musica-teoria", "musica-practica", "musica-lecturas"] },
 ];
 
 export const QUESTION_TYPES = [
@@ -25,6 +25,24 @@ export function coursesForSubject(subjectId) {
   const subject = SUBJECTS.find((item) => item.id === subjectId);
   if (!subject) return COURSES;
   return COURSES.filter((course) => subject.courses.includes(course.id));
+}
+
+export function getSubject(id) {
+  return SUBJECTS.find((item) => item.id === id) || null;
+}
+
+export function subjectOfCourse(courseId) {
+  return SUBJECTS.find((item) => item.courses.includes(courseId)) || null;
+}
+
+export function subjectsForAge(ageGroup) {
+  const key = courseAgeKey(ageGroup);
+  return SUBJECTS.filter((subject) =>
+    subject.courses.some((courseId) => COURSES.find((course) => course.id === courseId)?.ageGroups.includes(key)),
+  ).map((subject) => ({
+    ...subject,
+    courses: subject.courses.filter((courseId) => COURSES.find((course) => course.id === courseId)?.ageGroups.includes(key)),
+  }));
 }
 
 export function emptyQuestion() {

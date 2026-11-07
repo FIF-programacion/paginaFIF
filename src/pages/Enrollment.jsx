@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { SiteFooter } from "../components/SiteFooter";
 import { assistanceWhatsAppUrl, formatEnrollmentPaymentMessage } from "../data/org";
+import { ACADEMIC_GOALS, ENROLLMENT_FEES, GRADES, SCHOOL_TYPES, emptyEnrollment, schoolTypeLabel } from "../data/enrollments";
 import { ACADEMIC_GOALS, ENROLLMENT_DOCUMENT, ENROLLMENT_FEES, GRADES, SCHOLARSHIPS, SCHOOL_TYPES, emptyEnrollment } from "../data/enrollments";
 import "./Enrollment.css";
 
@@ -90,7 +91,7 @@ export default function Enrollment() {
       return "Completa los datos del representante.";
     }
     if (step === 2 && (!form.studentName || !form.studentId || !form.birthDate || !form.school || !form.schoolType || !form.grade || !form.city || !form.sector)) {
-      return "Completa los datos del estudiante, incluida la institución fiscal o particular.";
+      return "Completa los datos del estudiante, incluido el tipo de institución.";
     }
     if (step === 2 && !form.documentWhatsApp) {
       return `Confirma que enviarás por WhatsApp el ${ENROLLMENT_DOCUMENT.toLowerCase()}.`;
@@ -136,7 +137,7 @@ export default function Enrollment() {
     // Hasta tener Supabase la solicitud solo viaja por WhatsApp; no se guardan datos del menor en este navegador.
     const record = {
       ...form,
-      scholarshipLabels: form.scholarships.map((id) => SCHOLARSHIPS.find((item) => item.id === id)?.label || id),
+      scholarshipLabels: [],
     };
     window.open(assistanceWhatsAppUrl(formatEnrollmentPaymentMessage(record)), "_blank", "noopener,noreferrer");
     setDone(true);
@@ -214,7 +215,7 @@ export default function Enrollment() {
               <Field id="school" label="Institución educativa">
                 <input id="school" value={form.school} onChange={(event) => set("school", event.target.value)} />
               </Field>
-              <fieldset className="en-choice en-field">
+              <fieldset className="en-choice en-field en-school-type">
                 <legend>Tipo de institución</legend>
                 {SCHOOL_TYPES.map((type) => (
                   <label key={type.id}>
@@ -248,6 +249,12 @@ export default function Enrollment() {
                 <input id="sector" value={form.sector} onChange={(event) => set("sector", event.target.value)} />
               </Field>
             </div>
+            {fees && (
+              <div className="en-fees">
+                <p>Inscripción {schoolTypeLabel(form.schoolType).toLowerCase()}: <strong>${fees.inscription}</strong></p>
+                <p>{fees.extraLabel}: <strong>${fees.extra}</strong></p>
+              </div>
+            )}
             <div className="en-document">
               <h2>{ENROLLMENT_DOCUMENT}</h2>
               <p className="en-note">
@@ -331,7 +338,7 @@ export default function Enrollment() {
                 <div><dt>Estudiante</dt><dd>{form.studentName}</dd></div>
                 <div><dt>Documento del estudiante</dt><dd>{form.studentId}</dd></div>
                 <div><dt>Nacimiento</dt><dd>{form.birthDate}</dd></div>
-                <div><dt>Institución</dt><dd>{form.school} · {form.schoolType === "fiscal" ? "Fiscal" : "Particular"}</dd></div>
+                <div><dt>Institución</dt><dd>{form.school} · {schoolTypeLabel(form.schoolType)}</dd></div>
                 <div><dt>Grado</dt><dd>{form.grade}</dd></div>
                 <div><dt>Documento</dt><dd>{ENROLLMENT_DOCUMENT} (se envía por WhatsApp)</dd></div>
                 <div><dt>Residencia</dt><dd>{form.city} · {form.sector}</dd></div>
@@ -348,6 +355,13 @@ export default function Enrollment() {
                 se utilizará únicamente cuando sea necesario para precautelar el bienestar del estudiante. Cualquier uso
                 de información con fines investigativos requerirá la autorización correspondiente.
               </p>
+              {fees && (
+                <div className="en-fees">
+                  <h2>Valores {schoolTypeLabel(form.schoolType).toLowerCase()}</h2>
+                  <p>Inscripción: <strong>${fees.inscription}</strong></p>
+                  <p>{fees.extraLabel}: <strong>${fees.extra}</strong></p>
+                </div>
+              )}
               <fieldset className="en-goals">
                 <legend>Información de becas (opcional, solo una)</legend>
                 <label>

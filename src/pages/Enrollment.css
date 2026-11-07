@@ -146,6 +146,22 @@
   grid-template-columns: 1fr 1fr;
 }
 
+.en-school-type {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  grid-column: 1 / -1;
+}
+
+.en-school-type legend {
+  width: 100%;
+}
+
+.en-school-type label {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
 .en-choice legend,
 .en-goals legend {
   margin-bottom: 8px;

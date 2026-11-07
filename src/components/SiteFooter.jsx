@@ -54,7 +54,7 @@ export function SiteFooter() {
       <div className="fif-footer-bottom">
         <p>© 2026 {ORG.name}</p>
         <p>Fundación Integral de Familias · Ecuador</p>
-        {PLATFORM_ENABLED && <Link to="/admin" className="admin-gate">Coordinación</Link>}
+        <Link to="/admin" className="admin-gate">Coordinación</Link>
       </div>
     </footer>
   );

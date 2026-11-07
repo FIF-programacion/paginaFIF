@@ -60,6 +60,7 @@ export function ScrollSplitEvents({ imageSrc, cards }) {
                   <h3>{card.title}</h3>
                   <p className="lp-event-meta">
                     {card.date}
+                    {card.place ? <> <span>|</span> {card.place}</> : null}
                     {card.place && (
                       <>
                         {" "}<span>|</span> {card.place}
@@ -76,7 +77,7 @@ export function ScrollSplitEvents({ imageSrc, cards }) {
                       ? { target: "_blank", rel: "noreferrer" }
                       : {})}
                   >
-                    Inscribirme &gt;
+                    {card.ctaLabel || "Revisar"}
                   </a>
                 </div>
               </motion.div>

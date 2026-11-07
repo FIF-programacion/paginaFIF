@@ -33,7 +33,12 @@ export const GRADES = [
 export const SCHOOL_TYPES = [
   { id: "fiscal", label: "Fiscal" },
   { id: "particular", label: "Particular" },
+  { id: "homeschooling", label: "Homeschooling" },
 ];
+
+export function schoolTypeLabel(id) {
+  return SCHOOL_TYPES.find((item) => item.id === id)?.label || "—";
+}
 
 export const ENROLLMENT_FEES = {
   fiscal: {
@@ -42,6 +47,11 @@ export const ENROLLMENT_FEES = {
     extra: 40,
   },
   particular: {
+    inscription: 20,
+    extraLabel: "Mensualidad",
+    extra: 100,
+  },
+  homeschooling: {
     inscription: 20,
     extraLabel: "Mensualidad",
     extra: 100,

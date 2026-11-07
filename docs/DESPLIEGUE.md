@@ -1,24 +1,25 @@
 # Despliegue en Cloudflare Pages + dominio
 
-Objetivo de esta fase: publicar **solo el sitio institucional** (landing, donaciones, inscripciones y páginas legales). La plataforma FIF Learning queda apagada hasta migrar a Supabase (ver [PLAN-SUPABASE.md](PLAN-SUPABASE.md)).
+Objetivo de esta fase: publicar el **sitio institucional** (landing, donaciones, inscripciones y páginas legales) en `https://www.fundacionfif.org`. El portal de estudiantes FIF Learning queda apagado en producción hasta migrar a Supabase (ver [PLAN-SUPABASE.md](PLAN-SUPABASE.md)). Coordinación (`/admin`) sí permanece disponible.
 
 ## Qué se publica
 
 | Ruta | Estado |
 |---|---|
 | `/`, `/dona/*`, `/inscripciones`, `/legal/*` | Públicas |
-| `/fif-learning`, `/login`, `/profesores`, `/admin`, `/app/*`… | Apagadas: redirigen a `/` |
+| `/admin`, `/admin/panel` | Coordinación, siempre disponible |
+| `/fif-learning`, `/login`, `/profesores`, `/app/*` | Encendidas solo con `VITE_ENABLE_PLATFORM=true`. En el sitio publicado redirigen a `/` |
 
-El interruptor es la variable `VITE_ENABLE_PLATFORM` (ver `.env.example`). Con `false` (o sin definir), el código de la plataforma ni siquiera entra al bundle, así que las cuentas semilla no quedan expuestas.
+El interruptor es la variable `VITE_ENABLE_PLATFORM` (ver `.env.example`). En Cloudflare Pages debe quedar en `false`. El código de la plataforma se carga, pero las rutas de estudiantes y equipo redirigen a `/`.
 
-Para trabajar en la plataforma en local, crea `.env.local` con `VITE_ENABLE_PLATFORM=true` y ejecuta `npm run dev`.
+Para trabajar FIF Learning en local (portal, login, clases, minijuegos): crea `.env.local` con `VITE_ENABLE_PLATFORM=true` y ejecuta `npm run dev`. Esa variable no se sube a git.
 
 ## 1. Crear el proyecto en Cloudflare Pages
 
-Requisito: una cuenta de Cloudflare y acceso de administrador al repo `ArielBourgeat/FIF-WEB` en GitHub (si no eres el dueño, el dueño debe autorizar la app de Cloudflare o hacer este paso).
+Requisito: una cuenta de Cloudflare y acceso de administrador al repo `FIF-programacion/paginaFIF` en GitHub.
 
 1. Cloudflare → **Workers & Pages** → **Create** → pestaña **Pages** → **Connect to Git**.
-2. Elige el repo `FIF-WEB` y la rama `main`.
+2. Elige el repo `paginaFIF` y la rama `main`.
 3. Configuración de build:
    - Framework preset: **Vite** (o React (Vite)).
    - Build command: `npm run build`
@@ -50,7 +51,7 @@ El certificado HTTPS se emite solo. Agrega tanto `dominio` como `www.dominio` y 
 - Dominio principal: `https://www.fundacionfif.org` (comprado en Cloudflare Registrar).
 - `fundacionfif.org` redirige con 301 a `www` mediante una Redirect Rule (`https://fundacionfif.org/*` → `https://www.fundacionfif.org/${1}`, conservando parámetros).
 - Vista previa para WhatsApp y redes: `public/images/og-image.jpg` (1200×630) y las etiquetas `og:*` de `index.html`. Si se cambia la imagen, WhatsApp y Facebook la guardan en caché unos días; en Facebook se fuerza con el [Sharing Debugger](https://developers.facebook.com/tools/debug/).
-- Pendiente: decidir qué hacer con el despliegue de Vercel (`fif-web-org.vercel.app`): desconectarlo o dejarlo solo para vistas previas, para no tener dos sitios públicos.
+- El sitio público se publica solo desde Cloudflare Pages. No hay otro hosting de este proyecto.
 
 ## Medios
 

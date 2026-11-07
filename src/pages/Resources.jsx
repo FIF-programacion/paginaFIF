@@ -1,36 +1,34 @@
 import { useNavigate } from "react-router-dom";
 import { CourseCover } from "../components/CourseCover";
 import { getCourse } from "../data/courses";
+import { subjectsForAge } from "../data/teacher";
 import { useGame } from "../context/GameContext";
 
 export default function Resources() {
-  const { courseStats, visibleCourses, user } = useGame();
+  const { courseStats, user } = useGame();
   const navigate = useNavigate();
+  const subjects = subjectsForAge(user?.ageGroup);
 
   return (
     <section className="panel">
-      <h2 style={{ textAlign: "left" }}>Cursos disponibles para tu edad</h2>
+      <h2 style={{ textAlign: "left" }}>Cursos de tu grupo</h2>
+      <p className="pending-copy">Programación, matemática, música y arte (si corresponde a tu nivel). Dentro de cada uno están los trabajos del profesor y los minijuegos.</p>
       <div className="resources-grid">
-        {visibleCourses.map((item) => {
-          const course = getCourse(item.id, user?.ageGroup);
-          const stats = courseStats(item.id);
-          const locked = !stats.unlocked;
+        {subjects.map((subject) => {
+          const games = subject.courses.map((id) => getCourse(id, user?.ageGroup)).filter(Boolean);
+          const unlocked = games.some((course) => course.unlockedByDefault || courseStats(course.id).unlocked);
           return (
             <button
-              key={item.id}
-              className={`resource-card ${locked ? "locked" : ""}`}
+              key={subject.id}
+              className={`resource-card ${unlocked ? "" : "locked"}`}
               type="button"
-              disabled={locked}
-              onClick={() => {
-                if (!locked) navigate(`/app/curso/${item.id}`);
-              }}
+              onClick={() => navigate(`/app/materia/${subject.id}`)}
             >
-              <div className={locked ? "lock-wrap" : ""}>
-                <CourseCover type={course.cover} title={course.dashboardTitle} />
-                {locked && <img src="/images/padlock.png" alt="" className="lock" />}
+              <div className={unlocked ? "" : "lock-wrap"}>
+                <CourseCover type={subject.cover} title={subject.label.toUpperCase()} />
               </div>
-              <h3>{course.title}</h3>
-              <p>{locked ? "Bloqueado hasta completar el curso anterior." : course.description}</p>
+              <h3>{subject.label}</h3>
+              <p>{games.length} minijuegos de refuerzo, más trabajos y pruebas del profesor.</p>
             </button>
           );
         })}

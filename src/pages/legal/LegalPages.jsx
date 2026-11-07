@@ -18,7 +18,7 @@ export function PrivacyPage() {
       </p>
       <ul>
         <li>Datos del representante: nombres y apellidos, cédula o pasaporte, parentesco, celular / WhatsApp y correo.</li>
-        <li>Datos del estudiante: nombres y apellidos, cédula o documento de identidad, fecha de nacimiento, institución educativa (fiscal o particular), grado o curso, ciudad y sector de residencia.</li>
+        <li>Datos del estudiante: nombres y apellidos, cédula o documento de identidad, fecha de nacimiento, institución educativa (fiscal, particular u homeschooling), grado o curso, ciudad y sector de residencia.</li>
         <li>Información académica: participación en concursos, preparación previa y expectativas.</li>
         <li>Modalidad (presencial o virtual).</li>
         <li>Contacto de emergencia (nombre, parentesco y celular) y, de forma opcional, información indispensable para actuar ante una emergencia, que puede incluir datos de salud.</li>
@@ -155,7 +155,7 @@ export function CookiesPage() {
       </p>
       <h2>Qué se guarda en tu dispositivo</h2>
       <ul>
-        <li>El aviso “Entendido” de esta política, para no mostrarlo en cada visita.</li>
+        <li>Preferencias técnicas mínimas del navegador, si las hay. Este sitio no muestra un aviso de cookies de marketing.</li>
         {PLATFORM_ENABLED && (
           <>
             <li>Cuenta de FIF Learning (nombre, correo, resumen de contraseña, grupo).</li>

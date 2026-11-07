@@ -9,6 +9,7 @@ html.lp-html {
   --lp-navy: #10233a;
   --lp-gold: #e8c36a;
   --lp-orange: #f0a020;
+  --lp-brand: rgb(240, 131, 0);
   color: #111;
   background: #fff;
   /* Las animaciones de entrada (fotos de Nosotros, etc.) parten fuera de pantalla: no deben ensanchar la página. */
@@ -109,6 +110,12 @@ html.lp-html {
   font-weight: 800;
   letter-spacing: 0.42em;
   text-transform: uppercase;
+  color: var(--lp-blue);
+  transition: color 0.2s ease;
+}
+
+.lp-nav.is-on-hero .lp-nav-caption {
+  color: #fff;
 }
 
 .lp-nav-list {
@@ -422,7 +429,7 @@ html.lp-html {
   text-align: center;
   padding: 80px 24px 36px;
   color: #fff;
-  background: linear-gradient(180deg, rgba(7, 16, 24, 0.2), rgba(7, 16, 24, 0.38));
+  background: none;
 }
 
 .lp-hero-copy h1 {
@@ -433,6 +440,7 @@ html.lp-html {
   font-weight: 800;
   letter-spacing: -0.035em;
   text-transform: none;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
 }
 
 .lp-hero-copy h1 span {
@@ -445,6 +453,7 @@ html.lp-html {
   font-weight: 800;
   letter-spacing: 0.32em;
   text-transform: uppercase;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
 }
 
 .lp-scroll-hint::after {
@@ -1217,16 +1226,22 @@ html.lp-html {
   position: relative;
   z-index: 1;
   width: 100%;
-  padding: 28px 22px;
+  min-height: 100%;
+  padding: 32px 24px;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
 }
 
 .lp-flip-copy h3 {
   font-family: "Nunito", sans-serif;
-  font-size: clamp(22px, 2.2vw, 32px);
+  font-size: clamp(20px, 2.2vw, 30px);
   font-weight: 800;
-  margin: 0 0 10px;
+  margin: 0;
   color: inherit;
+  line-height: 1.15;
 }
 
 .lp-event-meta {
@@ -1234,6 +1249,7 @@ html.lp-html {
   font-size: 14px;
   font-weight: 600;
   color: inherit;
+  line-height: 1.45;
 }
 
 .lp-event-meta span {
@@ -1246,7 +1262,7 @@ html.lp-html {
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 3px;
-  margin: 16px 0 18px;
+  margin: 4px 0 8px;
   font-weight: 700;
 }
 
@@ -1255,16 +1271,17 @@ html.lp-html {
   align-items: center;
   justify-content: center;
   min-width: 148px;
-  background: #f0c014;
+  margin-top: auto;
+  background: var(--lp-brand);
   color: #fff;
   font-weight: 800;
   font-size: 14px;
-  padding: 11px 18px;
+  padding: 12px 20px;
   border-radius: 2px;
 }
 
 .lp-event-register:hover {
-  background: #e0b010;
+  background: #d47400;
 }
 
 /* Velocity + donate: tight spacing */
@@ -1333,7 +1350,7 @@ html.lp-html {
 }
 
 .lp-donate-card,
-.lp-media a {
+.lp-media > a {
   background: #eef5fc;
   border: 1px solid #d5e6f7;
   border-radius: 24px;
@@ -1341,7 +1358,59 @@ html.lp-html {
   color: #111;
 }
 
-.lp-media a strong {
+.lp-media-youtube {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.lp-yt-badge {
+  width: 44px;
+  height: 32px;
+  border-radius: 8px;
+  background: #ff0000;
+  display: grid;
+  place-items: center;
+  margin-bottom: 10px;
+}
+
+.lp-yt-badge .lp-social-icon {
+  width: 22px;
+  height: 22px;
+  fill: #fff;
+}
+
+.lp-media a strong,
+.lp-media-block strong {
+  color: var(--lp-blue);
+}
+
+.lp-media-block {
+  background: #eef5fc;
+  border: 1px solid #d5e6f7;
+  border-radius: 24px;
+  padding: 24px;
+  color: #111;
+  text-align: left;
+}
+
+.lp-media-block p {
+  margin: 8px 0 16px;
+}
+
+.lp-podcast-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lp-podcast-links a {
+  background: #fff;
+  border: 1px solid #d5e6f7;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 800;
   color: var(--lp-blue);
 }
 
@@ -1552,6 +1621,53 @@ html.lp-html {
   color: #fff;
 }
 
+@media (max-width: 1100px) {
+  .lp-events {
+    height: auto;
+  }
+
+  .lp-events-pin {
+    position: relative;
+    height: auto;
+    overflow: visible;
+    padding: 48px 0 32px;
+  }
+
+  .lp-split {
+    flex-direction: column;
+    height: auto;
+    min-height: 0;
+    width: calc(100% - 32px);
+    max-width: 640px;
+    margin: 0 auto;
+    gap: 16px;
+  }
+
+  .lp-flip {
+    width: 100%;
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 280px;
+    transform: none !important;
+  }
+
+  .lp-flip-front {
+    display: none;
+  }
+
+  .lp-flip-back {
+    position: relative;
+    inset: auto;
+    transform: none;
+    border-radius: 24px;
+    min-height: 280px;
+  }
+
+  .lp-flip-copy {
+    min-height: 280px;
+  }
+}
+
 @media (max-width: 900px) {
   .lp-hero {
     height: auto;
@@ -1601,9 +1717,48 @@ html.lp-html {
     height: 220px;
   }
   .lp-split {
-    height: 42vh;
-    min-height: 240px;
-    margin: 0 16px;
+    flex-direction: column;
+    height: auto;
+    min-height: 0;
+    width: calc(100% - 32px);
+    max-width: 640px;
+    margin: 0 auto;
+    gap: 16px;
+  }
+
+  .lp-events {
+    height: auto;
+  }
+
+  .lp-events-pin {
+    position: relative;
+    height: auto;
+    overflow: visible;
+    padding: 48px 0 32px;
+  }
+
+  .lp-flip {
+    width: 100%;
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 280px;
+    transform: none !important;
+  }
+
+  .lp-flip-front {
+    display: none;
+  }
+
+  .lp-flip-back {
+    position: relative;
+    inset: auto;
+    transform: none;
+    border-radius: 24px;
+    min-height: 280px;
+  }
+
+  .lp-flip-copy {
+    min-height: 280px;
   }
 }
 
@@ -1795,13 +1950,15 @@ html.lp-html {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(14px, 1.8vw, 28px);
-  align-items: end;
+  align-items: center;
+  justify-items: center;
 }
 
 .lp-team-card {
   position: relative;
   overflow: hidden;
   min-width: 0;
+  width: 100%;
   aspect-ratio: 3 / 4;
   border-radius: 18px;
   background: #f3f3f3;
@@ -1812,6 +1969,7 @@ html.lp-html {
   height: 100%;
   display: block;
   object-fit: cover;
+  object-position: center center;
 }
 
 .lp-team-name {
@@ -1823,17 +1981,14 @@ html.lp-html {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(8px);
+  text-align: center;
 }
 
 .lp-team-name h3 {
   margin: 0;
   font-size: clamp(0.95rem, 1.2vw, 1.2rem);
   color: #4164b5;
-}
-
-/* Un poquito de ritmo para que no parezca una cuadrícula rígida */
-.lp-team-card:nth-child(2) {
-  transform: translateY(28px);
+  text-align: center;
 }
 
 @media (max-width: 950px) {
@@ -1859,9 +2014,5 @@ html.lp-html {
 
   .lp-team-card {
     aspect-ratio: 4 / 5;
-  }
-
-  .lp-team-card:nth-child(2) {
-    transform: none;
   }
 }

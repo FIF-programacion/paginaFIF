@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { BrandLockup, RainbowTitle, Wordmark } from "../components/Brand";
 import { SiteFooter } from "../components/SiteFooter";
-import { LANDING_COURSES, courseAgeKey } from "../data/courses";
+import { subjectsForAge, SUBJECTS } from "../data/teacher";
 import { useGame } from "../context/GameContext";
 import { homePath } from "../utils/roles";
 
@@ -101,7 +101,8 @@ export default function FifLearning() {
               FIF Learning es el espacio digital de refuerzo académico de la Fundación Integral de
               Familias. Ofrece lecciones cortas, ejercicios interactivos y un registro de progreso
               (puntos, racha e insignias) pensado para practicar en casa, no para reemplazar la
-              escuela.
+              escuela. En Matemática el refuerzo sigue el sílabo olímpico: Combinatoria, Teoría de
+              números, Geometría y Álgebra.
             </p>
           </div>
           <img src="/images/family-sun.jpg" alt="Ilustración de una familia junta, símbolo de acompañamiento" className="character" />
@@ -124,9 +125,8 @@ export default function FifLearning() {
               Cursos según la edad
             </h2>
             <p className="section-copy">
-              Al registrarte eliges si tienes menos de 12 años o 12 años o más. Esa elección cambia
-              la dificultad y los ejercicios. El registro de menores de 12 años pide autorización
-              de madre, padre o tutor.
+              Coordinación asigna el grupo inicial / nivelación o el grupo regular. Eso cambia
+              la dificultad, los ejercicios y si ves Arte. El grupo regular no incluye el curso de Arte.
             </p>
           </div>
           <div className="progress-visual">
@@ -143,25 +143,22 @@ export default function FifLearning() {
           <h2 className="landing-kicker" style={{ color: "#1d4ed8", textAlign: "center" }}>Nuestros cursos</h2>
           <div className="courses-grid">
             <p className="section-copy">
-              Las materias fueron preparadas por el equipo pedagógico de la fundación como refuerzo
-              digital. La disponibilidad depende del grupo de edad de la cuenta. Completar un curso
-              no equivale a un título oficial.
+              Oferta: Programación, Matemática, Arte y Música. Cada clase incluye trabajos del
+              profesor y minijuegos de refuerzo. Matemática se organiza en los cuatro ejes del
+              sílabo olímpico. Arte corresponde al grupo inicial / nivelación; el grupo regular
+              no lo incluye. Completar un curso no equivale a un título oficial.
             </p>
             <div className="course-list">
-              {(user?.ageGroup ? LANDING_COURSES.filter((course) => course.ages.includes(courseAgeKey(user.ageGroup))) : LANDING_COURSES).map((course) => (
+              {(user?.ageGroup ? subjectsForAge(user.ageGroup) : SUBJECTS).map((subject) => (
                 <Link
-                  key={course.id}
-                  to={user ? `/app/curso/${course.id}` : "/login"}
+                  key={subject.id}
+                  to={user ? `/app/materia/${subject.id}` : "/login"}
                   className="course-chip"
-                  style={{ background: course.color, color: "#111827" }}
+                  style={{ background: subject.color, color: "#111827" }}
                 >
-                  {course.title}
+                  {subject.label}
                   <span className="chip-age">
-                    {course.ages.includes("under12") && course.ages.includes("over12")
-                      ? "Inicial y regular"
-                      : course.ages.includes("under12")
-                        ? "Inicial / nivelación"
-                        : "Grupo Regular"}
+                    {subject.id === "arte" ? "Inicial / nivelación" : "Inicial y regular"}
                   </span>
                 </Link>
               ))}
