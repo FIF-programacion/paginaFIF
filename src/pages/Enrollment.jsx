@@ -2,8 +2,16 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { SiteFooter } from "../components/SiteFooter";
 import { assistanceWhatsAppUrl, formatEnrollmentPaymentMessage } from "../data/org";
-import { ACADEMIC_GOALS, ENROLLMENT_FEES, GRADES, SCHOOL_TYPES, emptyEnrollment, schoolTypeLabel } from "../data/enrollments";
-import { ACADEMIC_GOALS, ENROLLMENT_DOCUMENT, ENROLLMENT_FEES, GRADES, SCHOLARSHIPS, SCHOOL_TYPES, emptyEnrollment } from "../data/enrollments";
+import {
+  ACADEMIC_GOALS,
+  ENROLLMENT_DOCUMENT,
+  ENROLLMENT_FEES,
+  GRADES,
+  SCHOLARSHIPS,
+  SCHOOL_TYPES,
+  emptyEnrollment,
+  schoolTypeLabel,
+} from "../data/enrollments";
 import "./Enrollment.css";
 
 const STEPS = [
