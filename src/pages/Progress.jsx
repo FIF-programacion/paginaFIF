@@ -2,9 +2,11 @@ import { ageLabel } from "../data/org";
 import { useGame } from "../context/GameContext";
 import { downloadCertificate } from "../utils/certificate";
 import { getCourse } from "../data/courses";
+import { getSubject, subjectOfCourse } from "../data/teacher";
 
-export default function Progress() {
+export default function Progress({ subjectId } = {}) {
   const { courseStats, user, visibleCourses } = useGame();
+  const subject = subjectId ? getSubject(subjectId) : null;
 
   return (
     <section className="panel">
@@ -23,6 +25,7 @@ export default function Progress() {
           {visibleCourses
             .map((item) => getCourse(item.id, user?.ageGroup))
             .filter((course) => course && (courseStats(course.id).completed > 0 || course.unlockedByDefault))
+            .filter((course) => !subject || subjectOfCourse(course.id)?.id === subject.id)
             .map((course) => {
               const stats = courseStats(course.id);
               return (

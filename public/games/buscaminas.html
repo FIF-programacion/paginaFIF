@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Buscaminas FIF</title>
+  <style>
+    :root {
+      --ink: #10233a;
+      --blue: #1e5bb8;
+      --orange: #F08300;
+      --paper: #f4f7fb;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      font-family: Nunito, Arial, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      background: #fff;
+      border-bottom: 2px solid #d7deea;
+      flex-shrink: 0;
+    }
+    header img { height: 48px; width: auto; }
+    header h1 { font-size: 16px; margin: 0; color: var(--blue); }
+    header p { margin: 0; font-size: 12px; color: #5b6575; }
+    .hud { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill, button {
+      font: inherit;
+      font-weight: 800;
+      border: 0;
+      border-radius: 999px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    .pill { background: #fff3e0; color: #9a3412; }
+    button.primary { background: var(--blue); color: #fff; }
+    button.ghost { background: #e8edf5; color: var(--ink); }
+    button.flag-on { background: var(--orange); color: #fff; }
+    main {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 10px;
+      padding: 10px;
+    }
+    .coach, .board-wrap {
+      background: #fff;
+      border-radius: 16px;
+      padding: 10px;
+      min-height: 0;
+    }
+    .coach { display: flex; flex-direction: column; align-items: center; text-align: center; overflow: hidden; }
+    .coach img { width: 92px; height: auto; }
+    .speech {
+      margin-top: 8px;
+      background: #eef5fc;
+      border-radius: 12px;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+    .math {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #5b6575;
+      text-align: left;
+    }
+    .board-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+    .grid {
+      display: grid;
+      gap: 3px;
+      background: #c5d0e0;
+      padding: 6px;
+      border-radius: 10px;
+    }
+    .cell {
+      width: 28px;
+      height: 28px;
+      border: 0;
+      border-radius: 4px;
+      background: #1e5bb8;
+      color: #fff;
+      font: 800 13px Nunito, sans-serif;
+      cursor: pointer;
+      padding: 0;
+    }
+    .cell.open { background: #edf2f8; color: var(--ink); cursor: default; }
+    .cell.mine { background: #dc2626; }
+    .cell.flag { background: var(--orange); }
+    .cell.n1 { color: #2563eb; }
+    .cell.n2 { color: #16a34a; }
+    .cell.n3 { color: #dc2626; }
+    .cell.n4 { color: #7c3aed; }
+    .overlay {
+      position: fixed; inset: 0; background: rgba(16,35,58,.45);
+      display: none; place-items: center; padding: 16px;
+    }
+    .overlay.show { display: grid; }
+    .modal {
+      background: #fff; border-radius: 16px; padding: 18px; max-width: 420px;
+      text-align: center;
+    }
+    @media (max-width: 720px) {
+      main { grid-template-columns: 1fr; }
+      .coach { flex-direction: row; gap: 10px; text-align: left; }
+      .coach img { width: 56px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="/images/detective-glass.jpg" alt="Detective FIF" />
+    <div>
+      <h1>Caso Buscaminas</h1>
+      <p>Cada número es una ecuación: minas vecinas = N. Variables 0 (libre) o 1 (bomba).</p>
+    </div>
+    <div class="hud">
+      <span class="pill" id="mines">Minas 10</span>
+      <span class="pill" id="clock">0 s</span>
+      <button class="ghost" id="flagBtn" type="button">🚩 Bandera</button>
+      <button class="primary" id="reset" type="button">Nuevo caso</button>
+    </div>
+  </header>
+  <main>
+    <aside class="coach">
+      <img id="face" src="/images/detective-glass.jpg" alt="" />
+      <div class="speech" id="speech">Haz clic en una casilla para abrir el caso. El primer paso es seguro.</div>
+      <p class="math">Si un 1 ya tiene 1 bandera, el resto es 0. Si las casillas cerradas = minas que faltan, todas son 1. En general el problema es NP-completo: se resuelve pista a pista.</p>
+    </aside>
+    <section class="board-wrap">
+      <div class="grid" id="grid"></div>
+    </section>
+  </main>
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <h2 id="endTitle"></h2>
+      <p id="endText"></p>
+      <button class="primary" id="again" type="button">Investigar otro tablero</button>
+    </div>
+  </div>
+  <script>
+    const ROWS = 9, COLS = 9, MINES = 10;
+    const gridEl = document.getElementById("grid");
+    const speech = document.getElementById("speech");
+    const overlay = document.getElementById("overlay");
+    let board = [];
+    let started = false;
+    let over = false;
+    let flagMode = false;
+    let flags = 0;
+    let seconds = 0;
+    let timer = null;
+
+    function idx(r, c) { return r * COLS + c; }
+    function neighbors(r, c) {
+      const out = [];
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (!dr && !dc) continue;
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) out.push([nr, nc]);
+        }
+      }
+      return out;
+    }
+
+    function reset() {
+      started = false; over = false; flags = 0; seconds = 0;
+      clearInterval(timer); timer = null;
+      document.getElementById("clock").textContent = "0 s";
+      document.getElementById("mines").textContent = "Minas " + MINES;
+      overlay.classList.remove("show");
+      speech.textContent = "Haz clic en una casilla para abrir el caso. El primer paso es seguro.";
+      board = Array.from({ length: ROWS * COLS }, () => ({ mine: false, open: false, flag: false, n: 0 }));
+      render();
+    }
+
+    function plant(safeR, safeC) {
+      const forbidden = new Set([idx(safeR, safeC), ...neighbors(safeR, safeC).map(([r, c]) => idx(r, c))]);
+      let planted = 0;
+      while (planted < MINES) {
+        const i = Math.floor(Math.random() * ROWS * COLS);
+        if (forbidden.has(i) || board[i].mine) continue;
+        board[i].mine = true;
+        planted += 1;
+      }
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cell = board[idx(r, c)];
+          cell.n = neighbors(r, c).filter(([nr, nc]) => board[idx(nr, nc)].mine).length;
+        }
+      }
+    }
+
+    function open(r, c) {
+      const cell = board[idx(r, c)];
+      if (over || cell.open || cell.flag) return;
+      if (!started) {
+        plant(r, c);
+        started = true;
+        timer = setInterval(() => {
+          seconds += 1;
+          document.getElementById("clock").textContent = seconds + " s";
+        }, 1000);
+      }
+      cell.open = true;
+      if (cell.mine) return lose();
+      if (cell.n === 0) neighbors(r, c).forEach(([nr, nc]) => open(nr, nc));
+      hint(r, c);
+      if (board.every((item) => item.mine || item.open)) win();
+    }
+
+    function toggleFlag(r, c) {
+      const cell = board[idx(r, c)];
+      if (over || cell.open) return;
+      cell.flag = !cell.flag;
+      flags += cell.flag ? 1 : -1;
+      document.getElementById("mines").textContent = "Minas " + Math.max(0, MINES - flags);
+      hint(r, c);
+    }
+
+    function hint(r, c) {
+      const cell = board[idx(r, c)];
+      if (!cell.open || cell.mine) return;
+      const around = neighbors(r, c).map(([nr, nc]) => board[idx(nr, nc)]);
+      const flagged = around.filter((item) => item.flag).length;
+      const closed = around.filter((item) => !item.open && !item.flag).length;
+      const remain = cell.n - flagged;
+      if (cell.n === 0) {
+        speech.textContent = "Un 0: todas las vecinas son variables 0 (libres). Las abrí por inferencia.";
+      } else if (remain === 0 && closed > 0) {
+        speech.textContent = "El " + cell.n + " ya tiene " + flagged + " bandera(s). Las casillas que faltan son 0: están libres.";
+      } else if (remain > 0 && remain === closed) {
+        speech.textContent = "Quedan " + closed + " casillas y " + remain + " mina(s). Todas son 1. Márcalas con bandera.";
+      } else if (closed > 0) {
+        const p = Math.round((remain / closed) * 100);
+        speech.textContent = "Probabilidad condicional aquí: " + remain + " mina(s) en " + closed + " casillas → P ≈ " + p + "%.";
+      }
+    }
+
+    function win() {
+      over = true; clearInterval(timer);
+      document.getElementById("endTitle").textContent = "Caso resuelto";
+      document.getElementById("endText").textContent = "Usaste restricciones, intersección de vecinas y probabilidad. El detective cierra el expediente.";
+      overlay.classList.add("show");
+    }
+    function lose() {
+      over = true; clearInterval(timer);
+      board.forEach((cell) => { if (cell.mine) cell.open = true; });
+      render();
+      document.getElementById("endTitle").textContent = "Había una mina";
+      document.getElementById("endText").textContent = "Revisa las ecuaciones: el número debe coincidir con las bombas vecinas. Intenta otra vez.";
+      overlay.classList.add("show");
+    }
+
+    function render() {
+      gridEl.style.gridTemplateColumns = "repeat(" + COLS + ", 28px)";
+      gridEl.innerHTML = "";
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cell = board[idx(r, c)];
+          const btn = document.createElement("button");
+          btn.className = "cell";
+          if (cell.open) {
+            btn.classList.add("open");
+            if (cell.mine) { btn.classList.add("mine"); btn.textContent = "💣"; }
+            else if (cell.n) { btn.classList.add("n" + cell.n); btn.textContent = cell.n; }
+          } else if (cell.flag) {
+            btn.classList.add("flag");
+            btn.textContent = "🚩";
+          }
+          btn.oncontextmenu = (event) => { event.preventDefault(); toggleFlag(r, c); render(); };
+          btn.onclick = () => { if (flagMode) toggleFlag(r, c); else open(r, c); render(); };
+          gridEl.appendChild(btn);
+        }
+      }
+    }
+
+    document.getElementById("reset").onclick = reset;
+    document.getElementById("again").onclick = reset;
+    document.getElementById("flagBtn").onclick = function () {
+      flagMode = !flagMode;
+      this.classList.toggle("flag-on", flagMode);
+      this.textContent = flagMode ? "🚩 Bandera ON" : "🚩 Bandera";
+    };
+    reset();
+  </script>
+</body>
+</html>

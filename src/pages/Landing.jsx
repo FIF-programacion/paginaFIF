@@ -27,25 +27,25 @@ const ABOUT_BANDS = [
   {
     title: "Nosotros",
     text: "Somos una fundación comprometida con brindar oportunidades de aprendizaje, creatividad y desarrollo personal a niños y jóvenes. Creemos en el poder de la educación y el arte como herramientas para transformar vidas y construir comunidades más solidarias y conscientes.",
-    image: "/images/Image1.jpg",
+    image: "/images/nosotros-aula-nino.jpg",
     side: "left",
   },
   {
     title: "Misión",
     text: "Ser un espacio educativo innovador que nutre el potencial y el desarrollo integral de los niños, fomentando el amor por el aprendizaje, el pensamiento crítico y un carácter fuerte.",
-    image: "/images/Image2.jpg",
+    image: "/images/nosotros-ninas-clase.jpg",
     side: "right",
   },
   {
     title: "Enfoque",
     text: "Nuestro trabajo se enfoca en crear espacios donde cada participante pueda descubrir su potencial, fortalecer su confianza y compartir con otros sus talentos. Desde nuestros inicios, hemos buscado ser un punto de encuentro entre la enseñanza, la expresión y la colaboración. Cada actividad que realizamos nace del deseo de inspirar curiosidad, empatía y sentido de pertenencia. En nuestra fundación, aprender también significa disfrutar, explorar y crecer juntos.",
-    image: "/images/Image3.jpg",
+    image: "/images/nosotros-escritura.jpg",
     side: "left",
   },
   {
     title: "Visión",
     text: "Ser reconocida en Ecuador como la fundación líder en el desarrollo integral de la niñez, transformando la educación en una aventura de vida. Aspiramos a que cada niño de FIF se convierta en un agente de cambio, capaz de destacar en cualquier ámbito, con una capacidad crítica mejorada y una visión equilibrada y creativa del mundo.",
-    image: "/images/Image4.jpg",
+    image: "/images/nosotros-aprendizaje-digital.jpg",
     side: "right",
   },
 ];
@@ -68,19 +68,19 @@ const TEAM = [
   },
 ];
 
+/** Fotos reales: nuevas + las que antes estaban en Nosotros y en campo. Sin ilustraciones ni piezas de IA. */
 const PROJECT_IMAGES = [
+  "/images/nosotros-aula-nino.jpg",
+  "/images/nosotros-ninas-clase.jpg",
+  "/images/nosotros-escritura.jpg",
+  "/images/nosotros-aprendizaje-digital.jpg",
+  "/images/proyecto-grupo-olimpiada.jpg",
+  "/images/eventos-equipo-ninos.jpg",
   "/images/Image1.jpg",
   "/images/Image2.jpg",
   "/images/Image3.jpg",
   "/images/Image4.jpg",
-  "/images/Image5.jpg",
   "/images/proyectos-profes.jpg",
-  "/images/proyecto-arte.jpg",
-  "/images/proyecto-musica.jpg",
-  "/images/proyecto-familias.jpg",
-  "/images/proyecto-mates.jpg",
-  "/images/team.jpg",
-  "/images/family-alone.jpg",
 ];
 
 const EVENTS = [
@@ -108,8 +108,8 @@ const EVENTS = [
     title: "Concursos matemáticos",
     date: "Olimpiadas y competencias escolares",
     place: "Preparación y acompañamiento FIF",
-    bgColor: "#f3a3a0",
-    textColor: "#4a1f1c",
+    bgColor: "#F08300",
+    textColor: "#ffffff",
     moreHref: "#contacto",
     registerHref: "/inscripciones",
     ctaLabel: "Inscribirme",
@@ -483,7 +483,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <ScrollSplitEvents imageSrc="/images/Image5.jpg" cards={EVENTS} />
+        <ScrollSplitEvents imageSrc="/images/eventos-equipo-ninos.jpg" cards={EVENTS} />
 
         <Testimonials />
 
@@ -550,9 +550,6 @@ export default function Landing() {
                 </div>
               </div>
               <a className="lp-media-youtube" href={ORG.social.youtube} target="_blank" rel="noreferrer">
-                <span className="lp-yt-badge" aria-hidden="true">
-                  <IconSocial name="youtube" />
-                </span>
                 <span>YouTube</span>
                 <strong>Canal FIF</strong>
               </a>

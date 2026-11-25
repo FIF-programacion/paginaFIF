@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useGame } from "../context/GameContext";
 import { COURSES, courseAgeKey } from "../data/courses";
 import { ageLabel } from "../data/org";
 import { ACTIVITY_TYPES, QUESTION_TYPES, SUBJECTS, coursesForSubject, emptyQuestion, isQuestionReady, normalizeQuestion } from "../data/teacher";
-import { BOARD_COLUMNS, CONTENT_KINDS, TEAMS, WEEKDAYS, teamById, teamLabel } from "../data/staff";
-import { parseTestCode } from "../utils/parseTestCode";
+import { BOARD_COLUMNS, CONTENT_KINDS, TEAMS, teamById, teamLabel } from "../data/staff";
+import { ScheduleGrid } from "../components/ScheduleGrid";
 import { isStaff, staffAccess } from "../utils/roles";
 import { makeTestCode } from "../utils/security";
+import { AdminSideNav } from "../components/AdminSideNav";
 import "./Admin.css";
 
 function todayInput() {
@@ -44,6 +45,9 @@ export default function TeacherPanel() {
     saveContentItem,
     removeContentItem,
     logout,
+    newsPosts,
+    saveNewsPost,
+    removeNewsPost,
   } = useGame();
   const access = useMemo(() => staffAccess(user), [user]);
   const team = teamById(user?.teamId);
@@ -56,7 +60,8 @@ export default function TeacherPanel() {
       next.push(
         ...[
           { id: "crear", key: "tests", label: "Crear prueba" },
-          { id: "codigo", key: "tests", label: "Crear con código" },
+          { id: "codigo", key: "tests", label: "Prueba y código" },
+          { id: "noticias", key: "activities", label: "Noticias" },
           { id: "notas", key: "grades", label: "Calificaciones" },
           { id: "asistencia", key: "attendance", label: "Asistencia" },
           { id: "actividades", key: "activities", label: "Actividades" },
@@ -72,13 +77,11 @@ export default function TeacherPanel() {
   const [courseId, setCourseId] = useState(SUBJECTS[0].courses[0]);
   const [title, setTitle] = useState("");
   const [questions, setQuestions] = useState([emptyQuestion()]);
-  const [codeText, setCodeText] = useState(`TITULO: Prueba de ejemplo
-
-PREGUNTA: ¿Cuánto es 2+2?
-A) 3
-B) 4
-C) 5
-CORRECTA: B`);
+  const [testCover, setTestCover] = useState("");
+  const [quickTitle, setQuickTitle] = useState("");
+  const [quickQuestions, setQuickQuestions] = useState([{ prompt: "", options: ["", "", ""], correctIndex: 0 }]);
+  const [reviewActivityId, setReviewActivityId] = useState("");
+  const [newsDraft, setNewsDraft] = useState({ title: "", body: "" });
   const [feedback, setFeedback] = useState("");
   const [attendDate, setAttendDate] = useState(todayInput());
   const [marks, setMarks] = useState({});
@@ -90,13 +93,12 @@ CORRECTA: B`);
   const [taskDraft, setTaskDraft] = useState({ title: "", notes: "", status: "todo" });
   const [syllabusDraft, setSyllabusDraft] = useState({ title: "", body: "" });
   const [contentDraft, setContentDraft] = useState({ title: "", kind: "podcast", url: "", notes: "" });
-
   const courseOptions = coursesForSubject(subjectId);
   const mine = tests.filter((test) => test.teacherEmail === user?.email);
   const myAttempts = attempts.filter((item) => item.teacherEmail === user?.email || mine.some((test) => test.code === item.code));
   const published = useMemo(() => mine.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)), [mine]);
-  const myActivities = activities.filter((item) => item.teacherEmail === user?.email).slice().reverse();
-  const mySchedules = schedules.filter((item) => !item.teacherEmail || item.teacherEmail === user?.email);
+  const myActivities = activities.filter((item) => item.teacherEmail === user?.email && !item.delegation).slice().reverse();
+  const myDelegations = activities.filter((item) => item.teacherEmail === user?.email && item.delegation).slice().reverse();
   const visibleStudents = students.filter((student) => {
     const course = COURSES.find((item) => item.id === courseId);
     if (!course) return true;
@@ -152,32 +154,46 @@ CORRECTA: B`);
       teacherEmail: user.email,
       teacherName: `${user.firstName} ${user.lastName}`,
       questions: clean,
+      coverImage: testCover || null,
       createdAt: Date.now(),
     };
     saveTest(test);
     setFeedback(`Prueba publicada. Código para estudiantes: ${test.code}`);
     setTitle("");
     setQuestions([emptyQuestion()]);
+    setTestCover("");
   };
 
-  const publishFromCode = () => {
-    try {
-      const parsed = parseTestCode(codeText);
-      const test = {
-        code: makeTestCode(),
-        title: parsed.title,
-        subjectId,
-        courseId,
-        questions: parsed.questions.map((question) => normalizeQuestion({ ...question, type: "choice", points: 1 })),
-        teacherEmail: user.email,
-        teacherName: `${user.firstName} ${user.lastName}`,
-        createdAt: Date.now(),
-      };
-      saveTest(test);
-      setFeedback(`Prueba publicada. Código para estudiantes: ${test.code}`);
-    } catch (error) {
-      setFeedback(error.message);
+  const publishQuickTest = () => {
+    const clean = quickQuestions
+      .map((q) => normalizeQuestion({
+        type: "choice",
+        prompt: q.prompt,
+        options: q.options,
+        correctIndex: q.correctIndex,
+        points: 1,
+      }))
+      .filter(isQuestionReady);
+    if (!quickTitle.trim() || !clean.length) {
+      setFeedback("Pon un título y al menos una pregunta con opciones y respuesta correcta.");
+      return;
     }
+    const test = {
+      code: makeTestCode(),
+      title: quickTitle.trim(),
+      subjectId,
+      courseId,
+      teacherEmail: user.email,
+      teacherName: `${user.firstName} ${user.lastName}`,
+      questions: clean,
+      coverImage: testCover || null,
+      createdAt: Date.now(),
+    };
+    saveTest(test);
+    setFeedback(`Prueba publicada. Los alumnos ingresan el código: ${test.code}`);
+    setQuickTitle("");
+    setQuickQuestions([{ prompt: "", options: ["", "", ""], correctIndex: 0 }]);
+    setTestCover("");
   };
 
   const saveClassAttendance = () => {
@@ -239,17 +255,14 @@ CORRECTA: B`);
 
   return (
     <div className="ad-shell">
-      <aside className="ad-side">
-        <strong>EQUIPO FIF</strong>
-        <p className="ad-side-meta">{teamLabel(user.teamId)} · {user.firstName}</p>
-        {tabs.map((item) => (
-          <button key={item.id} type="button" className={tab === item.id ? "is-on" : ""} onClick={() => setTab(item.id)}>
-            {item.label}
-          </button>
-        ))}
-        <Link to="/fif-learning">Portal público</Link>
-        <button type="button" onClick={logout}>Cerrar sesión</button>
-      </aside>
+      <AdminSideNav
+        title="EQUIPO FIF"
+        meta={<p className="ad-side-meta">{teamLabel(user.teamId)} · {user.firstName}</p>}
+        tabs={tabs}
+        tab={tab}
+        onTab={setTab}
+        onLogout={logout}
+      />
       <div className="ad-main">
         <div className="ad-top">
           <div>
@@ -440,7 +453,8 @@ CORRECTA: B`);
       )}
 
       {tab === "crear" && (
-        <section className="ad-card">
+        <section className="ad-card ad-form-pro">
+          <p className="ad-lead">Arma la evaluación; al publicar se genera un <strong>código FIF</strong> para que los estudiantes la ingresen.</p>
           <div className="teacher-filters">
             <label>
               Materia
@@ -455,8 +469,27 @@ CORRECTA: B`);
               </select>
             </label>
           </div>
-          <label htmlFor="test-title">Título prueba</label>
-          <input id="test-title" className="pill-input" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="TÍTULO PRUEBA" />
+          <label htmlFor="test-title">Título de la prueba</label>
+          <input id="test-title" className="pill-input" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Ej. Olimpiada de fracciones" />
+          <label>
+            Imagen de portada (opcional)
+            <input
+              type="file"
+              accept="image/*"
+              onChange={async (event) => {
+                const file = event.target.files?.[0];
+                if (!file) { setTestCover(""); return; }
+                const dataUrl = await new Promise((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.onload = () => resolve(reader.result);
+                  reader.onerror = () => reject(new Error("No se pudo leer la imagen."));
+                  reader.readAsDataURL(file);
+                });
+                setTestCover(dataUrl);
+              }}
+            />
+          </label>
+          {testCover && <img src={testCover} alt="Vista previa" className="test-cover-preview" />}
           {questions.map((question, qi) => (
             <article key={qi} className="teacher-question">
               <label htmlFor={`q-${qi}`}>Pregunta / enunciado</label>
@@ -509,12 +542,81 @@ CORRECTA: B`);
       )}
 
       {tab === "codigo" && (
-        <section className="ad-card">
-          <h2>Pegar prueba en código de texto</h2>
-          <p>Usa TITULO, PREGUNTA, opciones A) B) C) y CORRECTA. Separa preguntas con una línea en blanco.</p>
-          <label htmlFor="code-test">Código de la prueba</label>
-          <textarea id="code-test" className="code-editor" value={codeText} onChange={(event) => setCodeText(event.target.value)} />
-          <button className="btn btn-green" type="button" onClick={publishFromCode}>Publicar desde código</button>
+        <section className="ad-card ad-form-pro">
+          <h2>Prueba con código de acceso</h2>
+          <p>Formulario rápido: al publicar obtienes un <strong>código</strong> (no es programación) que el alumno escribe en FIF Learning.</p>
+          <div className="teacher-filters">
+            <label>
+              Materia
+              <select className="pill-select" value={subjectId} onChange={(event) => changeSubject(event.target.value)}>
+                {SUBJECTS.map((subject) => <option key={subject.id} value={subject.id}>{subject.label}</option>)}
+              </select>
+            </label>
+            <label>
+              Curso
+              <select className="pill-select" value={courseId} onChange={(event) => setCourseId(event.target.value)}>
+                {courseOptions.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
+              </select>
+            </label>
+          </div>
+          <label>Título<input className="pill-input" value={quickTitle} onChange={(event) => setQuickTitle(event.target.value)} /></label>
+          <label>
+            Imagen (opcional)
+            <input type="file" accept="image/*" onChange={async (event) => {
+              const file = event.target.files?.[0];
+              if (!file) { setTestCover(""); return; }
+              const dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error("No se pudo leer la imagen."));
+                reader.readAsDataURL(file);
+              });
+              setTestCover(dataUrl);
+            }}
+            />
+          </label>
+          {quickQuestions.map((question, qi) => (
+            <article key={qi} className="teacher-question">
+              <label>Pregunta {qi + 1}<input className="pill-input" value={question.prompt} onChange={(event) => {
+                setQuickQuestions((current) => current.map((row, i) => (i === qi ? { ...row, prompt: event.target.value } : row)));
+              }}
+              />
+              </label>
+              {question.options.map((option, oi) => (
+                <label key={oi}>
+                  Opción {String.fromCharCode(65 + oi)}
+                  <input
+                    className="pill-input"
+                    value={option}
+                    onChange={(event) => {
+                      setQuickQuestions((current) => current.map((row, i) => {
+                        if (i !== qi) return row;
+                        const options = [...row.options];
+                        options[oi] = event.target.value;
+                        return { ...row, options };
+                      }));
+                    }}
+                  />
+                </label>
+              ))}
+              <label>
+                Correcta
+                <select
+                  className="pill-select"
+                  value={question.correctIndex}
+                  onChange={(event) => setQuickQuestions((current) => current.map((row, i) => (i === qi ? { ...row, correctIndex: Number(event.target.value) } : row)))}
+                >
+                  {question.options.map((option, oi) => (
+                    <option key={oi} value={oi}>{String.fromCharCode(65 + oi)} {option || "—"}</option>
+                  ))}
+                </select>
+              </label>
+            </article>
+          ))}
+          <div className="actions-row">
+            <button className="btn btn-blue" type="button" onClick={() => setQuickQuestions((c) => [...c, { prompt: "", options: ["", "", ""], correctIndex: 0 }])}>Añadir pregunta</button>
+            <button className="btn btn-green" type="button" onClick={publishQuickTest}>Publicar y generar código</button>
+          </div>
         </section>
       )}
 
@@ -617,6 +719,21 @@ CORRECTA: B`);
 
       {tab === "actividades" && (
         <section className="ad-card">
+          {myDelegations.length > 0 && (
+            <>
+              <h2>Delegaciones de Coordinación</h2>
+              <ul className="activity-list delegation-list">
+                {myDelegations.map((item) => (
+                  <li key={item.id}>
+                    <strong>{item.title}</strong>
+                    <p>{item.description}</p>
+                    <small>{COURSES.find((course) => course.id === item.courseId)?.title || "Curso"} · {item.dueDate ? `Entrega ${item.dueDate}` : "Sin fecha"}</small>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          <h2>Publicar a estudiantes</h2>
           <div className="teacher-filters">
             <label>
               Materia
@@ -662,10 +779,21 @@ CORRECTA: B`);
       {tab === "revisar" && (
         <section className="ad-card">
           <h2>Entregas de estudiantes</h2>
-          <p>Revisa el texto y los archivos. Pon una nota de 0 a 10; el estudiante la verá en Actividades.</p>
-          {submissions.filter((item) => item.teacherEmail === user.email).length === 0 && <p>Aún no hay entregas para tus actividades.</p>}
+          <p>Elige una actividad para ver solo las entregas de esa tarea.</p>
+          <label>
+            Actividad
+            <select className="pill-select" value={reviewActivityId} onChange={(event) => setReviewActivityId(event.target.value)}>
+              <option value="">Todas mis actividades con entregas</option>
+              {myActivities.map((item) => (
+                <option key={item.id} value={item.id}>{item.title}</option>
+              ))}
+            </select>
+          </label>
+          {submissions.filter((item) => item.teacherEmail === user.email && (!reviewActivityId || item.activityId === reviewActivityId)).length === 0 && (
+            <p>Aún no hay entregas para la actividad seleccionada.</p>
+          )}
           <ul className="activity-list">
-            {submissions.filter((item) => item.teacherEmail === user.email).slice().reverse().map((item) => {
+            {submissions.filter((item) => item.teacherEmail === user.email && (!reviewActivityId || item.activityId === reviewActivityId)).slice().reverse().map((item) => {
               const draft = reviewDrafts[item.id] || { grade: item.grade ?? "", comment: item.teacherComment || "" };
               return (
                 <li key={item.id}>
@@ -720,16 +848,49 @@ CORRECTA: B`);
 
       {tab === "horarios" && (
         <section className="ad-card">
-          <h2>Horarios asignados</h2>
-          {mySchedules.length === 0 && <p>Coordinación aún no te asignó horarios en este dispositivo.</p>}
+          <h2>Horarios</h2>
+          <p>Solo lectura: Coordinación publica el horario oficial. Los voluntarios no pueden modificarlo.</p>
+          <ScheduleGrid items={schedules} emptyHint="Coordinación aún no ha publicado clases en la grilla." />
+        </section>
+      )}
+
+      {tab === "noticias" && teaches && (
+        <section className="ad-card ad-form-pro">
+          <h2>Noticias para estudiantes</h2>
+          <p>Los avisos aparecen en el panel Noticias del inicio de FIF Learning.</p>
+          <label>Título<input className="pill-input" value={newsDraft.title} onChange={(event) => setNewsDraft((c) => ({ ...c, title: event.target.value }))} /></label>
+          <label>Mensaje<textarea className="code-editor" rows={5} value={newsDraft.body} onChange={(event) => setNewsDraft((c) => ({ ...c, body: event.target.value }))} /></label>
+          <button
+            className="ad-btn"
+            type="button"
+            onClick={() => {
+              if (!newsDraft.title.trim() || !newsDraft.body.trim()) {
+                setFeedback("Completa título y mensaje.");
+                return;
+              }
+              saveNewsPost({
+                id: crypto.randomUUID(),
+                title: newsDraft.title.trim(),
+                body: newsDraft.body.trim(),
+                ageGroup: "all",
+                authorEmail: user.email,
+                authorName: `${user.firstName} ${user.lastName}`,
+                authorRole: "teacher",
+                createdAt: Date.now(),
+              });
+              setNewsDraft({ title: "", body: "" });
+              setFeedback("Noticia publicada para estudiantes.");
+            }}
+          >
+            Publicar
+          </button>
+          <h2>Mis avisos recientes</h2>
           <ul className="activity-list">
-            {mySchedules.map((item) => (
+            {newsPosts.filter((item) => item.authorEmail === user.email).slice().reverse().map((item) => (
               <li key={item.id}>
                 <strong>{item.title}</strong>
-                <p>
-                  {WEEKDAYS.find((day) => day.id === item.day)?.label} · {item.startTime}–{item.endTime} · {item.ageGroup === "all" ? "Todos los grupos" : ageLabel(item.ageGroup)}
-                </p>
-                {item.notes && <p>{item.notes}</p>}
+                <p>{item.body}</p>
+                <button className="ad-btn ad-btn-ghost" type="button" onClick={() => removeNewsPost(item.id)}>Quitar</button>
               </li>
             ))}
           </ul>

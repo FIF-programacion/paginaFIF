@@ -15,7 +15,7 @@ Este README es la guía de entrada al proyecto: qué hay, dónde está, cómo se
 1. [Estado del proyecto](#1-estado-del-proyecto)
 2. [Arrancar en local](#2-arrancar-en-local)
 3. [Usuarios de prueba](#3-usuarios-de-prueba)
-4. [Dónde están los datos (no hay base de datos todavía)](#4-dónde-están-los-datos-no-hay-base-de-datos-todavía)
+4. [Infraestructura, dominio y datos](#4-infraestructura-dominio-y-datos)
 5. [Flujos](#5-flujos)
 6. [Mapa de archivos: qué editar](#6-mapa-de-archivos-qué-editar)
 7. [Rutas](#7-rutas)
@@ -23,7 +23,7 @@ Este README es la guía de entrada al proyecto: qué hay, dónde está, cómo se
 9. [Git y publicación](#9-git-y-publicación)
 10. [Convención al cambiar algo](#10-convención-al-cambiar-algo)
 
-Más detalle de deploy y de la futura base: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) y [docs/PLAN-SUPABASE.md](docs/PLAN-SUPABASE.md).
+Más detalle de publicación y modelo de datos: [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) y [docs/PLAN-SUPABASE.md](docs/PLAN-SUPABASE.md).
 
 ---
 
@@ -114,49 +114,87 @@ Docentes y coordinación **no** comparten login. Un admin no entra por `/profeso
 
 ---
 
-## 4. Dónde están los datos (no hay base de datos todavía)
+## 4. Infraestructura, dominio y datos
 
-**Hoy no hay Postgres, ni API, ni servidor propio.** Todo lo de FIF Learning vive en el **navegador**, en `localStorage`, clave:
+Este proyecto no es solo una carpeta de React: forma parte de un **cambio de plataforma** que la fundación ya hizo o está consolidando.
+
+### Migración AWS → Cloudflare + dominio propio
+
+| Antes (AWS) | Ahora |
+|---|---|
+| Sitio y servicios asociados en la nube de **AWS** | Sitio publicado en **Cloudflare** |
+| Dominio y hosting repartidos o en transición | Dominio propio **`fundacionfif.org`** (registrar y DNS en Cloudflare) |
+| Base de datos y backend ligados al stack anterior | Base de datos en capa **Postgres** (proyecto **Supabase**), separada del front estático |
+
+Hoy la **cara pública** del repositorio `paginaFIF` es:
+
+- **URL:** https://www.fundacionfif.org (`fundacionfif.org` redirige a `www`)
+- **Build y CDN:** **Cloudflare Pages** (cada push a `main` genera `dist/` y despliega)
+- **HTTPS, caché y reglas:** panel de Cloudflare (ver [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md))
+
+No hay servidor Node en producción para la landing: es HTML/JS estático generado por Vite.
+
+### Base de datos (sí existe en el diseño del proyecto)
+
+**Sí hay base de datos** en el ecosistema FIF: **Postgres** administrado por **Supabase** (autenticación, tablas con RLS y almacenamiento de archivos). Es el reemplazo de lo que antes vivía en **AWS** para datos compartidos (cuentas, inscripciones, progreso, entregas, etc.). El esquema y las fases de cableado están en [docs/PLAN-SUPABASE.md](docs/PLAN-SUPABASE.md).
+
+Variables previstas en el cliente (públicas por diseño en Supabase):
+
+```text
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+```
+
+Se configuran en `.env.local` para desarrollo y en **Cloudflare Pages → Environment variables** para producción cuando el front ya lea Supabase.
+
+**Qué implica para quien abre este código hoy**
+
+| Capa | Dónde vive ahora en `paginaFIF` |
+|---|---|
+| Landing, donaciones, legales, assets | Repo + Cloudflare Pages |
+| Catálogo de cursos, textos FIF, minijuegos HTML | Código en `src/data/` y `public/` |
+| Operación FIF Learning (cuentas, progreso, horarios…) | En producción debe ir a **Supabase**; en desarrollo local el `GameContext` aún puede persistir en el navegador (ver abajo) |
+| Portal estudiante en fundacionfif.org | Apagado (`VITE_ENABLE_PLATFORM=false`) hasta que login y datos usen la base compartida de forma estable |
+
+### Persistencia temporal en el navegador (desarrollo)
+
+Mientras el portal se prueba en local, `src/context/GameContext.jsx` puede guardar estado en **`localStorage`**, clave:
 
 ```text
 fif-learning-state-v2
 ```
 
-Lo escribe `src/context/GameContext.jsx`. Eso significa:
+Eso sirve para maquetar y probar sin depender de la red, **no** es el modelo final en producción: los datos no se comparten entre equipos ni con el sitio publicado. Para vaciar pruebas: DevTools → Application → Local Storage → borrar esa clave.
 
-- Lo que cree Coordinación (estudiantes, horarios, pruebas) **solo existe en ese computador/navegador**.
-- Otro dispositivo, otra persona o una ventana privada no lo ve.
-- Por eso el portal de estudiantes está apagado en el sitio público.
-
-### Qué se guarda en esa clave
-
-| Campo | Contenido |
+| Campo en `localStorage` | Contenido (mismo modelo que migrará a Postgres) |
 |---|---|
-| `accounts` | Usuarios: `student`, `staff`, `admin`. La contraseña va hasheada (SHA-256), no en texto |
-| `sessionId` | Quién está logueado |
-| `progress` | Lecciones hechas por curso (minijuegos) |
-| `stats` | Puntos, insignias, racha |
-| `tests` / `attempts` | Pruebas con código `FIF-XXXXX` y calificaciones |
-| `activities` / `submissions` / `activityDone` | Tareas, deberes, entregas |
-| `schedules` / `attendance` | Horarios y asistencia |
-| `enrollments` | Solicitudes de inscripción (si se guardan en este dispositivo) |
-| `boardTasks` / `syllabusItems` / `contentItems` | Tablero, sílabo y contenidos del equipo |
+| `accounts` | Usuarios `student` / `staff` / `admin` (clave hasheada en cliente) |
+| `sessionId` | Sesión actual |
+| `progress`, `stats` | Refuerzos y gamificación |
+| `tests`, `attempts` | Pruebas con código `FIF-XXXXX` |
+| `activities`, `submissions`, `activityDone` | Tareas y entregas |
+| `schedules`, `attendance` | Horarios y asistencia |
+| `enrollments` | Fichas de inscripción en el dispositivo |
+| `boardTasks`, `syllabusItems`, `contentItems` | Tablero, sílabo y contenidos |
 
-### Qué no está en localStorage
+### Datos que no van a la base (siguen en el repo)
 
-| Dato | Dónde está |
+| Dato | Ubicación |
 |---|---|
-| Textos de la fundación, WhatsApp, redes | `src/data/org.js` (código) |
-| Cursos, lecciones, minijuegos | `src/data/courses.js` y `src/data/teacher.js` |
-| Tarifas de inscripción, tipos de colegio, becas internas | `src/data/enrollments.js` |
-| Cuentas semilla y equipos | `src/data/staff.js` |
-| Fotos, video, logos | `public/images/`, `public/videos/` |
+| Contacto, redes, WhatsApp, podcast | `src/data/org.js` |
+| Materias, cursos, refuerzos interactivos | `src/data/courses.js`, `src/data/teacher.js` |
+| Minijuegos HTML | `src/data/games.js`, `public/games/` |
+| Formulario de inscripción (reglas y becas internas) | `src/data/enrollments.js` |
+| Cuentas semilla de demo | `src/data/staff.js` |
+| Imágenes y video | `public/images/`, `public/videos/` |
 
-Inscripciones y donaciones **públicas** se van por WhatsApp (`src/data/org.js` → `assistanceWhatsAppUrl`). No se cobran en la web.
+Las inscripciones y donaciones **desde la web pública** siguen coordinándose por **WhatsApp** (`assistanceWhatsAppUrl` en `org.js`); no hay pasarela de pago en el sitio.
 
-### El plan de base de datos (aún no implementado)
+### Resumen mental del proyecto
 
-Cuando exista, será **Supabase** (Auth + Postgres + Storage). El modelo está en [docs/PLAN-SUPABASE.md](docs/PLAN-SUPABASE.md). Hasta entonces no hay `.env` de base de datos que rellenar: `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en `.env.example` están vacíos a propósito.
+1. **Cloudflare** = dominio `fundacionfif.org` + sitio institucional publicado.  
+2. **Supabase (Postgres)** = base de datos institucional tras la migración desde AWS.  
+3. **Este repo** = front único; FIF Learning se desarrolla aquí y se conecta a Supabase según [docs/PLAN-SUPABASE.md](docs/PLAN-SUPABASE.md).
 
 ---
 
@@ -179,8 +217,9 @@ Cuando exista, será **Supabase** (Auth + Postgres + Storage). El modelo está e
 
 1. Coordinación crea la cuenta.
 2. `/login` → tutorial la primera vez → `/app/cursos`.
-3. Ve las **materias** de su grupo (no la lista suelta de minijuegos).
-4. Dentro de cada materia (`/app/materia/:id`): pestaña **Aula** (trabajos del profesor), **Minijuegos**, **Código de prueba**.
+3. Ve las **materias** de su grupo (no la lista suelta de refuerzos).
+4. Dentro de cada materia (`/app/materia/:id`): Inicio, actividades, progreso, contenido (**refuerzos interactivos**), **minijuegos** HTML, sílabo y evaluación.
+5. **Minijuegos** también está en el menú general (`/app/minijuegos`): ahí se juega el HTML (por ejemplo Reto InFIFnito / OMEC N2).
 
 ### 5.4 Equipo / docente
 
@@ -202,7 +241,7 @@ paginaFIF/
 ├── README.md                  Esta guía
 ├── docs/
 │   ├── DESPLIEGUE.md          Cloudflare Pages + dominio
-│   └── PLAN-SUPABASE.md       Futura base de datos
+│   └── PLAN-SUPABASE.md       Postgres / Supabase y cableado del front
 ├── public/
 │   ├── images/                Logo, fotos, aliados, equipo
 │   ├── videos/                videoInicio.mp4
@@ -235,7 +274,8 @@ paginaFIF/
 | Pie y enlace Coordinación | `src/components/SiteFooter.jsx` |
 | Encender/apagar FIF Learning | `.env.local` y `src/config.js` (el flag). Rutas en `App.jsx` / `PlatformRoutes.jsx` |
 | Materias que ve el estudiante | `src/data/teacher.js` (`SUBJECTS`) y `ageGroups` en `src/data/courses.js` |
-| Minijuegos / lecciones | `src/data/courses.js` |
+| Refuerzos interactivos / lecciones | `src/data/courses.js` |
+| Minijuegos HTML | `src/data/games.js` y `public/games/` |
 | Cuentas semilla y equipos | `src/data/staff.js` |
 | Lógica de login, progreso, pruebas | `src/context/GameContext.jsx` |
 | Panel de coordinación | `src/pages/AdminPanel.jsx` + `Admin.css` |
@@ -249,7 +289,8 @@ paginaFIF/
 | Archivo | Función |
 |---|---|
 | `org.js` | Nombre, correo, teléfono, WhatsApp, redes, plataformas del podcast, grupos de edad |
-| `courses.js` | Cada minijuego (teoría/práctica/lecturas) y a qué edad aplica |
+| `courses.js` | Cada refuerzo interactivo (teoría/práctica/lecturas) y a qué edad aplica |
+| `games.js` | Minijuegos HTML (Reto InFIFnito / OMEC y otros) |
 | `teacher.js` | Materias visibles (Programación, Matemática, Arte, Música) y tipos de actividad/pregunta |
 | `staff.js` | Equipos, permisos, días, cuenta admin y voluntarios de prueba |
 | `enrollments.js` | Pasos de inscripción, tarifas, tipos de institución, becas internas |
@@ -259,7 +300,7 @@ paginaFIF/
 
 Públicas: `Landing`, `Enrollment`, `DonateIndividual`, `DonatePackages`, `legal/LegalPages`.
 
-Plataforma: `FifLearning`, `Login`, `Register` (cerrado), `Tutorial`, `Welcome`, `Dashboard`, `SubjectHub`, `CourseMap`, `TakeTest`, `StudentActivities`, `StudentSchedules`, `TeacherLogin`, `TeacherPanel`, `AdminLogin`, `AdminPanel`.
+Plataforma: `FifLearning`, `Login`, `Register` (cerrado), `Tutorial`, `Welcome`, `Dashboard`, `SubjectHub`, `MiniGames`, `HtmlGame`, `CourseMap`, `TakeTest`, `StudentActivities`, `StudentSchedules`, `TeacherLogin`, `TeacherPanel`, `AdminLogin`, `AdminPanel`.
 
 Ejercicios: `pages/exercises/MatchingExercise.jsx`, `TimedMathExercise.jsx`, `DeductorExercise.jsx`.
 
@@ -287,7 +328,7 @@ Ejercicios: `pages/exercises/MatchingExercise.jsx`, `TimedMathExercise.jsx`, `De
 | `roles.js` | Quién es staff/admin y a qué ruta va después del login |
 | `parseTestCode.js` | Interpreta pruebas pegadas como texto |
 | `gradeTest.js` | Califica un intento |
-| `certificate.js` | PDF al terminar un minijuego/curso |
+| `certificate.js` | PDF al terminar un refuerzo interactivo |
 
 ---
 
@@ -319,8 +360,10 @@ Definidas en `src/App.jsx` (públicas) y `src/PlatformRoutes.jsx` (plataforma).
 | `/profesores` | Login del equipo |
 | `/equipo` | Panel del equipo |
 | `/app/cursos` | Materias del estudiante |
-| `/app/materia/:subjectId` | Aula + minijuegos + código |
-| `/app/curso/:courseId` | Mapa de un minijuego |
+| `/app/materia/:subjectId` | Curso: inicio, refuerzos, minijuegos, sílabo |
+| `/app/minijuegos` | Catálogo de minijuegos HTML |
+| `/app/minijuegos/:gameId` | Jugar un minijuego HTML |
+| `/app/curso/:courseId` | Mapa de un refuerzo interactivo |
 | `/app/curso/:id/leccion/:n` | Ejercicio |
 | `/app/actividades` | Entregar tareas |
 | `/app/prueba` | Ingresar código de prueba |
@@ -334,7 +377,7 @@ Definidas en `src/App.jsx` (públicas) y `src/PlatformRoutes.jsx` (plataforma).
 
 El estudiante **no** ve 16 chips sueltos. Ve 3 o 4 **materias** (`SUBJECTS` en `teacher.js`):
 
-| Materia | Minijuegos de refuerzo | Quién la ve |
+| Materia | Refuerzos interactivos | Quién la ve |
 |---|---|---|
 | Programación | teoría, práctica, lecturas, programación 2 | Inicial y regular |
 | Matemática | Combinatoria, Teoría de números, Geometría, Álgebra (sílabo olímpico FIF Learning) | Inicial y regular |
@@ -343,7 +386,7 @@ El estudiante **no** ve 16 chips sueltos. Ve 3 o 4 **materias** (`SUBJECTS` en `
 
 `inicial` en el código se trata como `under12`; `regular` como `over12` (`courseAgeKey` en `courses.js`).
 
-Para añadir un minijuego: créalo en `courses.js`, agrégalo al array `COURSES` y enlázalo en `SUBJECTS` de `teacher.js`. Para quitar Arte del regular no hace falta tocar cada pantalla: basta con que esos cursos tengan `ageGroups: ["under12"]`.
+Para añadir un refuerzo interactivo: créalo en `courses.js`, agrégalo al array `COURSES` y enlázalo en `SUBJECTS` de `teacher.js`. Para un minijuego HTML, copia el archivo a `public/games/` y regístralo en `src/data/games.js`. Para quitar Arte del regular no hace falta tocar cada pantalla: basta con que esos cursos tengan `ageGroups: ["under12"]`.
 
 ---
 

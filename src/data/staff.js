@@ -3,7 +3,7 @@ export const ACCESS_KEYS = [
   { id: "grades", label: "Ver calificaciones" },
   { id: "attendance", label: "Tomar asistencia" },
   { id: "activities", label: "Publicar actividades" },
-  { id: "schedules", label: "Ver horarios" },
+  { id: "schedules", label: "Horarios (solo lectura)" },
 ];
 
 export const ACCESS_PRESETS = {

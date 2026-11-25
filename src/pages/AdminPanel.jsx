@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useGame } from "../context/GameContext";
 import { AGE_GROUPS, ageLabel, normalizeGroup } from "../data/org";
-import { ACCESS_KEYS, ACCESS_PRESETS, DEFAULT_ADMIN, DUTIES, STAFF_KIND_LABEL, TEAMS, WEEKDAYS, teamLabel } from "../data/staff";
+import { ACCESS_KEYS, ACCESS_PRESETS, DEFAULT_ADMIN, DUTIES, STAFF_KIND_LABEL, TEAMS, teamLabel } from "../data/staff";
 import { ACTIVITY_TYPES, SUBJECTS, coursesForSubject } from "../data/teacher";
 import { COURSES } from "../data/courses";
-import { ACADEMIC_GOALS, ENROLLMENT_STATUSES, schoolTypeLabel, statusLabel } from "../data/enrollments";
+import { ACADEMIC_GOALS, ENROLLMENT_STATUSES, SCHOLARSHIPS, schoolTypeLabel, statusLabel } from "../data/enrollments";
+import { ScheduleForm, ScheduleGrid } from "../components/ScheduleGrid";
+import { AdminSideNav } from "../components/AdminSideNav";
 import "./Admin.css";
 
 const TABS = [
@@ -13,6 +15,7 @@ const TABS = [
   { id: "grupos", label: "Grupos" },
   { id: "horarios", label: "Horarios" },
   { id: "delegar", label: "Actividades" },
+  { id: "noticias", label: "Noticias" },
   { id: "credenciales", label: "Cuentas" },
 ];
 
@@ -40,7 +43,13 @@ export default function AdminPanel() {
     updateStaffTeam,
     enrollments,
     updateEnrollmentStatus,
+    updateEnrollment,
     logout,
+    newsPosts,
+    saveNewsPost,
+    removeNewsPost,
+    removeStaffAccount,
+    addNextTempVolunteer,
   } = useGame();
 
   const [tab, setTab] = useState("inscripciones");
@@ -75,6 +84,8 @@ export default function AdminPanel() {
     access: emptyAccess("permanent"),
   });
   const [studentForm, setStudentForm] = useState({
+    source: "manual",
+    enrollmentId: "",
     firstName: "",
     lastName: "",
     email: "",
@@ -82,11 +93,22 @@ export default function AdminPanel() {
     ageGroup: "regular",
   });
   const [resets, setResets] = useState({});
+  const [tempVolunteerPassword, setTempVolunteerPassword] = useState("");
+  const [openStaffEmail, setOpenStaffEmail] = useState(null);
+  const [newsDraft, setNewsDraft] = useState({ title: "", body: "", ageGroup: "all" });
 
   const teachers = useMemo(() => staff.filter((item) => item.role !== "admin"), [staff]);
   const temps = teachers.filter((item) => item.staffKind === "temporary" || item.lockedUsername);
   const permanents = teachers.filter((item) => item.staffKind !== "temporary" && !item.lockedUsername);
   const activityCourses = coursesForSubject(activity.subjectId);
+  const enrollmentsWithoutAccount = useMemo(
+    () => enrollments.filter((item) => !item.studentAccountId),
+    [enrollments],
+  );
+  const delegationActivities = useMemo(
+    () => activities.filter((item) => item.delegation),
+    [activities],
+  );
 
   if (!hydrated) return null;
   if (!user || user.role !== "admin") return <Navigate to="/admin" replace />;
@@ -139,6 +161,8 @@ export default function AdminPanel() {
       teacherEmail: activity.teacherEmail,
       teacherName: teacherName(activity.teacherEmail),
       assignedBy: user.email,
+      delegation: true,
+      audience: "staff",
       createdAt: Date.now(),
     });
     setActivity((current) => ({ ...current, title: "", description: "", dueDate: "" }));
@@ -160,12 +184,64 @@ export default function AdminPanel() {
     }
   };
 
+  const applyEnrollmentToStudentForm = (enrollmentId) => {
+    const row = enrollments.find((item) => item.id === enrollmentId);
+    if (!row) return;
+    const parts = (row.studentName || "").trim().split(/\s+/);
+    setStudentForm((current) => ({
+      ...current,
+      enrollmentId,
+      firstName: parts[0] || current.firstName,
+      lastName: parts.slice(1).join(" ") || current.lastName,
+      email: current.email || (row.guardianEmail || "").trim().toLowerCase(),
+      tutorName: row.guardianName || "",
+      tutorEmail: row.guardianEmail || "",
+    }));
+  };
+
   const onCreateStudent = async () => {
-    const result = await createStudent(studentForm);
+    const payload = {
+      ...studentForm,
+      enrollmentId: studentForm.source === "enrollment" ? studentForm.enrollmentId : null,
+    };
+    const result = await createStudent(payload);
     setFeedback(result.ok ? `Cuenta de estudiante creada para ${studentForm.email}.` : result.message);
     if (result.ok) {
-      setStudentForm({ firstName: "", lastName: "", email: "", password: "", ageGroup: "regular" });
+      setStudentForm({
+        source: "manual",
+        enrollmentId: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        ageGroup: "regular",
+      });
     }
+  };
+
+  const onAddTempVolunteer = async () => {
+    const result = await addNextTempVolunteer(tempVolunteerPassword || undefined);
+    setFeedback(result.ok ? `Cuenta ${result.email} creada (voluntario ${result.slot}).` : result.message);
+    if (result.ok) setTempVolunteerPassword("");
+  };
+
+  const onPublishNews = () => {
+    if (!newsDraft.title.trim() || !newsDraft.body.trim()) {
+      setFeedback("La noticia necesita título y cuerpo.");
+      return;
+    }
+    saveNewsPost({
+      id: crypto.randomUUID(),
+      title: newsDraft.title.trim(),
+      body: newsDraft.body.trim(),
+      ageGroup: newsDraft.ageGroup || "all",
+      authorEmail: user.email,
+      authorName: `${user.firstName} ${user.lastName}`,
+      authorRole: "admin",
+      createdAt: Date.now(),
+    });
+    setNewsDraft({ title: "", body: "", ageGroup: "all" });
+    setFeedback("Aviso publicado para estudiantes en FIF Learning.");
   };
 
   const onReset = async (email) => {
@@ -179,16 +255,13 @@ export default function AdminPanel() {
 
   return (
     <div className="ad-shell">
-      <aside className="ad-side">
-        <strong>COORDINACIÓN FIF</strong>
-        {TABS.map((item) => (
-          <button key={item.id} type="button" className={tab === item.id ? "is-on" : ""} onClick={() => setTab(item.id)}>
-            {item.label}
-          </button>
-        ))}
-        <Link to="/">Sitio público</Link>
-        <button type="button" onClick={logout}>Cerrar sesión</button>
-      </aside>
+      <AdminSideNav
+        title="COORDINACIÓN FIF"
+        tabs={TABS}
+        tab={tab}
+        onTab={setTab}
+        onLogout={logout}
+      />
       <div className="ad-main">
         <div className="ad-top">
           <div>
@@ -258,7 +331,8 @@ export default function AdminPanel() {
                 <p><strong>Nacimiento:</strong> {selected.birthDate}</p>
                 <p><strong>Colegio:</strong> {selected.school} · {schoolTypeLabel(selected.schoolType)} · {selected.grade}</p>
                 <p><strong>Pago:</strong> ${selected.payAmount || "—"} · {selected.payName} · {selected.payPhone}</p>
-                {selected.scholarshipLabels?.length > 0 && <p><strong>Becas:</strong> {selected.scholarshipLabels.join(" · ")}</p>}
+                <p><strong>Becas:</strong> {selected.scholarshipLabels?.length ? selected.scholarshipLabels.join(" · ") : "Ninguna"}</p>
+                <p><strong>Porcentaje de beca:</strong> {selected.scholarshipPercent ?? 0}%</p>
                 {selected.payNotes && <p><strong>Notas de pago:</strong> {selected.payNotes}</p>}
                 <p><strong>Residencia:</strong> {selected.city} · {selected.sector}</p>
                 <p><strong>Concursos:</strong> {selected.contests === "si" ? "Sí" : "No"}</p>
@@ -266,6 +340,57 @@ export default function AdminPanel() {
                 <p><strong>Expectativas:</strong> {(selected.goals || []).map((id) => (id === "otro" && selected.otherGoal ? selected.otherGoal : ACADEMIC_GOALS.find((goal) => goal.id === id)?.label)).filter(Boolean).join(", ")}</p>
                 <p><strong>Emergencia:</strong> {selected.emergencyName} · {selected.emergencyRelation} · {selected.emergencyPhone}</p>
                 {selected.emergencyNotes && <p><strong>Nota:</strong> {selected.emergencyNotes}</p>}
+              </div>
+              <div className="ad-beca">
+                <h3>Beca de Coordinación</h3>
+                <label>
+                  Porcentaje
+                  <input
+                    className="pill-input"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={selected.scholarshipPercent ?? 0}
+                    onChange={(event) => {
+                      const pct = Math.min(100, Math.max(0, Number(event.target.value) || 0));
+                      updateEnrollment(selected.id, {
+                        scholarshipPercent: pct,
+                        scholarshipLabels: pct ? [`Beca ${pct}%`] : [],
+                      });
+                      setFeedback(pct ? `Beca de ${selected.studentName}: ${pct}%.` : `Beca de ${selected.studentName} en 0%.`);
+                    }}
+                  />
+                </label>
+                <div className="ad-beca-presets">
+                  {SCHOLARSHIPS.map((item) => (
+                    <button
+                      key={item.id}
+                      className="ad-btn ad-btn-ghost"
+                      type="button"
+                      onClick={() => {
+                        const pct = item.id.includes("100") ? 100 : item.id.includes("40") ? 40 : 10;
+                        updateEnrollment(selected.id, {
+                          scholarships: [item.id],
+                          scholarshipPercent: pct,
+                          scholarshipLabels: [item.label],
+                        });
+                        setFeedback(`Aplicada: ${item.label}`);
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  className="ad-btn"
+                  type="button"
+                  onClick={() => {
+                    updateEnrollment(selected.id, { scholarships: [], scholarshipPercent: 0, scholarshipLabels: [] });
+                    setFeedback(`Beca eliminada para ${selected.studentName}.`);
+                  }}
+                >
+                  Quitar beca
+                </button>
               </div>
               <button className="ad-btn ad-btn-ghost" type="button" onClick={() => setOpenEnrollment(null)}>Cerrar ficha</button>
             </article>
@@ -314,67 +439,24 @@ export default function AdminPanel() {
       {tab === "horarios" && (
         <section className="ad-card">
           <h2>Horarios de la plataforma</h2>
-          <div className="teacher-filters">
-            <label>
-              Título
-              <input className="pill-input" value={schedule.title} onChange={(event) => setSchedule((current) => ({ ...current, title: event.target.value }))} />
-            </label>
-            <label>
-              Día
-              <select className="pill-select" value={schedule.day} onChange={(event) => setSchedule((current) => ({ ...current, day: event.target.value }))}>
-                {WEEKDAYS.map((day) => <option key={day.id} value={day.id}>{day.label}</option>)}
-              </select>
-            </label>
-            <label>
-              Inicio
-              <input className="pill-input" type="time" value={schedule.startTime} onChange={(event) => setSchedule((current) => ({ ...current, startTime: event.target.value }))} />
-            </label>
-            <label>
-              Fin
-              <input className="pill-input" type="time" value={schedule.endTime} onChange={(event) => setSchedule((current) => ({ ...current, endTime: event.target.value }))} />
-            </label>
-            <label>
-              Grupo
-              <select className="pill-select" value={schedule.ageGroup} onChange={(event) => setSchedule((current) => ({ ...current, ageGroup: event.target.value }))}>
-                <option value="all">Todos los grupos</option>
-                {AGE_GROUPS.map((group) => <option key={group.id} value={group.id}>{group.label}</option>)}
-              </select>
-            </label>
-            <label>
-              Profesor
-              <select className="pill-select" value={schedule.teacherEmail} onChange={(event) => setSchedule((current) => ({ ...current, teacherEmail: event.target.value }))}>
-                <option value="">Sin asignar</option>
-                {teachers.map((item) => (
-                  <option key={item.email} value={item.email}>{item.firstName} {item.lastName}</option>
-                ))}
-              </select>
-            </label>
+          <p>A la izquierda añades una clase. A la derecha ves el horario como lo verá el estudiante.</p>
+          <div className="schedule-split">
+            <ScheduleForm
+              value={schedule}
+              onChange={setSchedule}
+              teachers={teachers}
+              submitLabel="Añadir al horario"
+              onSubmit={onSaveSchedule}
+            />
+            <ScheduleGrid items={schedules} onRemove={removeSchedule} emptyHint="Todavía no hay clases en la grilla." />
           </div>
-          <label htmlFor="sched-notes">Notas</label>
-          <textarea id="sched-notes" className="code-editor" value={schedule.notes} onChange={(event) => setSchedule((current) => ({ ...current, notes: event.target.value }))} />
-          <button className="btn btn-green" type="button" onClick={onSaveSchedule}>Publicar horario</button>
-
-          <h2>Publicados</h2>
-          {schedules.length === 0 && <p>No hay horarios todavía.</p>}
-          <ul className="activity-list">
-            {schedules.slice().reverse().map((item) => (
-              <li key={item.id}>
-                <strong>{item.title}</strong>
-                <p>
-                  {WEEKDAYS.find((day) => day.id === item.day)?.label} · {item.startTime}–{item.endTime} · {item.ageGroup === "all" ? "Todos los grupos" : ageLabel(item.ageGroup)}
-                  {item.teacherName ? ` · ${item.teacherName}` : ""}
-                </p>
-                {item.notes && <p>{item.notes}</p>}
-                <button className="btn btn-blue" type="button" onClick={() => removeSchedule(item.id)}>Quitar</button>
-              </li>
-            ))}
-          </ul>
         </section>
       )}
 
       {tab === "delegar" && (
         <section className="ad-card">
-          <h2>Nueva actividad para un profesor</h2>
+          <h2>Delegaciones al equipo docente</h2>
+          <p>Instrucciones o recordatorios para voluntarios y profesores. <strong>No</strong> aparecen en la plataforma de estudiantes; el docente las ve en Equipo FIF.</p>
           <div className="teacher-filters">
             <label>
               Materia
@@ -415,10 +497,10 @@ export default function AdminPanel() {
           <textarea id="adm-act-text" className="code-editor" value={activity.description} onChange={(event) => setActivity((current) => ({ ...current, description: event.target.value }))} />
           <button className="btn btn-green" type="button" onClick={onCreateAssigned}>Delegar actividad</button>
 
-          <h2>Actividades ya publicadas</h2>
-          {activities.length === 0 && <p>Nadie ha publicado actividades todavía.</p>}
+          <h2>Delegaciones enviadas</h2>
+          {delegationActivities.length === 0 && <p>Aún no hay delegaciones.</p>}
           <ul className="activity-list">
-            {activities.slice().reverse().map((item) => (
+            {delegationActivities.slice().reverse().map((item) => (
               <li key={item.id}>
                 <strong>{item.title}</strong>
                 <p>{ACTIVITY_TYPES.find((type) => type.id === item.type)?.label} · {COURSES.find((course) => course.id === item.courseId)?.title || "Curso"} · {item.teacherName || item.teacherEmail}</p>
@@ -437,6 +519,41 @@ export default function AdminPanel() {
         </section>
       )}
 
+      {tab === "noticias" && (
+        <section className="ad-card ad-form-pro">
+          <h2>Avisos para estudiantes</h2>
+          <p>Se muestran en el panel <strong>Noticias</strong> del inicio de FIF Learning.</p>
+          <label>
+            Título
+            <input className="pill-input" value={newsDraft.title} onChange={(event) => setNewsDraft((c) => ({ ...c, title: event.target.value }))} />
+          </label>
+          <label>
+            Mensaje
+            <textarea className="code-editor" rows={5} value={newsDraft.body} onChange={(event) => setNewsDraft((c) => ({ ...c, body: event.target.value }))} />
+          </label>
+          <label>
+            Grupo (opcional)
+            <select className="pill-select" value={newsDraft.ageGroup} onChange={(event) => setNewsDraft((c) => ({ ...c, ageGroup: event.target.value }))}>
+              <option value="all">Todos los estudiantes</option>
+              {AGE_GROUPS.map((group) => <option key={group.id} value={group.id}>{group.label}</option>)}
+            </select>
+          </label>
+          <button className="ad-btn" type="button" onClick={onPublishNews}>Publicar aviso</button>
+          <h2>Publicados</h2>
+          {newsPosts.length === 0 && <p>No hay avisos todavía.</p>}
+          <ul className="activity-list">
+            {newsPosts.slice().reverse().map((item) => (
+              <li key={item.id}>
+                <strong>{item.title}</strong>
+                <p>{item.body}</p>
+                <small>{item.authorName} · {new Date(item.createdAt).toLocaleString("es-EC")}</small>
+                <button className="ad-btn ad-btn-ghost" type="button" onClick={() => removeNewsPost(item.id)}>Quitar</button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {tab === "credenciales" && (
         <section className="ad-card">
           <article className="cred-card">
@@ -444,9 +561,38 @@ export default function AdminPanel() {
             <p>Usuario fijo: <strong>{DEFAULT_ADMIN.email}</strong>. Nadie se auto-registra. Todas las cuentas de estudiantes y del equipo las crea esta pantalla.</p>
           </article>
 
-          <article className="cred-card">
+          <article className="cred-card ad-form-pro">
             <h2>Crear estudiante</h2>
-            <p>FIF Learning queda cerrado al público. El estudiante entra con este correo y clave; en el primer inicio ve el tutorial.</p>
+            <p>Elige si la cuenta es nueva o proviene de una inscripción aprobada (evita duplicados en grupos).</p>
+            <fieldset className="ad-radio-row">
+              <legend>Origen</legend>
+              <label>
+                <input type="radio" name="student-source" checked={studentForm.source === "manual"} onChange={() => setStudentForm((c) => ({ ...c, source: "manual", enrollmentId: "" }))} />
+                Desde cero
+              </label>
+              <label>
+                <input type="radio" name="student-source" checked={studentForm.source === "enrollment"} onChange={() => setStudentForm((c) => ({ ...c, source: "enrollment" }))} />
+                Desde inscripción
+              </label>
+            </fieldset>
+            {studentForm.source === "enrollment" && (
+              <label>
+                Inscripción
+                <select
+                  className="pill-select"
+                  value={studentForm.enrollmentId}
+                  onChange={(event) => {
+                    setStudentForm((c) => ({ ...c, enrollmentId: event.target.value }));
+                    applyEnrollmentToStudentForm(event.target.value);
+                  }}
+                >
+                  <option value="">Elige una inscripción sin cuenta</option>
+                  {enrollmentsWithoutAccount.map((item) => (
+                    <option key={item.id} value={item.id}>{item.studentName} · {item.guardianEmail}</option>
+                  ))}
+                </select>
+              </label>
+            )}
             <div className="teacher-filters">
               <label>Nombre<input value={studentForm.firstName} onChange={(event) => setStudentForm((current) => ({ ...current, firstName: event.target.value }))} /></label>
               <label>Apellidos<input value={studentForm.lastName} onChange={(event) => setStudentForm((current) => ({ ...current, lastName: event.target.value }))} /></label>
@@ -459,12 +605,26 @@ export default function AdminPanel() {
                 </select>
               </label>
             </div>
-            <button className="ad-btn" type="button" onClick={onCreateStudent}>Crear cuenta de estudiante</button>
+            <button className="ad-btn" type="button" onClick={onCreateStudent} disabled={studentForm.source === "enrollment" && !studentForm.enrollmentId}>
+              Crear cuenta de estudiante
+            </button>
           </article>
 
           <article className="cred-card">
             <h2>Voluntarios temporales</h2>
             <p>El usuario se mantiene entre semestres. Coordinación carga la clave nueva del período y asigna el equipo.</p>
+            <div className="cred-row add-volunteer-row">
+              <label>
+                Clave para el siguiente voluntario
+                <input
+                  type="password"
+                  placeholder="Opcional (usa la clave por defecto)"
+                  value={tempVolunteerPassword}
+                  onChange={(event) => setTempVolunteerPassword(event.target.value)}
+                />
+              </label>
+              <button className="ad-btn" type="button" onClick={onAddTempVolunteer}>Agregar voluntario siguiente</button>
+            </div>
             {temps.map((item) => (
               <div className="cred-row" key={item.email}>
                 <div>
@@ -541,53 +701,82 @@ export default function AdminPanel() {
           <h2>Equipo con acceso</h2>
           {permanents.length === 0 && <p>Todavía no hay voluntarios permanentes en este dispositivo.</p>}
           {permanents.map((item) => (
-            <article className="cred-card" key={item.email}>
-              <strong>{item.firstName} {item.lastName}</strong>
-              <p>{item.email} · {STAFF_KIND_LABEL[item.staffKind] || "Equipo"} · {teamLabel(item.teamId)}</p>
-              <div className="teacher-filters">
-                <label>
-                  Equipo
-                  <select value={item.teamId || ""} onChange={(event) => updateStaffTeam(item.email, { teamId: event.target.value, duty: item.duty || "teacher" })}>
-                    <option value="">Sin equipo</option>
-                    {TEAMS.map((team) => <option key={team.id} value={team.id}>{team.label}</option>)}
-                  </select>
-                </label>
-                <label>
-                  Rol
-                  <select value={item.duty || "teacher"} onChange={(event) => updateStaffTeam(item.email, { duty: event.target.value, teamId: item.teamId || "" })}>
-                    {DUTIES.map((duty) => <option key={duty.id} value={duty.id}>{duty.label}</option>)}
-                  </select>
-                </label>
-              </div>
-              {item.duty === "teacher" && (
-                <fieldset className="access-grid">
-                  <legend>Permisos de aula</legend>
-                  {ACCESS_KEYS.map((key) => (
-                    <label key={key.id}>
-                      <input
-                        type="checkbox"
-                        checked={Boolean((item.access || ACCESS_PRESETS.teacher)[key.id])}
-                        onChange={(event) => updateStaffAccess(item.email, {
-                          ...(item.access || ACCESS_PRESETS.teacher),
-                          [key.id]: event.target.checked,
-                        })}
-                      />
-                      {key.label}
-                    </label>
-                  ))}
-                </fieldset>
-              )}
-              <div className="cred-row">
-                <input
-                  type="password"
-                  placeholder="Nueva clave"
-                  value={resets[item.email] || ""}
-                  onChange={(event) => setResets((current) => ({ ...current, [item.email]: event.target.value }))}
-                />
-                <button className="ad-btn" type="button" onClick={() => onReset(item.email)}>Cambiar clave</button>
-              </div>
-            </article>
+            <div className="staff-line" key={item.email}>
+              <span>
+                <strong>{item.firstName} {item.lastName}</strong>
+                {" · "}{item.email}
+                {" · "}{teamLabel(item.teamId)}
+                {" · "}{DUTIES.find((d) => d.id === item.duty)?.label || "Docente"}
+              </span>
+              <button className="ad-btn ad-btn-ghost" type="button" onClick={() => setOpenStaffEmail(item.email)}>Ver ficha completa</button>
+            </div>
           ))}
+          {openStaffEmail && permanents.some((item) => item.email === openStaffEmail) && (() => {
+            const item = permanents.find((row) => row.email === openStaffEmail);
+            return (
+              <article className="cred-card staff-ficha" key={item.email}>
+                <h3>{item.firstName} {item.lastName}</h3>
+                <p>{item.email} · {STAFF_KIND_LABEL[item.staffKind] || "Equipo"} · {teamLabel(item.teamId)}</p>
+                <div className="teacher-filters">
+                  <label>
+                    Equipo
+                    <select value={item.teamId || ""} onChange={(event) => updateStaffTeam(item.email, { teamId: event.target.value, duty: item.duty || "teacher" })}>
+                      <option value="">Sin equipo</option>
+                      {TEAMS.map((team) => <option key={team.id} value={team.id}>{team.label}</option>)}
+                    </select>
+                  </label>
+                  <label>
+                    Rol
+                    <select value={item.duty || "teacher"} onChange={(event) => updateStaffTeam(item.email, { duty: event.target.value, teamId: item.teamId || "" })}>
+                      {DUTIES.map((duty) => <option key={duty.id} value={duty.id}>{duty.label}</option>)}
+                    </select>
+                  </label>
+                </div>
+                {item.duty === "teacher" && (
+                  <fieldset className="access-grid">
+                    <legend>Permisos de aula</legend>
+                    {ACCESS_KEYS.map((key) => (
+                      <label key={key.id}>
+                        <input
+                          type="checkbox"
+                          checked={Boolean((item.access || ACCESS_PRESETS.teacher)[key.id])}
+                          onChange={(event) => updateStaffAccess(item.email, {
+                            ...(item.access || ACCESS_PRESETS.teacher),
+                            [key.id]: event.target.checked,
+                          })}
+                        />
+                        {key.label}
+                      </label>
+                    ))}
+                  </fieldset>
+                )}
+                <div className="cred-row">
+                  <input
+                    type="password"
+                    placeholder="Nueva clave"
+                    value={resets[item.email] || ""}
+                    onChange={(event) => setResets((current) => ({ ...current, [item.email]: event.target.value }))}
+                  />
+                  <button className="ad-btn" type="button" onClick={() => onReset(item.email)}>Cambiar clave</button>
+                </div>
+                <div className="actions-row">
+                  <button className="ad-btn ad-btn-ghost" type="button" onClick={() => setOpenStaffEmail(null)}>Cerrar ficha</button>
+                  <button
+                    className="ad-btn"
+                    type="button"
+                    style={{ background: "#b91c1c" }}
+                    onClick={() => {
+                      const result = removeStaffAccount(item.email);
+                      setFeedback(result.ok ? `${item.email} eliminado del equipo.` : result.message);
+                      if (result.ok) setOpenStaffEmail(null);
+                    }}
+                  >
+                    Eliminar miembro
+                  </button>
+                </div>
+              </article>
+            );
+          })()}
         </section>
       )}
       </div>

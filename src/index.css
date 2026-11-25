@@ -647,6 +647,390 @@ h3,
   min-height: 520px;
 }
 
+.dash-cursos {
+  grid-template-columns: minmax(220px, 0.42fr) minmax(0, 1fr);
+}
+
+.dash-side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 0;
+}
+
+.news-panel h2 {
+  font-size: 20px;
+  text-align: left;
+}
+
+.news-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.news-list li {
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.news-list small {
+  color: #64748b;
+}
+
+.news-empty {
+  color: #64748b;
+  margin: 0;
+}
+
+.pending-date {
+  margin: 4px 0 8px;
+  font-weight: 700;
+  color: #1e40af;
+  text-align: left;
+}
+
+.course-home {
+  grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.55fr);
+}
+
+.pending-panel h2,
+.pending-panel h3,
+.resumen-panel h3 {
+  text-align: left;
+  font-size: 22px;
+}
+
+.resumen-list {
+  display: grid;
+  gap: 12px;
+}
+
+.resumen-list button {
+  width: 100%;
+  min-height: 58px;
+  border: 0;
+  border-radius: 18px;
+  background: #fff;
+  font-weight: 800;
+  color: #1e3a8a;
+  cursor: pointer;
+  text-align: left;
+  padding: 0 18px;
+}
+
+.course-squares {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.course-squares.contenido-squares {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+  max-width: 640px;
+}
+
+.cover-card.is-square .course-cover {
+  aspect-ratio: 1;
+  height: auto;
+  width: 100%;
+  border-radius: 22px;
+}
+
+.cover-card.contenido-tile .course-cover {
+  border-radius: 18px;
+}
+
+.cover-card.contenido-tile .course-cover strong {
+  font-size: clamp(12px, 2.4vw, 17px);
+  padding: 2px 8px;
+}
+
+.course-banner {
+  background: #16143a;
+  color: #3b82f6;
+  border-radius: 16px;
+  padding: 16px 22px;
+  margin: 0 0 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.course-banner h2 {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 32px);
+  letter-spacing: 0.04em;
+}
+
+.course-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.course-dots span {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.course-dots .is-green { background: #22c55e; }
+.course-dots .is-yellow { background: #eab308; }
+.course-dots .is-red { background: #ef4444; }
+
+.nav-drop {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.nav-drop summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 12px 10px;
+  font-weight: 800;
+  color: #1e3a8a;
+  border-radius: 999px;
+}
+
+.nav-drop summary::-webkit-details-marker {
+  display: none;
+}
+
+.nav-drop summary.active,
+.nav-drop[open] summary {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.nav-drop-menu {
+  position: absolute;
+  z-index: 8;
+  top: 100%;
+  left: 0;
+  min-width: 200px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 8px;
+  display: grid;
+}
+
+.nav-drop-menu a {
+  text-align: left;
+  border-radius: 10px;
+}
+
+.minigame-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.html-game-card {
+  width: 108px;
+  height: 118px;
+  border: 0;
+  border-radius: 16px;
+  background: #1e5bb8;
+  color: #fff;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.html-game-card .mg-icon {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.html-game-card strong {
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.html-game-card.is-featured {
+  background: #F08300;
+}
+
+.app-shell:has(.html-game-panel) {
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.app-shell:has(.html-game-panel) .app-header {
+  flex-shrink: 0;
+}
+
+.app-shell:has(.html-game-panel) .app-nav {
+  display: none;
+}
+
+.app-shell:has(.html-game-panel) main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.html-game-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 8px 10px 10px;
+  border-radius: 20px;
+}
+
+.html-game-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 6px;
+  flex-shrink: 0;
+}
+
+.html-game-panel h2 {
+  font-size: 15px;
+  margin: 0;
+  text-align: left;
+  color: #1e3a8a;
+}
+
+.html-game-frame {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.schedule-split {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.4fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.schedule-form,
+.timetable-wrap {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.schedule-form {
+  display: grid;
+  gap: 10px;
+}
+
+.schedule-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.schedule-form .pill-input,
+.schedule-form .pill-select,
+.schedule-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.schedule-form h3,
+.timetable-title {
+  margin: 0 0 8px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.schedule-form-times {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.timetable {
+  display: grid;
+  min-width: 640px;
+  border: 1px solid #d7deea;
+}
+
+.timetable-wrap {
+  overflow-x: auto;
+}
+
+.timetable-row {
+  display: grid;
+  grid-template-columns: 72px repeat(7, minmax(80px, 1fr));
+}
+
+.timetable-cell {
+  min-height: 64px;
+  border: 1px solid #e5e7eb;
+  padding: 6px;
+}
+
+.timetable-cell.is-hour {
+  background: #e5e7eb;
+  font-weight: 800;
+  font-size: 13px;
+  display: grid;
+  place-items: center;
+}
+
+.timetable-cell.is-day {
+  color: #fff;
+  font-weight: 800;
+  text-align: center;
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+}
+
+.timetable-block {
+  background: #eef5fc;
+  border-radius: 8px;
+  padding: 6px;
+  display: grid;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.timetable-block strong {
+  font-size: 13px;
+}
+
+.timetable-remove {
+  border: 0;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 6px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
 .panel {
   background: #d9d9d9;
   border-radius: 36px;
@@ -654,11 +1038,23 @@ h3,
   box-shadow: var(--shadow);
 }
 
+.panel.html-game-panel {
+  padding: 8px 10px 10px;
+  border-radius: 20px;
+}
+
 .panel h2 {
   text-align: center;
   color: #2563eb;
   margin: 0 0 22px;
   font-size: 32px;
+}
+
+.panel.html-game-panel h2 {
+  font-size: 15px;
+  margin: 0;
+  text-align: left;
+  color: #1e3a8a;
 }
 
 .progress-grid {
@@ -1472,6 +1868,9 @@ h3,
   .landing-section.reverse,
   .onboard-grid,
   .dash-grid,
+  .dash-cursos,
+  .course-home,
+  .schedule-split,
   .help-layout,
   .courses-grid,
   .exercise-layout,
@@ -1528,8 +1927,16 @@ h3,
     border-radius: 24px;
   }
 
+  .panel.html-game-panel {
+    padding: 6px 8px 8px;
+  }
+
   .panel h2 {
     font-size: clamp(22px, 5vw, 32px);
+  }
+
+  .panel.html-game-panel h2 {
+    font-size: 14px;
   }
 
   .progress-grid {
@@ -1954,8 +2361,14 @@ h3,
   }
 
   .progress-grid,
+  .course-squares,
   .app-nav {
     grid-template-columns: 1fr;
+  }
+
+  .course-squares.contenido-squares {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: none;
   }
 
   .header-actions {

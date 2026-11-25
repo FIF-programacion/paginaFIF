@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Secuencias FIF</title>
+  <style>
+    body { margin: 0; font-family: Nunito, Arial, sans-serif; background: #f4f7fb; color: #10233a; }
+    main { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
+    h1 { color: #1e5bb8; }
+    .card { background: #fff; border-radius: 18px; padding: 20px; box-shadow: 0 8px 24px rgba(16,35,58,.08); }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+    button { font: inherit; font-weight: 800; border: 0; border-radius: 12px; padding: 10px 14px; cursor: pointer; background: #e8eef8; }
+    .chip { background: #d7e6ff; }
+    .ok { color: #166534; font-weight: 800; }
+    .bad { color: #b91c1c; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Secuencias</h1>
+    <p>Ordena los pasos de un algoritmo. Pulsa en el orden correcto.</p>
+    <div class="card">
+      <p id="task"></p>
+      <div class="row" id="pool"></div>
+      <p>Tu orden:</p>
+      <div class="row" id="picked"></div>
+      <p id="msg"></p>
+      <button type="button" id="reset">Reiniciar</button>
+    </div>
+  </main>
+  <script>
+    const STEPS = [
+      { text: "Leer el problema", ok: 1 },
+      { text: "Dividir en partes", ok: 2 },
+      { text: "Escribir el código", ok: 3 },
+      { text: "Probar y corregir", ok: 4 },
+    ];
+    const pool = document.getElementById("pool");
+    const picked = document.getElementById("picked");
+    const msg = document.getElementById("msg");
+    document.getElementById("task").textContent = "¿En qué orden se resuelve un programa?";
+    let chosen = [];
+    function draw() {
+      pool.innerHTML = "";
+      picked.innerHTML = "";
+      STEPS.filter((s) => !chosen.includes(s.ok)).forEach((s) => {
+        const b = document.createElement("button");
+        b.className = "chip";
+        b.textContent = s.text;
+        b.onclick = () => { chosen.push(s.ok); draw(); };
+        pool.appendChild(b);
+      });
+      chosen.forEach((n, i) => {
+        const s = STEPS.find((x) => x.ok === n);
+        const b = document.createElement("button");
+        b.textContent = (i + 1) + ". " + s.text;
+        picked.appendChild(b);
+      });
+      if (chosen.length === 4) {
+        const good = chosen.every((n, i) => n === i + 1);
+        msg.className = good ? "ok" : "bad";
+        msg.textContent = good ? "¡Correcto! Ese es el orden." : "Casi. Reinicia y vuelve a ordenar.";
+      } else msg.textContent = "";
+    }
+    document.getElementById("reset").onclick = () => { chosen = []; draw(); };
+    draw();
+  </script>
+</body>
+</html>
