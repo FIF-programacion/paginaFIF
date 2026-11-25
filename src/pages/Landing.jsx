@@ -55,6 +55,10 @@ const TEAM = [
     name: "Gabi y Diego",
     image: "/images/Diego_Gaby.avif",
     photoPosition: "center 70%",
+    name: "Gaby y Diego",
+    image: "/images/Diego_Gaby.avif",
+    // La pareja está a la derecha de la foto: se desplaza el recorte para que quede centrada en la tarjeta.
+    position: "74% center",
   },
   {
     name: "Anabelle Chacón",
@@ -88,6 +92,8 @@ const EVENTS = [
     title: "Clases y atención",
     date: "Sábados 7:30 am – 1:00 pm",
     place: "Fundación Integral de Familias",
+    date: "Martes y jueves 3:00 pm – 5:00 pm",
+    place: "Sábados 8:30 am – 12:30 pm",
     bgColor: "#5b9cf5",
     textColor: "#ffffff",
     moreHref: "#contacto",
@@ -95,9 +101,8 @@ const EVENTS = [
     ctaLabel: "Ver horarios",
   },
   {
-    title: "Conversando con los profes",
+    title: "Conversa con los Profes",
     date: "Encuentros, invitados y podcasts",
-    place: "FIF y Rumiñahui FM",
     bgColor: "#9ee0c8",
     textColor: "#16362d",
     moreHref: "#multimedia",
@@ -125,6 +130,9 @@ const ALLIES = [
 
 const HOURS = [
   { day: "Sábado", time: "7:30 am – 1:00 pm" },
+  { day: "Martes", time: "3:00 pm – 5:00 pm" },
+  { day: "Jueves", time: "3:00 pm – 5:00 pm" },
+  { day: "Sábado", time: "8:30 am – 12:30 pm" },
 ];
 
 function clamp(value) {
@@ -159,6 +167,7 @@ function IconSocial({ name }) {
     facebook: <path d="M14 8h3V4h-3c-2.8 0-5 2.2-5 5v3H6v4h3v8h4v-8h3.2L17 12h-4V9c0-.6.4-1 1-1Z" />,
     instagram: <path d="M8 3h8a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5Zm8 2H8a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3Zm-4 3.2A4.8 4.8 0 1 1 7.2 13 4.8 4.8 0 0 1 12 8.2Zm0 2A2.8 2.8 0 1 0 14.8 13 2.8 2.8 0 0 0 12 10.2ZM17.4 6.3a1.1 1.1 0 1 1-1.1 1.1 1.1 1.1 0 0 1 1.1-1.1Z" />,
     tiktok: <path d="M14.2 3h3.1c.3 2.4 1.6 4.2 4.2 4.5v3.1c-1.4 0-2.7-.4-4.1-1.2v6.8A6.7 6.7 0 1 1 9.2 9.6v3.3a3.5 3.5 0 1 0 2.5 3.3V3Z" />,
+    youtube: <path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4a2.5 2.5 0 0 0-1.8 1.8C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8ZM10 15V9l5.2 3L10 15Z" />,
     linkedin: <path d="M6.5 9H3.6v12h2.9V9ZM5 3.4A1.7 1.7 0 1 0 5 6.8 1.7 1.7 0 0 0 5 3.4ZM20.4 9c-2.3 0-3.7 1.2-4.3 2.4V9h-2.9v12h2.9v-6.4c0-1.7.9-2.8 2.4-2.8s2.2.9 2.2 2.8V21H21V14c0-3-1.5-5-4.6-5Z" />,
     youtube: <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8ZM9.6 15.6V8.4L15.8 12Z" />,
   };
@@ -447,6 +456,9 @@ export default function Landing() {
                   loading="lazy"
                   decoding="async"
                   style={member.photoPosition ? { objectPosition: member.photoPosition } : undefined}
+                  style={member.position ? { objectPosition: member.position } : undefined}
+                  loading="lazy"
+                  decoding="async"
                 />
 
                 <div className="lp-team-name">
@@ -550,6 +562,12 @@ export default function Landing() {
                 </div>
               </div>
               <a className="lp-media-youtube" href={ORG.social.youtube} target="_blank" rel="noreferrer">
+                <span className="lp-yt-badge" aria-hidden="true">
+                  <IconSocial name="youtube" />
+                </span>
+                <strong>Conversa con los Profes</strong>
+              </a>
+              <a href={ORG.social.youtube} target="_blank" rel="noreferrer">
                 <span>YouTube</span>
                 <strong>Canal FIF</strong>
               </a>
@@ -588,6 +606,7 @@ export default function Landing() {
                   <a href={ORG.social.tiktok} target="_blank" rel="noreferrer"><IconSocial name="tiktok" /> TikTok</a>
                   <a href={ORG.social.linkedin} target="_blank" rel="noreferrer"><IconSocial name="linkedin" /> LinkedIn</a>
                   <a href={ORG.social.instagram} target="_blank" rel="noreferrer"><IconSocial name="instagram" /> Instagram</a>
+                  <a href={ORG.social.youtube} target="_blank" rel="noreferrer"><IconSocial name="youtube" /> YouTube</a>
                 </div>
               </article>
             </div>

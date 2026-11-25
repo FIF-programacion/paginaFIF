@@ -14,6 +14,9 @@ export const ACADEMIC_GOALS = [
   { id: "otro", label: "Otro" },
 ];
 
+// Documento que se exige al inscribir. Aún no hay dónde guardar archivos: se envía por WhatsApp.
+export const ENROLLMENT_DOCUMENT = "Certificado de matrícula / declaración de homeschooling";
+
 export const GRADES = [
   "3ero EGB",
   "4to EGB",
@@ -58,7 +61,6 @@ export const ENROLLMENT_FEES = {
 export const SCHOLARSHIPS = [
   { id: "olimpiadas40", label: "Participación en olimpiadas: 40%" },
   { id: "olimpiadas100", label: "Ganar olimpiadas: 100%" },
-  { id: "hermanos", label: "Beca hermanos: $10 menos a cada estudiante" },
 ];
 
 export function emptyEnrollment() {
@@ -91,6 +93,7 @@ export function emptyEnrollment() {
     payEmail: "",
     payAmount: "",
     payNotes: "",
+    documentWhatsApp: false,
   };
 }
 

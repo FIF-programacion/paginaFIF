@@ -61,6 +61,11 @@ export function ScrollSplitEvents({ imageSrc, cards }) {
                   <p className="lp-event-meta">
                     {card.date}
                     {card.place ? <> <span>|</span> {card.place}</> : null}
+                    {card.place && (
+                      <>
+                        {" "}<span>|</span> {card.place}
+                      </>
+                    )}
                   </p>
                   <a className="lp-event-more" href={card.moreHref || "#contacto"}>
                     Más info

@@ -1,5 +1,4 @@
 .en-page {
-  min-height: 100vh;
   background: #f6f8fb;
   color: #152033;
 }
@@ -201,6 +200,18 @@
 
 .en-fees p {
   margin: 6px 0;
+}
+
+.en-document {
+  margin-top: 22px;
+}
+
+.en-document h2 {
+  font-size: 18px;
+}
+
+.en-document .en-note {
+  margin: 0 0 14px;
 }
 
 .en-review {

@@ -2,7 +2,16 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { SiteFooter } from "../components/SiteFooter";
 import { assistanceWhatsAppUrl, formatEnrollmentPaymentMessage } from "../data/org";
-import { ACADEMIC_GOALS, ENROLLMENT_FEES, GRADES, SCHOOL_TYPES, emptyEnrollment, schoolTypeLabel } from "../data/enrollments";
+import {
+  ACADEMIC_GOALS,
+  ENROLLMENT_DOCUMENT,
+  ENROLLMENT_FEES,
+  GRADES,
+  SCHOLARSHIPS,
+  SCHOOL_TYPES,
+  emptyEnrollment,
+  schoolTypeLabel,
+} from "../data/enrollments";
 import "./Enrollment.css";
 
 const STEPS = [
@@ -78,6 +87,11 @@ export default function Enrollment() {
     });
   };
 
+  // Las becas son excluyentes: se guarda como lista de 0 o 1 elemento.
+  const setScholarship = (id) => {
+    setForm((current) => ({ ...current, scholarships: id ? [id] : [] }));
+  };
+
   const fees = ENROLLMENT_FEES[form.schoolType];
 
   const validate = () => {
@@ -86,6 +100,9 @@ export default function Enrollment() {
     }
     if (step === 2 && (!form.studentName || !form.studentId || !form.birthDate || !form.school || !form.schoolType || !form.grade || !form.city || !form.sector)) {
       return "Completa los datos del estudiante, incluido el tipo de institución.";
+    }
+    if (step === 2 && !form.documentWhatsApp) {
+      return `Confirma que enviarás por WhatsApp el ${ENROLLMENT_DOCUMENT.toLowerCase()}.`;
     }
     if (step === 3 && (!form.contests || !form.extraPrep || !form.goals.length)) {
       return "Indica la información académica y al menos una expectativa.";
@@ -246,6 +263,22 @@ export default function Enrollment() {
                 <p>{fees.extraLabel}: <strong>${fees.extra}</strong></p>
               </div>
             )}
+            <div className="en-document">
+              <h2>{ENROLLMENT_DOCUMENT}</h2>
+              <p className="en-note">
+                Es obligatorio. Si el estudiante asiste a una institución, envía el certificado de matrícula del año
+                en curso; si es Homeschooling, la declaración de homeschooling. Por ahora el documento se envía por
+                WhatsApp al número de la fundación, junto con esta inscripción.
+              </p>
+              <label className="en-consent">
+                <input
+                  type="checkbox"
+                  checked={form.documentWhatsApp}
+                  onChange={(event) => set("documentWhatsApp", event.target.checked)}
+                />
+                <span>Enviaré el {ENROLLMENT_DOCUMENT.toLowerCase()} por WhatsApp.</span>
+              </label>
+            </div>
             </>
           )}
 
@@ -315,6 +348,7 @@ export default function Enrollment() {
                 <div><dt>Nacimiento</dt><dd>{form.birthDate}</dd></div>
                 <div><dt>Institución</dt><dd>{form.school} · {schoolTypeLabel(form.schoolType)}</dd></div>
                 <div><dt>Grado</dt><dd>{form.grade}</dd></div>
+                <div><dt>Documento</dt><dd>{ENROLLMENT_DOCUMENT} (se envía por WhatsApp)</dd></div>
                 <div><dt>Residencia</dt><dd>{form.city} · {form.sector}</dd></div>
                 <div><dt>Concursos</dt><dd>{form.contests === "si" ? "Sí" : "No"}</dd></div>
                 <div><dt>Preparación adicional</dt><dd>{form.extraPrep === "si" ? "Sí" : "No"}</dd></div>
@@ -336,6 +370,19 @@ export default function Enrollment() {
                   <p>{fees.extraLabel}: <strong>${fees.extra}</strong></p>
                 </div>
               )}
+              <fieldset className="en-goals">
+                <legend>Información de becas (opcional, solo una)</legend>
+                <label>
+                  <input type="radio" name="scholarship" checked={form.scholarships.length === 0} onChange={() => setScholarship("")} />
+                  Ninguna
+                </label>
+                {SCHOLARSHIPS.map((item) => (
+                  <label key={item.id}>
+                    <input type="radio" name="scholarship" checked={form.scholarships[0] === item.id} onChange={() => setScholarship(item.id)} />
+                    {item.label}
+                  </label>
+                ))}
+              </fieldset>
               <h2>Formulario de pago</h2>
               <p className="en-note">No hay cobro en la web. Completa el formulario y se abre WhatsApp para coordinar el pago de la inscripción con FIF.</p>
               <div className="en-grid">
@@ -353,7 +400,7 @@ export default function Enrollment() {
                 </Field>
               </div>
               <Field id="payNotes" label="Notas adicionales">
-                <textarea id="payNotes" rows={3} value={form.payNotes} onChange={(event) => set("payNotes", event.target.value)} placeholder="ALEKS, mensualidad, hermanos u otra indicación." />
+                <textarea id="payNotes" rows={3} value={form.payNotes} onChange={(event) => set("payNotes", event.target.value)} placeholder="ALEKS, mensualidad u otra indicación." />
               </Field>
               <label className="en-consent">
                 <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} />
@@ -364,6 +411,13 @@ export default function Enrollment() {
                   enviar el formulario por WhatsApp.
                 </span>
               </label>
+              {fees && (
+                <div className="en-fees">
+                  <h2>Valores {form.schoolType === "fiscal" ? "fiscal" : "particular"}</h2>
+                  <p>Inscripción: <strong>${fees.inscription}</strong></p>
+                  <p>{fees.extraLabel}: <strong>${fees.extra}</strong></p>
+                </div>
+              )}
             </>
           )}
 
