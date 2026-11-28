@@ -54,11 +54,8 @@ const TEAM = [
   {
     name: "Gabi y Diego",
     image: "/images/Diego_Gaby.avif",
-    photoPosition: "center 70%",
-    name: "Gaby y Diego",
-    image: "/images/Diego_Gaby.avif",
     // La pareja está a la derecha de la foto: se desplaza el recorte para que quede centrada en la tarjeta.
-    position: "74% center",
+    photoPosition: "74% center",
   },
   {
     name: "Anabelle Chacón",
@@ -456,9 +453,6 @@ export default function Landing() {
                   loading="lazy"
                   decoding="async"
                   style={member.photoPosition ? { objectPosition: member.photoPosition } : undefined}
-                  style={member.position ? { objectPosition: member.position } : undefined}
-                  loading="lazy"
-                  decoding="async"
                 />
 
                 <div className="lp-team-name">
