@@ -12,7 +12,7 @@ export default function Resources() {
   return (
     <section className="panel">
       <h2 style={{ textAlign: "left" }}>Cursos de tu grupo</h2>
-      <p className="pending-copy">Programación, matemática, música y arte (si corresponde a tu nivel). Dentro de cada uno están los trabajos del profesor y los minijuegos.</p>
+      <p className="pending-copy">Programación, matemática, música y arte (si corresponde a tu nivel). Dentro de cada uno están los trabajos del profesor y los refuerzos interactivos.</p>
       <div className="resources-grid">
         {subjects.map((subject) => {
           const games = subject.courses.map((id) => getCourse(id, user?.ageGroup)).filter(Boolean);
@@ -28,7 +28,7 @@ export default function Resources() {
                 <CourseCover type={subject.cover} title={subject.label.toUpperCase()} />
               </div>
               <h3>{subject.label}</h3>
-              <p>{games.length} minijuegos de refuerzo, más trabajos y pruebas del profesor.</p>
+              <p>{games.length} refuerzos interactivos, más trabajos y pruebas del profesor.</p>
             </button>
           );
         })}

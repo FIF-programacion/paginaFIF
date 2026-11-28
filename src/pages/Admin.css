@@ -75,6 +75,52 @@
   cursor: pointer;
 }
 
+.ad-form-pro {
+  display: grid;
+  gap: 14px;
+}
+
+.ad-radio-row {
+  border: 1px solid var(--ad-line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.ad-radio-row legend {
+  font-weight: 800;
+  padding: 0 4px;
+}
+
+.staff-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--ad-line);
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.staff-ficha {
+  margin-top: 12px;
+}
+
+.add-volunteer-row {
+  margin-bottom: 16px;
+}
+
+.test-cover-preview {
+  max-width: 220px;
+  border-radius: 10px;
+  border: 1px solid var(--ad-line);
+}
+
 .ad-btn-ghost {
   background: #e8edf5;
   color: var(--ad-navy);
@@ -94,6 +140,23 @@
   background: var(--ad-navy);
   color: #fff;
   padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 100vh;
+}
+
+.ad-side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.ad-side-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -289,6 +352,21 @@
 
 .ad-kanban-card small {
   color: #6b7280;
+}
+
+.ad-beca {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid var(--ad-line);
+  border-radius: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.ad-beca-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 @media (max-width: 860px) {

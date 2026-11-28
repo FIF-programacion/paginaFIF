@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { COURSES, courseAgeKey } from "../data/courses";
-import { ACTIVITY_TYPES } from "../data/teacher";
+import { ACTIVITY_TYPES, coursesForSubject } from "../data/teacher";
 import { TextEditor } from "../components/TextEditor";
 import { useGame } from "../context/GameContext";
+import { isStudentActivity } from "../utils/activities";
 
 const MAX_FILE_BYTES = 800 * 1024;
 
@@ -31,15 +32,20 @@ function fieldsForType(type) {
   return { editor: true, files: true, hint: "Escribe tu tarea y, si el profesor lo pide, adjunta un archivo o una imagen." };
 }
 
-export default function StudentActivities() {
+export default function StudentActivities({ subjectId } = {}) {
   const { user, activities, activityDone, submissions, submitActivityWork, completeActivity } = useGame();
   const [drafts, setDrafts] = useState({});
   const [feedback, setFeedback] = useState("");
 
+  const subjectCourseIds = subjectId ? coursesForSubject(subjectId).map((course) => course.id) : null;
   const mine = activities.filter((item) => {
-    const course = COURSES.find((course) => course.id === item.courseId);
-    if (!course) return true;
-    return course.ageGroups.includes(courseAgeKey(user?.ageGroup));
+    if (!isStudentActivity(item)) return false;
+    const course = COURSES.find((entry) => entry.id === item.courseId);
+    if (course && !course.ageGroups.includes(courseAgeKey(user?.ageGroup))) return false;
+    if (subjectCourseIds) {
+      return item.subjectId === subjectId || subjectCourseIds.includes(item.courseId);
+    }
+    return true;
   }).slice().reverse();
 
   const done = (activityId) => activityDone.some((item) => item.activityId === activityId && item.studentEmail === user.email);

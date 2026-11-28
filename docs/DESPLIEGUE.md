@@ -12,7 +12,7 @@ Objetivo de esta fase: publicar el **sitio institucional** (landing, donaciones,
 
 El interruptor es la variable `VITE_ENABLE_PLATFORM` (ver `.env.example`). En Cloudflare Pages debe quedar en `false`. El código de la plataforma se carga, pero las rutas de estudiantes y equipo redirigen a `/`.
 
-Para trabajar FIF Learning en local (portal, login, clases, minijuegos): crea `.env.local` con `VITE_ENABLE_PLATFORM=true` y ejecuta `npm run dev`. Esa variable no se sube a git.
+Para trabajar FIF Learning en local (portal, login, clases, refuerzos y minijuegos HTML): crea `.env.local` con `VITE_ENABLE_PLATFORM=true` y ejecuta `npm run dev`. Esa variable no se sube a git.
 
 ## 1. Crear el proyecto en Cloudflare Pages
 

@@ -83,6 +83,7 @@ export function GameProvider({ children }) {
   const [boardTasks, setBoardTasks] = useState([]);
   const [syllabusItems, setSyllabusItems] = useState([]);
   const [contentItems, setContentItems] = useState([]);
+  const [newsPosts, setNewsPosts] = useState([]);
   const [hydrated, setHydrated] = useState(false);
 
   const user = accounts.find((item) => item.id === sessionId) || null;
@@ -103,6 +104,7 @@ export function GameProvider({ children }) {
           passwordHash: "preview",
           ageGroup: "regular",
           dailyGoal: "5 minutos",
+          tutorialSeen: true,
           createdAt: Date.now(),
         };
         if (cancelled) return;
@@ -142,6 +144,7 @@ export function GameProvider({ children }) {
       setBoardTasks(saved?.boardTasks || []);
       setSyllabusItems(saved?.syllabusItems || []);
       setContentItems(saved?.contentItems || []);
+      setNewsPosts(saved?.newsPosts || []);
       setHydrated(true);
     };
 
@@ -173,9 +176,10 @@ export function GameProvider({ children }) {
         boardTasks,
         syllabusItems,
         contentItems,
+        newsPosts,
       }),
     );
-  }, [accounts, sessionId, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, submissions, enrollments, boardTasks, syllabusItems, contentItems, hydrated]);
+  }, [accounts, sessionId, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, submissions, enrollments, boardTasks, syllabusItems, contentItems, newsPosts, hydrated]);
 
   const register = async (profile) => {
     const email = profile.email.trim().toLowerCase();
@@ -245,9 +249,17 @@ export function GameProvider({ children }) {
     if (profile.password.length < 6) {
       return { ok: false, message: "La clave debe tener al menos 6 caracteres." };
     }
+    if (profile.enrollmentId) {
+      const enrollment = enrollments.find((item) => item.id === profile.enrollmentId);
+      if (!enrollment) return { ok: false, message: "La inscripción seleccionada ya no existe." };
+      if (enrollment.studentAccountId) {
+        return { ok: false, message: "Esa inscripción ya tiene una cuenta de estudiante." };
+      }
+    }
     const passwordHash = await hashSecret(profile.password, email);
+    const studentId = crypto.randomUUID();
     const next = {
-      id: crypto.randomUUID(),
+      id: studentId,
       role: "student",
       firstName: profile.firstName.trim(),
       lastName: profile.lastName.trim(),
@@ -257,10 +269,18 @@ export function GameProvider({ children }) {
       dailyGoal: profile.dailyGoal || "10 minutos",
       tutorName: profile.tutorName || "",
       tutorEmail: profile.tutorEmail || "",
+      enrollmentId: profile.enrollmentId || null,
       tutorialSeen: false,
       createdAt: Date.now(),
     };
     setAccounts((current) => [...current, next]);
+    if (profile.enrollmentId) {
+      setEnrollments((current) => current.map((item) => (
+        item.id === profile.enrollmentId
+          ? { ...item, studentAccountId: studentId, status: item.status === "pendiente" ? "pagado" : item.status }
+          : item
+      )));
+    }
     return { ok: true };
   };
 
@@ -529,6 +549,73 @@ export function GameProvider({ children }) {
     setEnrollments((current) => current.map((item) => (item.id === enrollmentId ? { ...item, status } : item)));
   };
 
+  const updateEnrollment = (enrollmentId, patch) => {
+    setEnrollments((current) => current.map((item) => (item.id === enrollmentId ? { ...item, ...patch } : item)));
+  };
+
+  const saveNewsPost = (post) => {
+    setNewsPosts((current) => [...current.filter((item) => item.id !== post.id), post]);
+  };
+
+  const removeNewsPost = (postId) => {
+    setNewsPosts((current) => current.filter((item) => item.id !== postId));
+  };
+
+  const removeStaffAccount = (email) => {
+    const target = accounts.find((item) => item.email === email);
+    if (!target || target.role === "admin" || target.email === DEFAULT_ADMIN.email) {
+      return { ok: false, message: "No se puede eliminar esa cuenta." };
+    }
+    if (target.lockedUsername && target.staffKind === "temporary") {
+      return { ok: false, message: "Los voluntarios temporales fijos no se eliminan; solo cambia la clave." };
+    }
+    setAccounts((current) => current.filter((item) => item.email !== email));
+    if (sessionId === target.id) setSessionId(null);
+    return { ok: true };
+  };
+
+  const addNextTempVolunteer = async (password = DEFAULT_TEMP_PASSWORD) => {
+    const slotNumbers = accounts
+      .map((item) => {
+        const fromEmail = item.email?.match(/^voluntario(\d+)@fif\.org$/i);
+        if (fromEmail) return Number(fromEmail[1]);
+        if (item.slot) {
+          const fromSlot = String(item.slot).match(/(\d+)/);
+          if (fromSlot) return Number(fromSlot[1]);
+        }
+        return 0;
+      })
+      .filter((n) => n > 0);
+    const nextNum = (slotNumbers.length ? Math.max(...slotNumbers) : 0) + 1;
+    const email = `voluntario${nextNum}@fif.org`;
+    if (accounts.some((item) => item.email === email)) {
+      return { ok: false, message: `Ya existe ${email}.` };
+    }
+    if (!password || password.length < 6) {
+      return { ok: false, message: "La clave debe tener al menos 6 caracteres." };
+    }
+    const passwordHash = await hashSecret(password, email);
+    setAccounts((current) => [
+      ...current,
+      {
+        id: `staff-temp-voluntario${nextNum}`,
+        role: "staff",
+        staffKind: "temporary",
+        duty: "member",
+        teamId: "",
+        firstName: "Voluntario",
+        lastName: `Temporal ${nextNum}`,
+        email,
+        passwordHash,
+        access: ACCESS_PRESETS.temporary,
+        lockedUsername: true,
+        slot: `voluntario${nextNum}`,
+        createdAt: Date.now(),
+      },
+    ]);
+    return { ok: true, email, slot: nextNum };
+  };
+
   const students = useMemo(
     () => accounts
       .filter((item) => item.role === "student")
@@ -563,6 +650,7 @@ export function GameProvider({ children }) {
       boardTasks,
       syllabusItems,
       contentItems,
+      newsPosts,
       visibleCourses,
       register,
       login,
@@ -591,14 +679,19 @@ export function GameProvider({ children }) {
       updateStaffTeam,
       saveEnrollment,
       updateEnrollmentStatus,
+      updateEnrollment,
       saveBoardTask,
       removeBoardTask,
       saveSyllabusItem,
       removeSyllabusItem,
       saveContentItem,
       removeContentItem,
+      saveNewsPost,
+      removeNewsPost,
+      removeStaffAccount,
+      addNextTempVolunteer,
     }),
-    [hydrated, user, students, staff, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, submissions, enrollments, boardTasks, syllabusItems, contentItems, visibleCourses],
+    [hydrated, user, students, staff, stats, progress, tests, attempts, messages, attendance, activities, activityDone, schedules, submissions, enrollments, boardTasks, syllabusItems, contentItems, newsPosts, visibleCourses],
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

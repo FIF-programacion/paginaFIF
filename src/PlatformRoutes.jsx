@@ -13,6 +13,8 @@ import Progress from "./pages/Progress";
 import Resources from "./pages/Resources";
 import Help from "./pages/Help";
 import SubjectHub from "./pages/SubjectHub";
+import HtmlGame from "./pages/HtmlGame";
+import MiniGames from "./pages/MiniGames";
 import CourseMap from "./pages/CourseMap";
 import ExercisePage from "./pages/exercises/ExercisePage";
 import CourseComplete from "./pages/CourseComplete";
@@ -54,7 +56,11 @@ export default function PlatformRoutes() {
           <Route path="prueba" element={<TakeTest />} />
           <Route path="actividades" element={<StudentActivities />} />
           <Route path="horarios" element={<StudentSchedules />} />
+          <Route path="minijuegos" element={<MiniGames />} />
+          <Route path="minijuegos/:gameId" element={<HtmlGame />} />
           <Route path="materia/:subjectId" element={<SubjectHub />} />
+          <Route path="materia/:subjectId/:section" element={<SubjectHub />} />
+          <Route path="materia/:subjectId/juego/:gameId" element={<HtmlGame />} />
           <Route path="curso/:courseId" element={<CourseMap />} />
           <Route path="curso/:courseId/leccion/:lessonId" element={<ExercisePage />} />
           <Route path="curso/:courseId/completado" element={<CourseComplete />} />

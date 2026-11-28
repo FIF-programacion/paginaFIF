@@ -144,7 +144,7 @@ export default function FifLearning() {
           <div className="courses-grid">
             <p className="section-copy">
               Oferta: Programación, Matemática, Arte y Música. Cada clase incluye trabajos del
-              profesor y minijuegos de refuerzo. Matemática se organiza en los cuatro ejes del
+              profesor y refuerzos interactivos. Matemática se organiza en los cuatro ejes del
               sílabo olímpico. Arte corresponde al grupo inicial / nivelación; el grupo regular
               no lo incluye. Completar un curso no equivale a un título oficial.
             </p>

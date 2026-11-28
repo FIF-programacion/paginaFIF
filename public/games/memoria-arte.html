@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Memoria de arte FIF</title>
+  <style>
+    :root { --ink: #10233a; --blue: #1e5bb8; --gold: #d4a017; --paper: #f7f3ea; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body {
+      font-family: Nunito, Arial, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #fff;
+      border-bottom: 2px solid #eadfca;
+      flex-shrink: 0;
+    }
+    header h1 { font-size: 16px; margin: 0; color: var(--blue); }
+    header p { margin: 0; font-size: 12px; color: #6b5e4a; }
+    .hud { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+    button, .pill {
+      font: inherit; font-weight: 800; border: 0; border-radius: 999px;
+      padding: 6px 12px; cursor: pointer;
+    }
+    .pill { background: #fff3d6; }
+    button.primary { background: var(--blue); color: #fff; }
+    button.ghost { background: #efe6d6; }
+    button.on { background: var(--gold); color: #fff; }
+    .board {
+      flex: 1; min-height: 0; overflow: hidden;
+      display: grid; gap: 6px; padding: 8px;
+      margin: 0 auto;
+      width: min(560px, 100%);
+      height: 100%;
+    }
+    .board.size-4 { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); }
+    .board.size-6 { grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(4, 1fr); width: min(720px, 100%); }
+    .card {
+      perspective: 700px; cursor: pointer; background: transparent; padding: 0;
+      border: 0; width: 100%; height: 100%; min-height: 0;
+    }
+    .inner {
+      position: relative; width: 100%; height: 100%;
+      transform-style: preserve-3d; transition: transform .45s;
+    }
+    .card.is-up .inner, .card.is-match .inner { transform: rotateY(180deg); }
+    .face {
+      position: absolute; inset: 0; backface-visibility: hidden; border-radius: 12px;
+      display: grid; place-items: center; padding: 8px; text-align: center;
+      border: 3px solid #10233a; box-shadow: 3px 3px 0 #10233a;
+    }
+    .back { background: linear-gradient(145deg, #1e5bb8, #0f3a7a); color: #fff; font-size: 28px; }
+    .front { transform: rotateY(180deg); background: #fff; }
+    .card.is-match .front { border-color: var(--gold); box-shadow: 0 0 0 3px #f5d76e, 3px 3px 0 #10233a; }
+    .art { width: 100%; height: 54%; border-radius: 8px; }
+    .label { font-size: 10px; font-weight: 800; line-height: 1.15; }
+    .artist { font-size: 11px; font-weight: 800; }
+    .overlay {
+      position: fixed; inset: 0; background: rgba(16,35,58,.5);
+      display: none; place-items: center; padding: 16px;
+    }
+    .overlay.show { display: grid; }
+    .modal { background: #fff; border-radius: 16px; max-width: 520px; padding: 18px; max-height: 90vh; overflow: auto; }
+    .modal h2 { margin: 0 0 8px; color: var(--blue); }
+    .facts { text-align: left; font-size: 13px; }
+    .facts li { margin: 6px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Memoria de arte</h1>
+      <p>Voltea dos tarjetas: obra + artista. Si coinciden, quedan en oro.</p>
+    </div>
+    <div class="hud">
+      <span class="pill" id="tries">Intentos 0</span>
+      <span class="pill" id="clock">0 s</span>
+      <button class="ghost on" id="btn4" type="button">4×4</button>
+      <button class="ghost" id="btn6" type="button">4×6</button>
+      <button class="primary" id="reset" type="button">Nueva partida</button>
+    </div>
+  </header>
+  <div class="board size-4" id="board"></div>
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <h2>¡Galería completa!</h2>
+      <p id="summary"></p>
+      <ul class="facts" id="facts"></ul>
+      <button class="primary" id="again" type="button">Jugar otra vez</button>
+    </div>
+  </div>
+  <script>
+    const PAIRS = [
+      { id: "monalisa", work: "Mona Lisa", artist: "Leonardo da Vinci", art: "linear-gradient(180deg,#6b4f32 0 28%,#c8a36a 28% 70%,#3e2a18 70%)", fact: "La Mona Lisa no tiene cejas visibles: era habitual depilarlas en su época." },
+      { id: "noche", work: "La noche estrellada", artist: "Vincent van Gogh", art: "radial-gradient(circle at 75% 18%,#f5e27a 0 12%,transparent 13%),linear-gradient(180deg,#123a7a,#1d4ed8 40%,#0b2a4a)", fact: "Van Gogh pintó La noche estrellada en 1889, desde la ventana del asilo de Saint-Rémy." },
+      { id: "grito", work: "El grito", artist: "Edvard Munch", art: "linear-gradient(180deg,#f59e0b,#ef4444 40%,#1e3a5f)", fact: "Munch hizo varias versiones de El grito: temple, pastel y litografía." },
+      { id: "relojes", work: "La persistencia de la memoria", artist: "Salvador Dalí", art: "linear-gradient(180deg,#fde68a,#f59e0b 50%,#92400e)", fact: "Los relojes blandos de Dalí nacieron al ver un queso camembert derretido." },
+      { id: "guernica", work: "Guernica", artist: "Pablo Picasso", art: "repeating-linear-gradient(90deg,#111 0 12%,#eee 12% 24%)", fact: "Guernica se pintó en blanco y negro para recordar las fotos de prensa de la guerra." },
+      { id: "perla", work: "La joven de la perla", artist: "Johannes Vermeer", art: "linear-gradient(180deg,#1e3a5f,#c4a574 42%,#0f172a)", fact: "Nadie sabe con certeza quién posó para La joven de la perla." },
+      { id: "beso", work: "El beso", artist: "Gustav Klimt", art: "linear-gradient(180deg,#f5d76e,#b45309 55%,#7c2d12)", fact: "Klimt cubrió El beso con pan de oro, como los mosaicos bizantinos." },
+      { id: "sol", work: "Impresión, sol naciente", artist: "Claude Monet", art: "linear-gradient(180deg,#93c5fd,#fb923c 55%,#1e3a5f)", fact: "El título de esta obra le dio nombre al impresionismo." },
+      { id: "meninas", work: "Las meninas", artist: "Diego Velázquez", art: "linear-gradient(180deg,#1f2937,#d6c3a3 45%,#111827)", fact: "Velázquez se pintó a sí mismo frente al lienzo, mirándonos." },
+      { id: "ola", work: "La gran ola", artist: "Katsushika Hokusai", art: "linear-gradient(180deg,#e0f2fe,#1d4ed8 40%,#0f172a)", fact: "La gran ola es un grabado ukiyo-e, no un óleo." },
+      { id: "gothic", work: "American Gothic", artist: "Grant Wood", art: "linear-gradient(180deg,#93c5fd,#f1e3c4 40%,#365314)", fact: "Los modelos fueron la hermana del pintor y su dentista." },
+      { id: "night", work: "Nighthawks", artist: "Edward Hopper", art: "linear-gradient(180deg,#0f172a,#f59e0b 55%,#1e3a5f)", fact: "Nighthawks muestra un diner de Nueva York de madrugada, sin puerta visible." },
+      { id: "creacion", work: "La creación de Adán", artist: "Michelangelo", art: "linear-gradient(180deg,#cbd5e1,#94a3b8 45%,#475569)", fact: "El dedo casi tocándose simboliza el instante en que Dios da vida al hombre." },
+      { id: "venus", work: "El nacimiento de Venus", artist: "Sandro Botticelli", art: "linear-gradient(180deg,#e0f2fe,#fbcfe8 50%,#f472b6)", fact: "Venus nace del mar en una concha, según la mitología clásica." },
+      { id: "irises", work: "Lirios", artist: "Vincent van Gogh", art: "linear-gradient(180deg,#60a5fa,#a855f7 45%,#4ade80)", fact: "Van Gogh pintó Lirios mientras estaba en el asilo de Saint-Rémy." },
+      { id: "david", work: "David", artist: "Michelangelo", art: "linear-gradient(180deg,#f5f5f4,#d6d3d1 50%,#78716c)", fact: "El David original es un bloque de mármol de más de cinco metros." },
+      { id: "persist", work: "Campo de trigo con cipreses", artist: "Vincent van Gogh", art: "linear-gradient(180deg,#38bdf8,#22c55e 55%,#14532d)", fact: "Los cipreses le recordaban a Van Gogh lápidas y eternidad." },
+      { id: "liberty", work: "La libertad guiando al pueblo", artist: "Eugène Delacroix", art: "linear-gradient(180deg,#1e3a8a,#dc2626 55%,#fbbf24)", fact: "La figura central lleva el gorro frigio, símbolo de libertad." },
+      { id: "persist2", work: "Composición VIII", artist: "Wassily Kandinsky", art: "linear-gradient(145deg,#ef4444,#facc15 40%,#3b82f6 70%,#111)", fact: "Kandinsky relacionaba formas y colores con emociones y sonidos." },
+      { id: "medusa", work: "La Medusa", artist: "Caravaggio", art: "linear-gradient(180deg,#14532d,#a16207 50%,#0f172a)", fact: "Caravaggio pintó la cabeza cortada con un detalle casi escultórico." },
+      { id: "sagrada", work: "La Sagrada Familia", artist: "Antoni Gaudí", art: "linear-gradient(180deg,#fde68a,#fb923c 40%,#6d28d9)", fact: "Gaudí trabajó décadas en la basílica; aún se construye hoy." },
+      { id: "frida", work: "Autorretrato con mono", artist: "Frida Kahlo", art: "linear-gradient(180deg,#16a34a,#f472b6 50%,#0f172a)", fact: "Frida usó símbolos mexicanos y su dolor personal en sus autorretratos." },
+      { id: "rivera", work: "Hombre en el cruce", artist: "Diego Rivera", art: "linear-gradient(180deg,#f97316,#15803d 55%,#1d4ed8)", fact: "Rivera mezcló muralismo político con historia de México." },
+      { id: "tahiti", work: "Mujeres de Tahití", artist: "Paul Gauguin", art: "linear-gradient(180deg,#fbbf24,#22c55e 55%,#1e3a8a)", fact: "Gauguin buscó colores y mitos lejos de Europa." },
+      { id: "chicago", work: "Chicago II", artist: "Georgia O'Keeffe", art: "linear-gradient(180deg,#fce7f3,#e11d48 55%,#0f172a)", fact: "O'Keeffe amplió flores hasta que parecían paisajes abstractos." },
+      { id: "warhol", work: "Marilyn Diptych", artist: "Andy Warhol", art: "repeating-linear-gradient(90deg,#f472b6 0 8%,#fde047 8% 16%,#38bdf8 16% 24%)", fact: "Warhol repitió la imagen para hablar de fama y consumo." },
+      { id: "dali2", work: "Metamorfosis de Narciso", artist: "Salvador Dalí", art: "linear-gradient(180deg,#e5e7eb,#60a5fa 50%,#f59e0b)", fact: "Dalí muestra dos figuras que se reflejan como manos y flor." },
+      { id: "magritte", work: "El imperio de las luces", artist: "René Magritte", art: "linear-gradient(180deg,#0ea5e9 0 58%,#111827 58%)", fact: "Magritte une día y noche en un mismo paisaje." },
+      { id: "miro", work: "La estrella", artist: "Joan Miró", art: "linear-gradient(145deg,#ef4444,#111 40%,#facc15 75%)", fact: "Miró simplificó formas como si fueran señales o constelaciones." },
+      { id: "hokusai2", work: "Red Fuji", artist: "Katsushika Hokusai", art: "linear-gradient(180deg,#dc2626,#7c2d12 40%,#1e3a8a)", fact: "Fuji rojo aparece cuando la montaña capta la luz del amanecer." },
+      { id: "angeles", work: "Las líneas del destino", artist: "Rembrandt", art: "linear-gradient(180deg,#451a03,#f59e0b 55%,#0f172a)", fact: "Rembrandt dominaba la luz oscura llamada claroscuro." },
+      { id: "starry2", work: "Autorretrato", artist: "Vincent van Gogh", art: "linear-gradient(180deg,#1e3a8a,#15803d 60%,#ca8a04)", fact: "Van Gogh se pintó a sí mismo más de treinta veces." },
+      { id: "botticelli2", work: "Primavera", artist: "Sandro Botticelli", art: "linear-gradient(180deg,#ecfccb,#84cc16 45%,#1d4ed8)", fact: "Primavera reúne figuras mitológicas en un jardín simbólico." },
+      { id: "picasso2", work: "Las señoritas de Avignon", artist: "Pablo Picasso", art: "linear-gradient(135deg,#f97316,#facc15 35%,#1e3a8a 70%)", fact: "Esta obra abrió camino al cubismo con formas angulosas." },
+      { id: "matisse", work: "La danza", artist: "Henri Matisse", art: "linear-gradient(180deg,#1d4ed8,#ef4444 50%,#22c55e)", fact: "Matisse usó color plano para transmitir movimiento y alegría." },
+      { id: "monet2", work: "Nenúfares", artist: "Claude Monet", art: "linear-gradient(180deg,#86efac,#22d3ee 55%,#312e81)", fact: "Monet pintó su estanque en Giverny una y otra vez." },
+      { id: "kahlo2", work: "Las dos Fridas", artist: "Frida Kahlo", art: "linear-gradient(90deg,#f8fafc,#dc2626 50%,#1e3a8a)", fact: "Dos Fridas muestran el lado europeo y el mexicano de su identidad." },
+      { id: "leonardo2", work: "La última cena", artist: "Leonardo da Vinci", art: "linear-gradient(180deg,#78350f,#fef3c7 45%,#1c1917)", fact: "Leonardo capturó el instante justo después de que Jesús anuncia la traición." },
+      { id: "vangogh3", work: "Girasoles", artist: "Vincent van Gogh", art: "linear-gradient(180deg,#fbbf24,#ca8a04 55%,#1e3a8a)", fact: "Los girasoles celebraban la llegada de su amigo Gauguin." },
+      { id: "velazquez2", work: "Venus al espejo", artist: "Diego Velázquez", art: "linear-gradient(180deg,#fcd34d,#b45309 50%,#0f172a)", fact: "El espejo invita a pensar quién mira y quién es mirado." },
+      { id: "cezanne", work: "Mont Sainte-Victoire", artist: "Paul Cézanne", art: "linear-gradient(180deg,#93c5fd,#4ade80 55%,#57534e)", fact: "Cézanne pintó la misma montaña desde distintos ángulos." },
+      { id: "escher", work: "Mano con esfera reflectante", artist: "M. C. Escher", art: "radial-gradient(circle,#e5e7eb 0 35%,#1e3a8a 36%)", fact: "Escher jugó con perspectiva imposible y reflejos en esferas." },
+      { id: "kahlo3", work: "La columna rota", artist: "Frida Kahlo", art: "linear-gradient(180deg,#fca5a5,#6b7280 50%,#111827)", fact: "Frida convierte su dolor físico en un lenguaje visual directo." }
+    ];
+
+    const board = document.getElementById("board");
+    const overlay = document.getElementById("overlay");
+    let size = 8;
+    let deck = [];
+    let first = null;
+    let lock = false;
+    let tries = 0;
+    let seconds = 0;
+    let timer = null;
+    let matched = [];
+
+    function shuffle(list) {
+      const next = list.slice();
+      for (let i = next.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [next[i], next[j]] = [next[j], next[i]];
+      }
+      return next;
+    }
+
+    function beep(freq, dur) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.frequency.value = freq;
+        o.connect(g); g.connect(ctx.destination);
+        g.gain.value = 0.05;
+        o.start();
+        o.stop(ctx.currentTime + dur);
+      } catch (err) {}
+    }
+
+    function start() {
+      const pairs = shuffle(PAIRS).slice(0, size);
+      deck = shuffle(pairs.flatMap((item) => ([
+        { pairId: item.id, kind: "work", item },
+        { pairId: item.id, kind: "artist", item },
+      ])));
+      first = null; lock = false; tries = 0; seconds = 0; matched = [];
+      clearInterval(timer);
+      timer = setInterval(() => {
+        seconds += 1;
+        document.getElementById("clock").textContent = seconds + " s";
+      }, 1000);
+      document.getElementById("tries").textContent = "Intentos 0";
+      document.getElementById("clock").textContent = "0 s";
+      overlay.classList.remove("show");
+      board.className = "board " + (size === 8 ? "size-4" : "size-6");
+      board.innerHTML = "";
+      deck.forEach((card, i) => {
+        const btn = document.createElement("button");
+        btn.className = "card";
+        btn.type = "button";
+        btn.innerHTML = '<div class="inner"><div class="face back">🎨</div><div class="face front">' +
+          (card.kind === "work"
+            ? '<div class="art" style="background:' + card.item.art + '"></div><div class="label">' + card.item.work + "</div>"
+            : '<div class="artist">' + card.item.artist + "</div>") +
+          "</div></div>";
+        btn.onclick = () => flip(i, btn);
+        board.appendChild(btn);
+      });
+    }
+
+    function flip(i, btn) {
+      if (lock || btn.classList.contains("is-up") || btn.classList.contains("is-match")) return;
+      btn.classList.add("is-up");
+      if (!first) { first = { i, btn }; return; }
+      lock = true;
+      tries += 1;
+      document.getElementById("tries").textContent = "Intentos " + tries;
+      const a = deck[first.i];
+      const b = deck[i];
+      if (a.pairId === b.pairId && a.kind !== b.kind) {
+        beep(880, 0.12);
+        setTimeout(() => {
+          first.btn.classList.add("is-match");
+          btn.classList.add("is-match");
+          matched.push(a.item);
+          first = null; lock = false;
+          if (matched.length === size) victory();
+        }, 280);
+      } else {
+        beep(180, 0.18);
+        setTimeout(() => {
+          first.btn.classList.remove("is-up");
+          btn.classList.remove("is-up");
+          first = null; lock = false;
+        }, 1200);
+      }
+    }
+
+    function victory() {
+      clearInterval(timer);
+      document.getElementById("summary").textContent = "Emparejaste " + size + " pares en " + seconds + " s y " + tries + " intentos.";
+      document.getElementById("facts").innerHTML = matched.map((item) => "<li><strong>" + item.work + ":</strong> " + item.fact + "</li>").join("");
+      overlay.classList.add("show");
+    }
+
+    document.getElementById("reset").onclick = start;
+    document.getElementById("again").onclick = start;
+    document.getElementById("btn4").onclick = function () {
+      size = 8; this.classList.add("on"); document.getElementById("btn6").classList.remove("on"); start();
+    };
+    document.getElementById("btn6").onclick = function () {
+      size = 12; this.classList.add("on"); document.getElementById("btn4").classList.remove("on"); start();
+    };
+    start();
+  </script>
+</body>
+</html>

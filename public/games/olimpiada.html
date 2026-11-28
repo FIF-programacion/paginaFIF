@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reto olímpico FIF</title>
+  <style>
+    :root { font-family: Nunito, Arial, sans-serif; }
+    body { margin: 0; background: #f4f7fb; color: #10233a; }
+    main { max-width: 640px; margin: 0 auto; padding: 24px 16px 40px; }
+    h1 { color: #1e5bb8; font-size: 28px; margin: 0 0 8px; }
+    .card { background: #fff; border-radius: 18px; padding: 20px; box-shadow: 0 8px 24px rgba(16,35,58,.08); }
+    .q { font-size: 20px; font-weight: 800; margin: 0 0 16px; }
+    button { font: inherit; font-weight: 800; border: 0; border-radius: 12px; padding: 12px 14px; cursor: pointer; background: #e8eef8; color: #10233a; text-align: left; }
+    .opts { display: grid; gap: 10px; }
+    .opts button:hover { background: #d7e6ff; }
+    .bar { display: flex; justify-content: space-between; margin: 0 0 16px; font-weight: 800; color: #1e5bb8; }
+    .ok { background: #d1fae5; }
+    .bad { background: #fee2e2; }
+    .next { margin-top: 16px; background: #1e5bb8; color: #fff; width: 100%; text-align: center; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Reto olímpico</h1>
+    <p>Combinatoria y teoría de números. Elige la respuesta y justifica en tu cuaderno.</p>
+    <div class="card">
+      <div class="bar"><span id="step"></span><span id="score"></span></div>
+      <p class="q" id="prompt"></p>
+      <div class="opts" id="opts"></div>
+      <button class="next" id="next" hidden type="button">Siguiente</button>
+    </div>
+  </main>
+  <script>
+    const ITEMS = [
+      { q: "2 camisas y 3 pantalones. ¿Cuántos outfits?", a: "6", opts: ["5", "6", "8"] },
+      { q: "AB y BA, si el orden importa, ¿son el mismo caso?", a: "No", opts: ["Sí", "No", "Depende"] },
+      { q: "Principio de producto: 3 caminos y luego 2. Total:", a: "6", opts: ["5", "6", "32"] },
+      { q: "7 fichas. ¿Par o impar?", a: "Impar", opts: ["Par", "Impar", "Primo"] },
+      { q: "Resto de 14 ÷ 5", a: "4", opts: ["2", "3", "4"] },
+      { q: "MCD de 8 y 12", a: "4", opts: ["2", "4", "8"] },
+      { q: "Un cuadrado de lado 4. Perímetro:", a: "16", opts: ["8", "12", "16"] },
+      { q: "Patrón 2, 4, 6, 8. Siguiente:", a: "10", opts: ["9", "10", "12"] },
+    ];
+    let i = 0, score = 0, locked = false;
+    const prompt = document.getElementById("prompt");
+    const opts = document.getElementById("opts");
+    const next = document.getElementById("next");
+    function render() {
+      locked = false;
+      next.hidden = true;
+      document.getElementById("step").textContent = "Pregunta " + (i + 1) + " / " + ITEMS.length;
+      document.getElementById("score").textContent = "Puntos " + score;
+      const item = ITEMS[i];
+      prompt.textContent = item.q;
+      opts.innerHTML = "";
+      item.opts.forEach((opt) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = opt;
+        btn.onclick = () => pick(opt, item.a, btn);
+        opts.appendChild(btn);
+      });
+    }
+    function pick(opt, answer, btn) {
+      if (locked) return;
+      locked = true;
+      const ok = opt === answer;
+      if (ok) score += 1;
+      btn.className = ok ? "ok" : "bad";
+      [...opts.children].forEach((el) => {
+        if (el.textContent === answer) el.className = "ok";
+      });
+      document.getElementById("score").textContent = "Puntos " + score;
+      next.hidden = false;
+      next.textContent = i === ITEMS.length - 1 ? "Ver resultado" : "Siguiente";
+    }
+    function goNext() {
+      if (i < ITEMS.length - 1) { i += 1; render(); return; }
+      prompt.textContent = "Terminaste. " + score + " de " + ITEMS.length + ".";
+      opts.innerHTML = "";
+      next.textContent = "Otra vez";
+      next.onclick = function restart() {
+        i = 0; score = 0; next.onclick = goNext; render();
+      };
+    }
+    next.onclick = goNext;
+    render();
+  </script>
+</body>
+</html>
