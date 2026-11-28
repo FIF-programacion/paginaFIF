@@ -13,8 +13,12 @@ function ProductCard({ product }) {
 
   return (
     <article className="shop-card">
-      <div className="shop-card-media">
-        {product.image ? <img src={product.image} alt={product.name} /> : <ShirtArt color={product.color} print={product.print} />}
+      <div className={product.image ? "shop-card-media shop-card-media--photo" : "shop-card-media"}>
+        {product.image ? (
+          <img src={product.image} alt={`${product.name}, vista frontal y espalda`} />
+        ) : (
+          <ShirtArt color={product.color} print={product.print} />
+        )}
       </div>
       <div className="shop-card-body">
         <h3>{product.name}</h3>

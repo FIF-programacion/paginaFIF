@@ -1,39 +1,15 @@
-// Plantilla: reemplaza nombres, precios, colores e imágenes por los productos reales.
-// Si un producto tiene `image` (ruta en /public/images), se muestra en lugar del dibujo.
-export const SHOP_SIZES = ["XS", "S", "M", "L", "XL"];
+// Si un producto tiene `image` (ruta en /public/images), se muestra la foto; si no, un dibujo
+// de camiseta con los colores `color` y `print`.
+export const SHOP_SIZES = ["S", "M", "L"];
 
 export const SHOP_PRODUCTS = [
   {
-    id: "clasica-azul",
-    name: "Camiseta clásica FIF",
+    id: "infifnito",
+    name: "Camiseta INFIFNITO",
+    // Precio provisional: confirmar el precio real antes de abrir la tienda.
     price: 15,
-    color: "#1e5bb8",
-    print: "#e8c36a",
-    description: "Algodón suave con el logo de la fundación al frente.",
-  },
-  {
-    id: "mentes-curiosas",
-    name: "Mentes curiosas",
-    price: 18,
-    color: "#10233a",
-    print: "#e8c36a",
-    description: "Edición especial de los talleres de matemáticas y ciencia.",
-  },
-  {
-    id: "familias-dorada",
-    name: "Familias FIF",
-    price: 18,
-    color: "#e8c36a",
-    print: "#10233a",
-    description: "Para compartir en familia en las actividades de la comunidad.",
-  },
-  {
-    id: "voluntario-blanca",
-    name: "Voluntariado",
-    price: 15,
-    color: "#ffffff",
-    print: "#1e5bb8",
-    description: "La camiseta de quienes acompañan los programas como voluntarios.",
+    image: "/images/camiseta-infifnito.png",
+    description: "Camiseta blanca con la serie del coseno al frente y a INFIFNITO en la espalda.",
   },
 ];
 
