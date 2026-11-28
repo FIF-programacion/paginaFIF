@@ -512,6 +512,11 @@ export default function Landing() {
                 <p>Paquetes para empresas y aliados que quieren impulsar un programa.</p>
                 <Link to="/dona/paquetes" className="lp-hero-cta">Ver paquetes</Link>
               </article>
+              <article className="lp-donate-card">
+                <h3>Tienda solidaria</h3>
+                <p>Lleva una camiseta FIF y apoya los talleres y becas de la fundación.</p>
+                <Link to="/dona/camisetas" className="lp-hero-cta">Camisetas</Link>
+              </article>
             </div>
           </FadeIn>
         </section>

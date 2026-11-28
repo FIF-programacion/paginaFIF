@@ -4,6 +4,10 @@ import Landing from "./pages/Landing";
 import DonateIndividual from "./pages/DonateIndividual";
 import DonatePackages from "./pages/DonatePackages";
 import Enrollment from "./pages/Enrollment";
+import Shop from "./pages/Shop";
+import ShopCheckout from "./pages/ShopCheckout";
+import ShopResult from "./pages/ShopResult";
+import { CartProvider } from "./context/CartContext";
 import { PrivacyPage, TermsPage, CookiesPage, RefundsPage, NoticesPage, ContactPage } from "./pages/legal/LegalPages";
 
 // Coordinación queda disponible en el sitio publicado. El portal de estudiantes
@@ -12,20 +16,25 @@ const PlatformRoutes = lazy(() => import("./PlatformRoutes"));
 
 export default function App() {
   return (
-    <Suspense fallback={null}>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/dona/individual" element={<DonateIndividual />} />
-        <Route path="/dona/paquetes" element={<DonatePackages />} />
-        <Route path="/inscripciones" element={<Enrollment />} />
-        <Route path="/legal/privacidad" element={<PrivacyPage />} />
-        <Route path="/legal/terminos" element={<TermsPage />} />
-        <Route path="/legal/cookies" element={<CookiesPage />} />
-        <Route path="/legal/reembolsos" element={<RefundsPage />} />
-        <Route path="/legal/avisos" element={<NoticesPage />} />
-        <Route path="/legal/contacto" element={<ContactPage />} />
-        <Route path="*" element={<PlatformRoutes />} />
-      </Routes>
-    </Suspense>
+    <CartProvider>
+      <Suspense fallback={null}>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/dona/individual" element={<DonateIndividual />} />
+          <Route path="/dona/paquetes" element={<DonatePackages />} />
+          <Route path="/dona/camisetas" element={<Shop />} />
+          <Route path="/dona/camisetas/checkout" element={<ShopCheckout />} />
+          <Route path="/dona/camisetas/resultado" element={<ShopResult />} />
+          <Route path="/inscripciones" element={<Enrollment />} />
+          <Route path="/legal/privacidad" element={<PrivacyPage />} />
+          <Route path="/legal/terminos" element={<TermsPage />} />
+          <Route path="/legal/cookies" element={<CookiesPage />} />
+          <Route path="/legal/reembolsos" element={<RefundsPage />} />
+          <Route path="/legal/avisos" element={<NoticesPage />} />
+          <Route path="/legal/contacto" element={<ContactPage />} />
+          <Route path="*" element={<PlatformRoutes />} />
+        </Routes>
+      </Suspense>
+    </CartProvider>
   );
 }
